@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:id="@+id/nav_spaces"
+        android:icon="@drawable/ic_map"
+        android:title="Spaces"/>
+    <item android:id="@+id/nav_devices"
+        android:icon="@drawable/ic_socket"
+        android:title="Devices"/>
+    <item android:id="@+id/nav_buildings"
+        android:icon="@drawable/ic_office_block"
+        android:title="Buildings"/>
+</menu>
