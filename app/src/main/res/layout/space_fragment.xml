@@ -50,7 +50,7 @@
             android:id="@+id/space_detail_power"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="5000 W"
+            android:text="0 W"
             android:layout_alignParentEnd="true"
             android:textAppearance="?android:attr/textAppearanceMedium"/>
     </RelativeLayout>

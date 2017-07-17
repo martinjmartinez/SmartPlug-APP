@@ -1,4 +1,4 @@
-package com.example.martinjmartinez.proyectofinal.UI.Devices;
+package com.example.martinjmartinez.proyectofinal.UI.Devices.Fragments;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -13,6 +13,7 @@ import android.widget.GridView;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Device;
 import com.example.martinjmartinez.proyectofinal.R;
+import com.example.martinjmartinez.proyectofinal.UI.Devices.Adapters.DeviceListAdapter;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
 import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
@@ -81,7 +82,7 @@ public class DeviceListFragment extends Fragment{
                     Bundle bundle =  new Bundle();
                     bundle.putString("QUERY", "http://192.168.1.17:3000/devices/" + deviceSelected.get_id());
                     deviceDetailFragment.setArguments(bundle);
-                    Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.DEVICE_LIST_FRAGMENT), deviceDetailFragment, FragmentKeys.DEVICE_DETAIL_FRAGMENT);
+                    Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.DEVICE_LIST_FRAGMENT), deviceDetailFragment, FragmentKeys.DEVICE_DETAIL_FRAGMENT, true);
                 }
             }
         });

@@ -1,4 +1,4 @@
-package com.example.martinjmartinez.proyectofinal.UI.Devices;
+package com.example.martinjmartinez.proyectofinal.UI.Devices.Adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;

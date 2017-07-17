@@ -1,9 +1,8 @@
-package com.example.martinjmartinez.proyectofinal.UI.Spaces;
+package com.example.martinjmartinez.proyectofinal.UI.Spaces.Adapters;
 
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +12,7 @@ import android.widget.TextView;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Space;
 import com.example.martinjmartinez.proyectofinal.R;
+import com.example.martinjmartinez.proyectofinal.UI.Spaces.Fragments.SpaceDetailFragment;
 import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 
@@ -66,7 +66,7 @@ public class SpaceListAdapter extends ArrayAdapter<Space> {
                 Bundle bundle = new Bundle();
                 bundle.putString("QUERY", "http://192.168.1.17:3000/spaces/" + space.get_id());
                 spaceDetailFragment.setArguments(bundle);
-                Utils.loadContentFragment(((AppCompatActivity) getContext()).getSupportFragmentManager().findFragmentByTag(FragmentKeys.SPACE_LIST_FRAGMENT), spaceDetailFragment, FragmentKeys.SPACE_DETAIL_FRAGMENT);
+                Utils.loadContentFragment(((AppCompatActivity) getContext()).getSupportFragmentManager().findFragmentByTag(FragmentKeys.SPACE_LIST_FRAGMENT), spaceDetailFragment, FragmentKeys.SPACE_DETAIL_FRAGMENT, true);
             }
         });
     }

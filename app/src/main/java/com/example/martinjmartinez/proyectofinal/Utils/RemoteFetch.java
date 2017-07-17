@@ -1,7 +1,4 @@
-package com.example.martinjmartinez.proyectofinal;
-
-import android.content.Context;
-import android.util.Log;
+package com.example.martinjmartinez.proyectofinal.Utils;
 
 import org.json.JSONObject;
 

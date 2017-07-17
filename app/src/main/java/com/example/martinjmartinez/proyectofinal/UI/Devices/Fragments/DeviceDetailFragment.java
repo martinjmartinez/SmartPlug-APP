@@ -1,4 +1,4 @@
-package com.example.martinjmartinez.proyectofinal.UI.Buildings;
+package com.example.martinjmartinez.proyectofinal.UI.Devices.Fragments;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -10,12 +10,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.example.martinjmartinez.proyectofinal.Entities.Building;
-import com.example.martinjmartinez.proyectofinal.Entities.Space;
+import com.example.martinjmartinez.proyectofinal.Entities.Device;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
 
 import java.io.IOException;
+import java.util.List;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -24,17 +24,17 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 /**
- * Created by MartinJMartinez on 7/15/2017.
+ * Created by MartinJMartinez on 7/14/2017.
  */
 
-public class BuildingDetailFragment extends Fragment {
+public class DeviceDetailFragment extends Fragment {
 
-    private Building mBuilding;
+    private Device mDevice;
     private API mAPI;
     private Activity mActivity;
     private String mQuery;
 
-    public BuildingDetailFragment() {}
+    public DeviceDetailFragment() {}
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -48,16 +48,16 @@ public class BuildingDetailFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.building_fragment, container, false);
+        View view = inflater.inflate(R.layout.device_fragment, container, false);
 
-        iniVariables();
-        getBuilding(mAPI.getClient(), view);
+        iniVariables(view);
+        getDevice(mAPI.getClient(), view);
 
         return view;
     }
 
-    private void iniVariables() {
-        mBuilding = new Building();
+    private void iniVariables(View view) {
+        mDevice = new Device();
         mActivity = getActivity();
         mAPI =  new API();
     }
@@ -66,7 +66,7 @@ public class BuildingDetailFragment extends Fragment {
 
     }
 
-    private void getBuilding(OkHttpClient client, final View view) {
+    private void getDevice(OkHttpClient client, final View view) {
         Log.e("QUERY", mQuery);
         Request request = new Request.Builder()
                 .url(mQuery)
@@ -86,8 +86,8 @@ public class BuildingDetailFragment extends Fragment {
                     mActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            mBuilding = mAPI.getBuilding(response);
-                            initDeviceView(mBuilding, view);
+                            mDevice = mAPI.getDevice(response);
+                            initDeviceView(mDevice, view);
                         }
                     });
                 }
@@ -95,17 +95,22 @@ public class BuildingDetailFragment extends Fragment {
         });
     }
 
-    private void initDeviceView( Building building, View view) {
+    private void initDeviceView( Device device, View view) {
 
-        TextView name = (TextView) view.findViewById(R.id.building_detail_name);
-        TextView spaces = (TextView) view.findViewById(R.id.building_detail_spaces);
-        //TextView building = (TextView) view.findViewById(R.id.space_detail_building);
-        TextView power = (TextView) view.findViewById(R.id.building_detail_power);
+        TextView name = (TextView) view.findViewById(R.id.device_detail_name);
+        TextView ip_address = (TextView) view.findViewById(R.id.device_detail_ip);
+        TextView space = (TextView) view.findViewById(R.id.device_detail_space);
+        TextView building = (TextView) view.findViewById(R.id.device_detail_building);
+        TextView power = (TextView) view.findViewById(R.id.device_detail_power);
 
-        name.setText(building.getName());
+        name.setText(device.getName());
+        ip_address.setText(device.getIp_address());
+        if (device.getSpace() != null) {
+            space.setText(device.getSpace().getName());
 
-        if (building.getSpaces() != null) {
-            spaces.setText(building.getSpaces().size() + "");
+            if (device.getSpace().getBuilding() != null) {
+                building.setText(device.getSpace().getBuilding().getName());
+            }
         }
         //power.setText();
     }

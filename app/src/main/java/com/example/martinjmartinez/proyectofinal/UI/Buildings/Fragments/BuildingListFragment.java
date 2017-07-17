@@ -1,7 +1,9 @@
-package com.example.martinjmartinez.proyectofinal.UI.Buildings;
+package com.example.martinjmartinez.proyectofinal.UI.Buildings.Fragments;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -9,13 +11,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
+import android.widget.LinearLayout;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
-import com.example.martinjmartinez.proyectofinal.Entities.Space;
 import com.example.martinjmartinez.proyectofinal.R;
-import com.example.martinjmartinez.proyectofinal.UI.Devices.DeviceListFragment;
-import com.example.martinjmartinez.proyectofinal.UI.Spaces.SpaceListAdapter;
-import com.example.martinjmartinez.proyectofinal.UI.Spaces.SpaceListFragment;
+import com.example.martinjmartinez.proyectofinal.UI.Buildings.Adapters.BuildingListAdapter;
+import com.example.martinjmartinez.proyectofinal.UI.Spaces.Fragments.SpaceListFragment;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
 import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
@@ -41,6 +42,8 @@ public class BuildingListFragment extends Fragment {
     private API mAPI;
     private Activity mActivity;
     private String mQuery;
+    private FloatingActionButton mAddBuildingButton;
+    private LinearLayout mEmtyBuildingListLayout;
 
     public BuildingListFragment() {}
 
@@ -49,10 +52,14 @@ public class BuildingListFragment extends Fragment {
         View view = inflater.inflate(R.layout.building_list_fragment, container, false);
 
         initVariables(view);
-        getBuildings(mAPI.getClient());
         initListeners();
 
         return view;
+    }
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        getBuildings(mAPI.getClient());
     }
 
     private void initVariables(View view) {
@@ -60,22 +67,34 @@ public class BuildingListFragment extends Fragment {
         mActivity = getActivity();
         mGridView = (GridView) view.findViewById(R.id.building_grid);
         mAPI =  new API();
+        mEmtyBuildingListLayout = (LinearLayout) view.findViewById(R.id.empty_building_list_layout);
+        mAddBuildingButton = (FloatingActionButton) view.findViewById(R.id.add_building_button);
+
     }
 
     private void initListeners() {
         mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if(!mBuildingList.isEmpty()) {
+                if (!mBuildingList.isEmpty()) {
                     Building buildingSelected = mBuildingList.get(position);
-                    if (buildingSelected.getSpaces() != null && !buildingSelected.getSpaces().isEmpty()) {
-                        SpaceListFragment spaceListFragment = new SpaceListFragment();
-                        Bundle bundle = new Bundle();
-                        bundle.putString("QUERY", "http://192.168.1.17:3000/buildings/" + buildingSelected.get_id() + "/spaces");
-                        spaceListFragment.setArguments(bundle);
-                        Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.BUILDING_LIST_FRAGMENT), spaceListFragment, FragmentKeys.SPACE_LIST_FRAGMENT);
-                    }
+
+                    SpaceListFragment spaceListFragment = new SpaceListFragment();
+                    Bundle bundle = new Bundle();
+                    bundle.putString("QUERY", "http://192.168.1.17:3000/buildings/" + buildingSelected.get_id() + "/spaces");
+                    spaceListFragment.setArguments(bundle);
+                    Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.BUILDING_LIST_FRAGMENT), spaceListFragment, FragmentKeys.SPACE_LIST_FRAGMENT, true);
+
                 }
+            }
+        });
+
+        mAddBuildingButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                BuildingCreateFragment buildingCreateFragment = new BuildingCreateFragment();
+                Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.BUILDING_LIST_FRAGMENT), buildingCreateFragment, FragmentKeys.BUILDING_CREATION_FRAGMENT, true);
+
             }
         });
     }
@@ -96,17 +115,25 @@ public class BuildingListFragment extends Fragment {
                 if (!response.isSuccessful()) {
                     throw new IOException("Unexpected code " + response);
                 } else {
-                    mActivity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mBuildingList = mAPI.getBuildingList(response);
-                            initSpacesList(mBuildingList);
-                        }
-                    });
+                    mBuildingList = mAPI.getBuildingList(response);
+                    if (!mBuildingList.isEmpty()) {
+                        mActivity.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                initSpacesList(mBuildingList);
+                            }
+                        });
+                        mEmtyBuildingListLayout.setVisibility(View.GONE);
+                    } else {
+                        mGridView.setVisibility(View.GONE);
+                        mEmtyBuildingListLayout.setVisibility(View.VISIBLE);
+                    }
                 }
+
             }
         });
     }
+
 
     void initSpacesList(List<Building> buildingsList) {
         BuildingListAdapter buildingListAdapter = new BuildingListAdapter(getContext(), R.layout.building_list_item, buildingsList);

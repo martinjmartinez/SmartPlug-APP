@@ -1,7 +1,9 @@
-package com.example.martinjmartinez.proyectofinal.UI.Spaces;
+package com.example.martinjmartinez.proyectofinal.UI.Spaces.Fragments;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -9,10 +11,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
+import android.widget.LinearLayout;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Space;
 import com.example.martinjmartinez.proyectofinal.R;
-import com.example.martinjmartinez.proyectofinal.UI.Devices.DeviceListFragment;
+import com.example.martinjmartinez.proyectofinal.UI.Devices.Fragments.DeviceListFragment;
+import com.example.martinjmartinez.proyectofinal.UI.Spaces.Adapters.SpaceListAdapter;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
 import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
@@ -35,21 +39,47 @@ public class SpaceListFragment extends Fragment {
 
     private List<Space> mSpacesList;
     private GridView mGridView;
+    private LinearLayout mEmptySpaceListLayout;
+    private FloatingActionButton mAddSpaceButton;
     private API mAPI;
     private Activity mActivity;
     private String mQuery;
+    private String mBuildingId;
 
     public SpaceListFragment() {}
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+       getArgumentsBundle();
+    }
+
+    public void getArgumentsBundle() {
+        Bundle bundle = this.getArguments();
+        if (bundle != null) {
+            mQuery = bundle.getString("QUERY", "http://192.168.1.17:3000/spaces");
+            mBuildingId = bundle.getString("BUILDING_ID", "");
+        } else {
+            mQuery = "http://192.168.1.17:3000/spaces";
+        }
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.space_list_fragment, container, false);
 
         initVariables(view);
-        getSpaces(mAPI.getClient());
         initListeners();
 
         return view;
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        getArgumentsBundle();
+        getSpaces(mAPI.getClient());
     }
 
     private void initVariables(View view) {
@@ -57,6 +87,8 @@ public class SpaceListFragment extends Fragment {
         mActivity = getActivity();
         mGridView = (GridView) view.findViewById(R.id.spaces_grid);
         mAPI =  new API();
+        mEmptySpaceListLayout = (LinearLayout) view.findViewById(R.id.empty_space_list_layout);
+        mAddSpaceButton = (FloatingActionButton) view.findViewById(R.id.add_space_button);
     }
 
     private void initListeners() {
@@ -70,16 +102,27 @@ public class SpaceListFragment extends Fragment {
                         Bundle bundle = new Bundle();
                         bundle.putString("QUERY", "http://192.168.1.17:3000/spaces/" + spaceSelected.get_id() + "/devices");
                         deviceListFragment.setArguments(bundle);
-                        Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.SPACE_LIST_FRAGMENT), deviceListFragment, FragmentKeys.DEVICE_LIST_FRAGMENT);
+                        Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.SPACE_LIST_FRAGMENT), deviceListFragment, FragmentKeys.DEVICE_LIST_FRAGMENT, true);
                     }
                 }
+            }
+        });
+
+        mAddSpaceButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SpaceCreateFragment spaceCreateFragment = new SpaceCreateFragment();
+                Bundle bundle = new Bundle();
+                bundle.putString("BUILDING_ID", mBuildingId);
+                spaceCreateFragment.setArguments(bundle);
+                Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.SPACE_LIST_FRAGMENT), spaceCreateFragment, FragmentKeys.SPACE_CREATION_FRAGMENT, true);
             }
         });
     }
 
     public void getSpaces(OkHttpClient client) {
         Request request = new Request.Builder()
-                .url("http://192.168.1.17:3000/spaces")
+                .url(mQuery)
                 .build();
 
         client.newCall(request).enqueue(new Callback() {
@@ -93,11 +136,17 @@ public class SpaceListFragment extends Fragment {
                 if (!response.isSuccessful()) {
                     throw new IOException("Unexpected code " + response);
                 } else {
+                    mSpacesList = mAPI.getSpaceList(response);
                     mActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            mSpacesList = mAPI.getSpaceList(response);
-                            initSpacesList(mSpacesList);
+                            if (!mSpacesList.isEmpty()) {
+                                mEmptySpaceListLayout.setVisibility(View.GONE);
+                                initSpacesList(mSpacesList);
+                            } else {
+                                mGridView.setVisibility(View.GONE);
+                                mEmptySpaceListLayout.setVisibility(View.VISIBLE);
+                            }
                         }
                     });
                 }

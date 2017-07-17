@@ -40,34 +40,31 @@ public class API {
 
     public Device getDevice(Response response) {
         try {
-            try {
-                JSONObject deviceData = new JSONObject(response.body().string());
+            JSONObject deviceData = new JSONObject(response.body().string());
+            Device device = new Device();
 
-                Device device = new Device();
+            device.set_id(deviceData.getString("_id"));
+            device.setName(deviceData.getString("name"));
+            device.setIp_address(deviceData.getString("ip_address"));
+            device.setStatus(deviceData.getBoolean("status"));
 
-                device.set_id(deviceData.getString("_id"));
-                device.setName(deviceData.getString("name"));
-                device.setIp_address(deviceData.getString("ip_address"));
-                device.setStatus(deviceData.getBoolean("status"));
+            if (deviceData.has("space")) {
+                if (deviceData.get("space") instanceof JSONObject) {
+                    Space space = new Space();
 
-                if (deviceData.has("space")) {
-                    if(deviceData.get("space") instanceof JSONObject) {
-                        Space space = new Space();
-                        space.set_id(deviceData.getJSONObject("space").getString("_id"));
-                        space.setName(deviceData.getJSONObject("space").getString("name"));
+                    space.set_id(deviceData.getJSONObject("space").getString("_id"));
+                    space.setName(deviceData.getJSONObject("space").getString("name"));
 
-                        device.setSpace(space);
-                    }
+                    device.setSpace(space);
                 }
-
-                return device;
-
-            } catch (JSONException e) {
-                Log.e("getDevice", e.getMessage());
             }
-        } catch (IOException e) {
 
+            return device;
+
+        } catch (JSONException | IOException e) {
+            Log.e("getDevice", e.getMessage());
         }
+
         return null;
     }
 
@@ -75,53 +72,89 @@ public class API {
         List<Device> devicesList = new ArrayList<>();
 
         try {
-            try {
-                JSONArray devices = new JSONArray(response.body().string());
-                for (int i = 0; i < devices.length(); i++) {
-                    Device device = new Device();
+            JSONArray devices = new JSONArray(response.body().string());
 
-                    device.set_id(devices.getJSONObject(i).getString("_id"));
-                    device.setName(devices.getJSONObject(i).getString("name"));
-                    device.setIp_address(devices.getJSONObject(i).getString("ip_address"));
-                    device.setStatus(devices.getJSONObject(i).getBoolean("status"));
+            for (int i = 0; i < devices.length(); i++) {
+                Device device = new Device();
 
-                    if (devices.getJSONObject(i).has("space")) {
-                        if (devices.getJSONObject(i).get("space") instanceof JSONObject) {
-                            Space space = new Space();
-                            space.set_id(devices.getJSONObject(i).getJSONObject("space").getString("_id"));
-                            space.setName(devices.getJSONObject(i).getJSONObject("space").getString("name"));
+                device.set_id(devices.getJSONObject(i).getString("_id"));
+                device.setName(devices.getJSONObject(i).getString("name"));
+                device.setIp_address(devices.getJSONObject(i).getString("ip_address"));
+                device.setStatus(devices.getJSONObject(i).getBoolean("status"));
 
-                            device.setSpace(space);
-                        }
+                if (devices.getJSONObject(i).has("space")) {
+                    if (devices.getJSONObject(i).get("space") instanceof JSONObject) {
+                        Space space = new Space();
+
+                        space.set_id(devices.getJSONObject(i).getJSONObject("space").getString("_id"));
+                        space.setName(devices.getJSONObject(i).getJSONObject("space").getString("name"));
+
+                        device.setSpace(space);
                     }
-
-                    devicesList.add(device);
                 }
-
-                return devicesList;
-
-            } catch (JSONException e) {
-                Log.e("getDeviceList", e.getMessage());
+                devicesList.add(device);
             }
-        } catch (IOException e) {
 
+            return devicesList;
+
+        } catch (JSONException | IOException e) {
+            Log.e("getDeviceList", e.getMessage());
         }
+
         return null;
     }
 
     public Space getSpace(Response response) {
         try {
-            try {
-                JSONObject spaceData = new JSONObject(response.body().string());
+            JSONObject spaceData = new JSONObject(response.body().string());
+            Space space = new Space();
 
+            space.set_id(spaceData.getString("_id"));
+            space.setName(spaceData.getString("name"));
+
+            if (spaceData.has("devices")) {
+                if (spaceData.get("devices") instanceof JSONArray) {
+                    JSONArray devices = spaceData.getJSONArray("devices");
+                    List<Device> devicesList = new ArrayList<>();
+
+                    for (int j = 0; j < devices.length(); j++) {
+                        Device device = new Device();
+
+                        device.set_id(devices.getJSONObject(j).getString("_id"));
+                        device.setName(devices.getJSONObject(j).getString("name"));
+                        device.setStatus(devices.getJSONObject(j).getBoolean("status"));
+                        device.setIp_address(devices.getJSONObject(j).getString("ip_address"));
+
+                        devicesList.add(device);
+                    }
+                    space.setDevices(devicesList);
+                }
+            }
+
+            return space;
+
+        } catch (JSONException | IOException e) {
+            Log.e("getSpace", e.getMessage());
+        }
+
+        return null;
+    }
+
+    public List<Space> getSpaceList(Response response) {
+        List<Space> spacesList = new ArrayList<>();
+
+        try {
+            JSONArray spaces = new JSONArray(response.body().string());
+
+            for (int i = 0; i < spaces.length(); i++) {
                 Space space = new Space();
 
-                space.set_id(spaceData.getString("_id"));
-                space.setName(spaceData.getString("name"));
+                space.set_id(spaces.getJSONObject(i).getString("_id"));
+                space.setName(spaces.getJSONObject(i).getString("name"));
 
-                if (spaceData.has("devices")) {
-                    if (spaceData.get("devices") instanceof JSONArray) {
-                        JSONArray devices = spaceData.getJSONArray("devices");
+                if (spaces.getJSONObject(i).has("devices")) {
+                    if (spaces.getJSONObject(i).get("devices") instanceof JSONArray) {
+                        JSONArray devices = spaces.getJSONObject(i).getJSONArray("devices");
                         List<Device> devicesList = new ArrayList<>();
 
                         for (int j = 0; j < devices.length(); j++) {
@@ -134,64 +167,16 @@ public class API {
 
                             devicesList.add(device);
                         }
-
                         space.setDevices(devicesList);
                     }
                 }
-
-                return space;
-
-            } catch (JSONException e) {
-                Log.e("getSpace", e.getMessage());
+                spacesList.add(space);
             }
-        } catch (IOException e) {
 
-        }
-        return null;
-    }
+            return spacesList;
 
-    public List<Space> getSpaceList(Response response) {
-        List<Space> spacesList = new ArrayList<>();
-
-        try {
-            try {
-                JSONArray spaces = new JSONArray(response.body().string());
-                for (int i = 0; i < spaces.length(); i++) {
-                    Space space = new Space();
-
-                    space.set_id(spaces.getJSONObject(i).getString("_id"));
-                    space.setName(spaces.getJSONObject(i).getString("name"));
-
-                    if (spaces.getJSONObject(i).has("devices")) {
-                        if (spaces.getJSONObject(i).get("devices") instanceof JSONArray) {
-                            JSONArray devices = spaces.getJSONObject(i).getJSONArray("devices");
-                            List<Device> devicesList = new ArrayList<>();
-
-                            for (int j = 0; j < devices.length(); j++) {
-                                Device device = new Device();
-
-                                device.set_id(devices.getJSONObject(j).getString("_id"));
-                                device.setName(devices.getJSONObject(j).getString("name"));
-                                device.setStatus(devices.getJSONObject(j).getBoolean("status"));
-                                device.setIp_address(devices.getJSONObject(j).getString("ip_address"));
-
-                                devicesList.add(device);
-                            }
-
-                            space.setDevices(devicesList);
-                        }
-                    }
-
-                    spacesList.add(space);
-                }
-
-                return spacesList;
-
-            } catch (JSONException e) {
-                Log.e("getSpaceList", e.getMessage());
-            }
-        } catch (IOException e) {
-
+        } catch (JSONException | IOException e) {
+            Log.e("getSpaceList", e.getMessage());
         }
 
         return null;
@@ -201,60 +186,17 @@ public class API {
         List<Building> buildingList = new ArrayList<>();
 
         try {
-            try {
-                JSONArray buildings = new JSONArray(response.body().string());
-                for (int i = 0; i < buildings.length(); i++) {
-                    Building building = new Building();
+            JSONArray buildings = new JSONArray(response.body().string());
 
-                    building.set_id(buildings.getJSONObject(i).getString("_id"));
-                    building.setName(buildings.getJSONObject(i).getString("name"));
-
-                    if (buildings.getJSONObject(i).has("spaces")) {
-                        if (buildings.getJSONObject(i).get("spaces") instanceof JSONArray) {
-                            JSONArray spaces = buildings.getJSONObject(i).getJSONArray("spaces");
-                            List<Space> spacesList = new ArrayList<>();
-
-                            for (int j = 0; j < spaces.length(); j++) {
-                                Space space = new Space();
-
-                                space.set_id(spaces.getJSONObject(j).getString("_id"));
-                                space.setName(spaces.getJSONObject(j).getString("name"));
-
-                                spacesList.add(space);
-                            }
-
-                            building.setSpaces(spacesList);
-                        }
-                    }
-
-                    buildingList.add(building);
-                }
-
-                return buildingList;
-
-            } catch (JSONException e) {
-                Log.e("getSpaceList", e.getMessage());
-            }
-        } catch (IOException e) {
-
-        }
-
-        return null;
-    }
-
-    public Building getBuilding(Response response) {
-        try {
-            try {
-                JSONObject buildingData = new JSONObject(response.body().string());
-
+            for (int i = 0; i < buildings.length(); i++) {
                 Building building = new Building();
 
-                building.set_id(buildingData.getString("_id"));
-                building.setName(buildingData.getString("name"));
+                building.set_id(buildings.getJSONObject(i).getString("_id"));
+                building.setName(buildings.getJSONObject(i).getString("name"));
 
-                if (buildingData.has("spaces")) {
-                    if (buildingData.get("spaces") instanceof JSONArray) {
-                        JSONArray spaces = buildingData.getJSONArray("spaces");
+                if (buildings.getJSONObject(i).has("spaces")) {
+                    if (buildings.getJSONObject(i).get("spaces") instanceof JSONArray) {
+                        JSONArray spaces = buildings.getJSONObject(i).getJSONArray("spaces");
                         List<Space> spacesList = new ArrayList<>();
 
                         for (int j = 0; j < spaces.length(); j++) {
@@ -270,14 +212,49 @@ public class API {
                     }
                 }
 
-                return building;
-
-            } catch (JSONException e) {
-                Log.e("getBuilding", e.getMessage());
+                buildingList.add(building);
             }
-        } catch (IOException e) {
 
+            return buildingList;
+
+        } catch (JSONException | IOException e) {
+            Log.e("getSpaceList", e.getMessage());
         }
+
+        return null;
+    }
+
+    public Building getBuilding(Response response) {
+        try {
+            JSONObject buildingData = new JSONObject(response.body().string());
+            Building building = new Building();
+
+            building.set_id(buildingData.getString("_id"));
+            building.setName(buildingData.getString("name"));
+
+            if (buildingData.has("spaces")) {
+                if (buildingData.get("spaces") instanceof JSONArray) {
+                    JSONArray spaces = buildingData.getJSONArray("spaces");
+                    List<Space> spacesList = new ArrayList<>();
+
+                    for (int j = 0; j < spaces.length(); j++) {
+                        Space space = new Space();
+
+                        space.set_id(spaces.getJSONObject(j).getString("_id"));
+                        space.setName(spaces.getJSONObject(j).getString("name"));
+
+                        spacesList.add(space);
+                    }
+                    building.setSpaces(spacesList);
+                }
+            }
+
+            return building;
+
+        } catch (JSONException | IOException e) {
+            Log.e("getBuilding", e.getMessage());
+        }
+
         return null;
     }
 }

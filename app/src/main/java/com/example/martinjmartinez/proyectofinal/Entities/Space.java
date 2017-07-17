@@ -16,8 +16,7 @@ public class Space {
 
     private List<Device> devices;
 
-    public Space() {
-    }
+    public Space() {}
 
     public Space(String _id) {
         this._id = _id;
@@ -43,8 +42,8 @@ public class Space {
         return building;
     }
 
-    public void setBuilding(String building_id) {
-        //TODO
+    public void setBuilding(Building building) {
+        this.building = building;
     }
 
     public List<Device> getDevices() {
@@ -53,5 +52,12 @@ public class Space {
 
     public void setDevices(List<Device> devices) {
         this.devices = devices;
+    }
+
+    @Override
+    public String toString() {
+        return "{" +
+                "\"name\":\"" + name + "\"" +
+                '}';
     }
 }

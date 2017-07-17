@@ -1,4 +1,4 @@
-package com.example.martinjmartinez.proyectofinal.UI.Buildings;
+package com.example.martinjmartinez.proyectofinal.UI.Buildings.Adapters;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -11,9 +11,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
-import com.example.martinjmartinez.proyectofinal.Entities.Space;
 import com.example.martinjmartinez.proyectofinal.R;
-import com.example.martinjmartinez.proyectofinal.UI.Spaces.SpaceDetailFragment;
+import com.example.martinjmartinez.proyectofinal.UI.Buildings.Fragments.BuildingDetailFragment;
 import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 
@@ -66,7 +65,7 @@ public class BuildingListAdapter extends ArrayAdapter<Building> {
                 Bundle bundle = new Bundle();
                 bundle.putString("QUERY", "http://192.168.1.17:3000/buildings/" + building.get_id());
                 buildingDetailFragment.setArguments(bundle);
-                Utils.loadContentFragment(((AppCompatActivity) getContext()).getSupportFragmentManager().findFragmentByTag(FragmentKeys.BUILDING_LIST_FRAGMENT), buildingDetailFragment, FragmentKeys.BUILDING_DETAIL_FRAGMENT);
+                Utils.loadContentFragment(((AppCompatActivity) getContext()).getSupportFragmentManager().findFragmentByTag(FragmentKeys.BUILDING_LIST_FRAGMENT), buildingDetailFragment, FragmentKeys.BUILDING_DETAIL_FRAGMENT, true);
             }
         });
     }

@@ -1,13 +1,13 @@
 package com.example.martinjmartinez.proyectofinal.Utils;
 
-import android.content.Context;
+import android.app.Activity;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
+import android.widget.EditText;
 
 import com.example.martinjmartinez.proyectofinal.R;
-import com.example.martinjmartinez.proyectofinal.RemoteFetch;
 
 import org.json.JSONObject;
 
@@ -53,13 +53,18 @@ public class Utils {
         return data;
     }
 
-    static public void loadContentFragment(final Fragment fromFragment,  Fragment toFrament, String toFragmentKey) {
+    static public void loadContentFragment(final Fragment fromFragment,  Fragment toFrament, String toFragmentKey, boolean addToStack) {
         FragmentTransaction fragmentTransaction = fromFragment.getFragmentManager().beginTransaction();
 
         fragmentTransaction.setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left);
         fragmentTransaction.replace(R.id.frame_layout, toFrament, toFragmentKey);
-        fragmentTransaction.addToBackStack(null);
-
+        if (addToStack) {
+            fragmentTransaction.addToBackStack(null);
+        }
         fragmentTransaction.commitAllowingStateLoss();
+    }
+
+    static public boolean isEditTextEmpty(EditText editText) {
+        return editText.getText().toString().trim().length() == 0;
     }
 }

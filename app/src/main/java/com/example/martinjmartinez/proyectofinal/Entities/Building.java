@@ -38,4 +38,8 @@ public class Building {
         this.spaces = spaces;
     }
 
+    @Override
+    public String toString() {
+        return "{\"name\":\"" + getName()+"\"}";
+    }
 }

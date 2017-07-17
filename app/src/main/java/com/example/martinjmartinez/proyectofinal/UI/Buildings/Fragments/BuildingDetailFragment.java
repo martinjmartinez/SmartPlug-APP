@@ -1,4 +1,4 @@
-package com.example.martinjmartinez.proyectofinal.UI.Spaces;
+package com.example.martinjmartinez.proyectofinal.UI.Buildings.Fragments;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -10,7 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.example.martinjmartinez.proyectofinal.Entities.Space;
+import com.example.martinjmartinez.proyectofinal.Entities.Building;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
 
@@ -26,14 +26,14 @@ import okhttp3.Response;
  * Created by MartinJMartinez on 7/15/2017.
  */
 
-public class SpaceDetailFragment extends Fragment{
+public class BuildingDetailFragment extends Fragment {
 
-    private Space mSpace;
+    private Building mBuilding;
     private API mAPI;
     private Activity mActivity;
     private String mQuery;
 
-    public SpaceDetailFragment() {}
+    public BuildingDetailFragment() {}
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -47,16 +47,16 @@ public class SpaceDetailFragment extends Fragment{
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.space_fragment, container, false);
+        View view = inflater.inflate(R.layout.building_fragment, container, false);
 
         iniVariables();
-        getSpace(mAPI.getClient(), view);
+        getBuilding(mAPI.getClient(), view);
 
         return view;
     }
 
     private void iniVariables() {
-        mSpace = new Space();
+        mBuilding = new Building();
         mActivity = getActivity();
         mAPI =  new API();
     }
@@ -65,7 +65,7 @@ public class SpaceDetailFragment extends Fragment{
 
     }
 
-    private void getSpace(OkHttpClient client, final View view) {
+    private void getBuilding(OkHttpClient client, final View view) {
         Log.e("QUERY", mQuery);
         Request request = new Request.Builder()
                 .url(mQuery)
@@ -85,8 +85,8 @@ public class SpaceDetailFragment extends Fragment{
                     mActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            mSpace = mAPI.getSpace(response);
-                            initSpaceView(mSpace, view);
+                            mBuilding = mAPI.getBuilding(response);
+                            initDeviceView(mBuilding, view);
                         }
                     });
                 }
@@ -94,21 +94,17 @@ public class SpaceDetailFragment extends Fragment{
         });
     }
 
-    private void initSpaceView( Space space, View view) {
+    private void initDeviceView( Building building, View view) {
 
-        TextView name = (TextView) view.findViewById(R.id.space_detail_name);
-        TextView devices = (TextView) view.findViewById(R.id.space_detail_devices);
-        TextView building = (TextView) view.findViewById(R.id.space_detail_building);
-        TextView power = (TextView) view.findViewById(R.id.space_detail_power);
+        TextView name = (TextView) view.findViewById(R.id.building_detail_name);
+        TextView spaces = (TextView) view.findViewById(R.id.building_detail_spaces);
+        //TextView building = (TextView) view.findViewById(R.id.space_detail_building);
+        TextView power = (TextView) view.findViewById(R.id.building_detail_power);
 
-        name.setText(space.getName());
+        name.setText(building.getName());
 
-        if (space.getDevices() != null) {
-            devices.setText(space.getDevices().size() + "");
-
-            if (space.getBuilding() != null) {
-                building.setText(space.getBuilding().getName());
-            }
+        if (building.getSpaces() != null) {
+            spaces.setText(building.getSpaces().size() + "");
         }
         //power.setText();
     }

@@ -1,4 +1,4 @@
-package com.example.martinjmartinez.proyectofinal.UI.Devices;
+package com.example.martinjmartinez.proyectofinal.UI.Spaces.Fragments;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -10,12 +10,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.example.martinjmartinez.proyectofinal.Entities.Device;
+import com.example.martinjmartinez.proyectofinal.Entities.Space;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
 
 import java.io.IOException;
-import java.util.List;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -24,17 +23,17 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 /**
- * Created by MartinJMartinez on 7/14/2017.
+ * Created by MartinJMartinez on 7/15/2017.
  */
 
-public class DeviceDetailFragment extends Fragment {
+public class SpaceDetailFragment extends Fragment{
 
-    private Device mDevice;
+    private Space mSpace;
     private API mAPI;
     private Activity mActivity;
     private String mQuery;
 
-    public DeviceDetailFragment() {}
+    public SpaceDetailFragment() {}
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -48,16 +47,16 @@ public class DeviceDetailFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.device_fragment, container, false);
+        View view = inflater.inflate(R.layout.space_fragment, container, false);
 
-        iniVariables(view);
-        getDevice(mAPI.getClient(), view);
+        iniVariables();
+        getSpace(mAPI.getClient(), view);
 
         return view;
     }
 
-    private void iniVariables(View view) {
-        mDevice = new Device();
+    private void iniVariables() {
+        mSpace = new Space();
         mActivity = getActivity();
         mAPI =  new API();
     }
@@ -66,7 +65,7 @@ public class DeviceDetailFragment extends Fragment {
 
     }
 
-    private void getDevice(OkHttpClient client, final View view) {
+    private void getSpace(OkHttpClient client, final View view) {
         Log.e("QUERY", mQuery);
         Request request = new Request.Builder()
                 .url(mQuery)
@@ -86,8 +85,8 @@ public class DeviceDetailFragment extends Fragment {
                     mActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            mDevice = mAPI.getDevice(response);
-                            initDeviceView(mDevice, view);
+                            mSpace = mAPI.getSpace(response);
+                            initSpaceView(mSpace, view);
                         }
                     });
                 }
@@ -95,21 +94,20 @@ public class DeviceDetailFragment extends Fragment {
         });
     }
 
-    private void initDeviceView( Device device, View view) {
+    private void initSpaceView( Space space, View view) {
 
-        TextView name = (TextView) view.findViewById(R.id.device_detail_name);
-        TextView ip_address = (TextView) view.findViewById(R.id.device_detail_ip);
-        TextView space = (TextView) view.findViewById(R.id.device_detail_space);
-        TextView building = (TextView) view.findViewById(R.id.device_detail_building);
-        TextView power = (TextView) view.findViewById(R.id.device_detail_power);
+        TextView name = (TextView) view.findViewById(R.id.space_detail_name);
+        TextView devices = (TextView) view.findViewById(R.id.space_detail_devices);
+        TextView building = (TextView) view.findViewById(R.id.space_detail_building);
+        TextView power = (TextView) view.findViewById(R.id.space_detail_power);
 
-        name.setText(device.getName());
-        ip_address.setText(device.getIp_address());
-        if (device.getSpace() != null) {
-            space.setText(device.getSpace().getName());
+        name.setText(space.getName());
 
-            if (device.getSpace().getBuilding() != null) {
-                building.setText(device.getSpace().getBuilding().getName());
+        if (space.getDevices() != null) {
+            devices.setText(space.getDevices().size() + "");
+
+            if (space.getBuilding() != null) {
+                building.setText(space.getBuilding().getName());
             }
         }
         //power.setText();
