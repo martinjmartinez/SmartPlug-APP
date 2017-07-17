@@ -6,7 +6,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     tools:context="com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity"
-    android:id="@+id/drawer_layout">
+    android:id="@+id/drawer_layout"
+    android:background="@color/background">
 
    
    <LinearLayout

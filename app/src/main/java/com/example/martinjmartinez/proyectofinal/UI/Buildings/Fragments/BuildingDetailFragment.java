@@ -82,10 +82,10 @@ public class BuildingDetailFragment extends Fragment {
                 if (!response.isSuccessful()) {
                     throw new IOException("Unexpected code " + response);
                 } else {
+                    mBuilding = mAPI.getBuilding(response);
                     mActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            mBuilding = mAPI.getBuilding(response);
                             initDeviceView(mBuilding, view);
                         }
                     });

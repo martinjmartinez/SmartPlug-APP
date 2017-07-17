@@ -1,16 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="6dp"
-    android:background="@color/colorPrimary">
+    android:layout_height="wrap_content">
 
-    <TextView
-        android:id="@+id/building_name_spinner_item"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Building 1"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:textColor="@android:color/white" />
-</LinearLayout>
+        android:orientation="vertical"
+        android:padding="6dp"
+        android:background="@color/colorPrimary">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginEnd="6dp"
+                android:paddingBottom="6dp"
+                android:src="@drawable/ic_office_block"/>
+
+            <TextView
+                android:id="@+id/building_name_spinner_item"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Building 1"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textColor="@android:color/white" />
+        </LinearLayout>
+    </LinearLayout>
+</android.support.v7.widget.CardView>

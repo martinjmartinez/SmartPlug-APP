@@ -4,156 +4,211 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <LinearLayout
-        android:layout_width="150dp"
-        android:layout_height="150dp"
-        android:layout_margin="16dp"
-        android:layout_gravity="center_horizontal"
-        android:orientation="vertical">
+    <android.support.v7.widget.CardView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginBottom="50dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp">
 
-        <ImageView
-            android:id="@+id/device_detail_image"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:src="@drawable/ic_socket"
+        <LinearLayout
+            android:layout_width="150dp"
+            android:layout_height="150dp"
             android:layout_gravity="center_horizontal"
-            android:layout_margin="6dp"/>
+            android:background="@color/cardBackground"
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/device_detail_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:maxLines="1"
-            android:text="Device 1"
-            android:textAppearance="?android:attr/textAppearanceLarge"/>
-    </LinearLayout>
+            <ImageView
+                android:id="@+id/device_detail_image"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_margin="6dp"
+                android:src="@drawable/ic_socket" />
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="45dp"
+            <TextView
+                android:id="@+id/device_detail_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:maxLines="1"
+                android:text="Device 1"
+                android:textAppearance="?android:attr/textAppearanceLarge" />
+        </LinearLayout>
+    </android.support.v7.widget.CardView>
+
+
+    <android.support.v7.widget.CardView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
         android:layout_marginStart="16dp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingEnd="16dp"
-        android:paddingStart="16dp">
+        android:layout_marginBottom="6dp">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:text="Power State"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="45dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingEnd="16dp"
+            android:paddingStart="16dp"
+            android:background="@color/cardBackground">
 
-        <Switch
-            android:id="@+id/device_detail_status"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true" />
-    </RelativeLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:text="Power State"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="45dp"
+            <Switch
+                android:id="@+id/device_detail_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true" />
+        </RelativeLayout>
+
+    </android.support.v7.widget.CardView>
+
+
+    <android.support.v7.widget.CardView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
         android:layout_marginStart="16dp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingEnd="16dp"
-        android:paddingStart="16dp">
+        android:layout_marginBottom="6dp">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:text="Power Consumtion"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="45dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingEnd="16dp"
+            android:paddingStart="16dp"
+            android:background="@color/cardBackground">
 
-        <TextView
-            android:id="@+id/device_detail_power"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="0 W"
-            android:layout_alignParentEnd="true"
-            android:textAppearance="?android:attr/textAppearanceMedium"/>
-    </RelativeLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:text="Power Consumtion"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="45dp"
+            <TextView
+                android:id="@+id/device_detail_power"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0 W"
+                android:layout_alignParentEnd="true"
+                android:textAppearance="?android:attr/textAppearanceMedium"/>
+        </RelativeLayout>
+    </android.support.v7.widget.CardView>
+
+
+    <android.support.v7.widget.CardView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
         android:layout_marginStart="16dp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingEnd="16dp"
-        android:paddingStart="16dp">
+        android:layout_marginBottom="6dp">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:text="IP Adress"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="45dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingEnd="16dp"
+            android:paddingStart="16dp"
+            android:background="@color/cardBackground">
 
-        <TextView
-            android:id="@+id/device_detail_ip"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text=""
-            android:layout_alignParentEnd="true"
-            android:textAppearance="?android:attr/textAppearanceMedium"/>
-    </RelativeLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:text="IP Adress"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="45dp"
+            <TextView
+                android:id="@+id/device_detail_ip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:layout_alignParentEnd="true"
+                android:textAppearance="?android:attr/textAppearanceMedium"/>
+        </RelativeLayout>
+    </android.support.v7.widget.CardView>C
+
+
+    <android.support.v7.widget.CardView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
         android:layout_marginStart="16dp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingEnd="16dp"
-        android:paddingStart="16dp">
+        android:layout_marginBottom="6dp">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:text="Space"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="45dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingEnd="16dp"
+            android:paddingStart="16dp"
+            android:background="@color/cardBackground">
 
-        <TextView
-            android:id="@+id/device_detail_space"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text=""
-            android:layout_alignParentEnd="true"
-            android:textAppearance="?android:attr/textAppearanceMedium"/>
-    </RelativeLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:text="Space"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="45dp"
+            <TextView
+                android:id="@+id/device_detail_space"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:layout_alignParentEnd="true"
+                android:textAppearance="?android:attr/textAppearanceMedium"/>
+        </RelativeLayout>
+    </android.support.v7.widget.CardView>
+
+
+    <android.support.v7.widget.CardView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
         android:layout_marginStart="16dp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingEnd="16dp"
-        android:paddingStart="16dp">
+        android:layout_marginBottom="6dp">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:text="Building"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="45dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingEnd="16dp"
+            android:paddingStart="16dp"
+            android:background="@color/cardBackground">
 
-        <TextView
-            android:id="@+id/device_detail_building"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text=""
-            android:layout_alignParentEnd="true"
-            android:textAppearance="?android:attr/textAppearanceMedium"/>
-    </RelativeLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:text="Building"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+
+            <TextView
+                android:id="@+id/device_detail_building"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:layout_alignParentEnd="true"
+                android:textAppearance="?android:attr/textAppearanceMedium"/>
+        </RelativeLayout>
+
+    </android.support.v7.widget.CardView>
+
 </LinearLayout>
