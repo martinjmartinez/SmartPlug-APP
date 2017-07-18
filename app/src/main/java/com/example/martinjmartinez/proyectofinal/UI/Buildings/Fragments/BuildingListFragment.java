@@ -42,9 +42,8 @@ public class BuildingListFragment extends Fragment {
     private GridView mGridView;
     private API mAPI;
     private Activity mActivity;
-    private String mQuery;
     private FloatingActionButton mAddBuildingButton;
-    private LinearLayout mEmtyBuildingListLayout;
+    private LinearLayout mEmptyBuildingListLayout;
 
     public BuildingListFragment() {}
 
@@ -68,7 +67,7 @@ public class BuildingListFragment extends Fragment {
         mActivity = getActivity();
         mGridView = (GridView) view.findViewById(R.id.building_grid);
         mAPI =  new API();
-        mEmtyBuildingListLayout = (LinearLayout) view.findViewById(R.id.empty_building_list_layout);
+        mEmptyBuildingListLayout = (LinearLayout) view.findViewById(R.id.empty_building_list_layout);
         mAddBuildingButton = (FloatingActionButton) view.findViewById(R.id.add_building_button);
 
     }
@@ -102,7 +101,7 @@ public class BuildingListFragment extends Fragment {
 
     public void getBuildings(OkHttpClient client) {
         Request request = new Request.Builder()
-                .url("http://192.168.1.17:3000/buildings")
+                .url(ArgumentsKeys.BUILDING_QUERY)
                 .build();
 
         client.newCall(request).enqueue(new Callback() {
@@ -117,18 +116,19 @@ public class BuildingListFragment extends Fragment {
                     throw new IOException("Unexpected code " + response);
                 } else {
                     mBuildingList = mAPI.getBuildingList(response);
-                    if (!mBuildingList.isEmpty()) {
-                        mActivity.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
+                    mActivity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (!mBuildingList.isEmpty()) {
                                 initSpacesList(mBuildingList);
+                                mEmptyBuildingListLayout.setVisibility(View.GONE);
+                            } else {
+                                mGridView.setVisibility(View.GONE);
+                                mEmptyBuildingListLayout.setVisibility(View.VISIBLE);
                             }
-                        });
-                        mEmtyBuildingListLayout.setVisibility(View.GONE);
-                    } else {
-                        mGridView.setVisibility(View.GONE);
-                        mEmtyBuildingListLayout.setVisibility(View.VISIBLE);
-                    }
+                        }
+                    });
+
                 }
 
             }

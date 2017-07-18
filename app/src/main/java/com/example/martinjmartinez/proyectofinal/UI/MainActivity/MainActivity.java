@@ -25,6 +25,7 @@ import com.example.martinjmartinez.proyectofinal.UI.Buildings.Fragments.Building
 import com.example.martinjmartinez.proyectofinal.UI.Devices.Fragments.DeviceListFragment;
 import com.example.martinjmartinez.proyectofinal.UI.Spaces.Fragments.SpaceListFragment;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
+import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
 
 import java.io.IOException;
@@ -163,8 +164,7 @@ public class MainActivity extends AppCompatActivity {
         SpaceListFragment spaceListFragment = new SpaceListFragment();
         Bundle bundle = new Bundle();
 
-        bundle.putString("QUERY", "http://192.168.1.17:3000/buildings/" + mSelectedBuilding.get_id() + "/spaces");
-        bundle.putString("BUILDING_ID", mSelectedBuilding.get_id());
+        bundle.putString(ArgumentsKeys.BUILDING_ID, mSelectedBuilding.get_id());
         spaceListFragment.setArguments(bundle);
 
         loadContentFragment(spaceListFragment, FragmentKeys.SPACE_LIST_FRAGMENT);
@@ -180,7 +180,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void getBuildings(OkHttpClient client) {
         Request request = new Request.Builder()
-                .url("http://192.168.1.17:3000/buildings")
+                .url(ArgumentsKeys.BUILDING_QUERY)
                 .build();
 
         client.newCall(request).enqueue(new Callback() {

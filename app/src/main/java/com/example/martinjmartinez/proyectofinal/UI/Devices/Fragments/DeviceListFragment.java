@@ -48,7 +48,7 @@ public class DeviceListFragment extends Fragment{
 
         Bundle bundle = this.getArguments();
         if (bundle != null) {
-            mQuery = bundle.getString("QUERY", "http://192.168.1.17:3000/devices");
+            mQuery = bundle.getString("QUERY", "https://smartplug-api.herokuapp.com/devices");
         }
     }
 
@@ -80,7 +80,7 @@ public class DeviceListFragment extends Fragment{
                     deviceSelected = mDevicesList.get(position);
                     DeviceDetailFragment deviceDetailFragment = new DeviceDetailFragment();
                     Bundle bundle =  new Bundle();
-                    bundle.putString("QUERY", "http://192.168.1.17:3000/devices/" + deviceSelected.get_id());
+                    bundle.putString("QUERY", "https://smartplug-api.herokuapp.com/devices/" + deviceSelected.get_id());
                     deviceDetailFragment.setArguments(bundle);
                     Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.DEVICE_LIST_FRAGMENT), deviceDetailFragment, FragmentKeys.DEVICE_DETAIL_FRAGMENT, true);
                 }
@@ -90,7 +90,7 @@ public class DeviceListFragment extends Fragment{
     private void getDevices(OkHttpClient client) {
         //Log.e("QUERY", mQuery);
         if(mQuery == null) {
-            mQuery = "http://192.168.1.17:3000/devices";
+            mQuery = "https://smartplug-api.herokuapp.com/devices";
         }
         Request request = new Request.Builder()
                 .url(mQuery)
