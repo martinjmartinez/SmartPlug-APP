@@ -18,6 +18,7 @@ import android.widget.Toast;
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
+import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 
@@ -36,8 +37,6 @@ import okhttp3.Response;
  */
 
 public class BuildingCreateFragment extends Fragment {
-
-    private Building mBuilding;
     private API mAPI;
     private Activity mActivity;
     private String mQuery;
@@ -50,13 +49,6 @@ public class BuildingCreateFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        Bundle bundle = this.getArguments();
-        if (bundle != null) {
-            mQuery = bundle.getString("QUERY", "http://192.168.1.17:3000/buildings");
-        } else {
-            mQuery = "http://192.168.1.17:3000/buildings";
-        }
     }
 
     @Override
@@ -64,9 +56,6 @@ public class BuildingCreateFragment extends Fragment {
         View view = inflater.inflate(R.layout.building_creation_fragment, container, false);
 
         iniVariables();
-
-        //TODO
-        //getBuilding(mAPI.getClient(), view);
         initView(view);
         initListeners();
 
@@ -74,7 +63,6 @@ public class BuildingCreateFragment extends Fragment {
     }
 
     private void iniVariables() {
-        mBuilding = new Building();
         mActivity = getActivity();
         mAPI =  new API();
     }
@@ -112,12 +100,12 @@ public class BuildingCreateFragment extends Fragment {
     }
 
     private void createBuilding(OkHttpClient client, String data) {
-        Log.e("QUERY", mQuery);
+        Log.e("QUERY", ArgumentsKeys.BUILDING_QUERY);
         MediaType JSON = MediaType.parse("application/json; charset=utf-8");
         RequestBody body = RequestBody.create(JSON, data);
         Log.e("JSON", data);
         Request request = new Request.Builder()
-                .url(mQuery)
+                .url(ArgumentsKeys.BUILDING_QUERY)
                 .post(body)
                 .build();
 

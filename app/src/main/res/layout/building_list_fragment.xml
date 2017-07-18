@@ -30,7 +30,7 @@
     </LinearLayout>
 
     <GridView
-        android:layout_margin="6dp"
+        android:layout_margin="16dp"
         android:id="@+id/building_grid"
         android:layout_width="match_parent"
         android:numColumns="3"

@@ -112,6 +112,17 @@ public class API {
             space.set_id(spaceData.getString("_id"));
             space.setName(spaceData.getString("name"));
 
+            if (spaceData.has("building")) {
+                if (spaceData.get("building") instanceof JSONObject) {
+                    JSONObject buildingData = spaceData.getJSONObject("building");
+                    Building building = new Building();
+
+                    building.set_id(buildingData.getString("_id"));
+                    building.setName(buildingData.getString("name"));
+
+                    space.setBuilding(building);
+                }
+            }
             if (spaceData.has("devices")) {
                 if (spaceData.get("devices") instanceof JSONArray) {
                     JSONArray devices = spaceData.getJSONArray("devices");
@@ -218,7 +229,7 @@ public class API {
             return buildingList;
 
         } catch (JSONException | IOException e) {
-            Log.e("getSpaceList", e.getMessage());
+            Log.e("getBuildingList", e.getMessage());
         }
 
         return null;
@@ -239,10 +250,29 @@ public class API {
 
                     for (int j = 0; j < spaces.length(); j++) {
                         Space space = new Space();
+                        JSONObject spaceData = spaces.getJSONObject(j);
 
-                        space.set_id(spaces.getJSONObject(j).getString("_id"));
-                        space.setName(spaces.getJSONObject(j).getString("name"));
+                        space.set_id(spaceData.getString("_id"));
+                        space.setName(spaceData.getString("name"));
 
+                        if (spaceData.has("devices")) {
+                            if (spaceData.get("devices") instanceof JSONArray) {
+                                JSONArray devices = spaceData.getJSONArray("devices");
+                                List<Device> buildingDevices = new ArrayList<>();
+
+                                for (int z = 0; z < devices.length(); z++) {
+                                    Device device = new Device();
+
+                                    device.set_id(devices.getJSONObject(z).getString("_id"));
+                                    device.setName(devices.getJSONObject(z).getString("name"));
+                                    device.setStatus(devices.getJSONObject(z).getBoolean("status"));
+                                    device.setIp_address(devices.getJSONObject(z).getString("ip_address"));
+
+                                    buildingDevices.add(device);
+                                }
+                                space.setDevices(buildingDevices);
+                            }
+                        }
                         spacesList.add(space);
                     }
                     building.setSpaces(spacesList);

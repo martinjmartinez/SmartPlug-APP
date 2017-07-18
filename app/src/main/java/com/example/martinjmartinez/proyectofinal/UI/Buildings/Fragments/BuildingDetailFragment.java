@@ -1,18 +1,26 @@
 package com.example.martinjmartinez.proyectofinal.UI.Buildings.Fragments;
 
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
+import com.example.martinjmartinez.proyectofinal.Entities.Space;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
+import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
+import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
+import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 
 import java.io.IOException;
 
@@ -31,7 +39,15 @@ public class BuildingDetailFragment extends Fragment {
     private Building mBuilding;
     private API mAPI;
     private Activity mActivity;
-    private String mQuery;
+    private String mBuildingId;
+    private TextView mNameTextView;
+    private TextView mSpacesTextView;
+    private TextView mDevicesTextView;
+    private Button mEditButton;
+    private Button mDeleteButton;
+    private TextView mPowerTextView;
+    private TextView mInfoTextView;
+
 
     public BuildingDetailFragment() {}
 
@@ -40,35 +56,106 @@ public class BuildingDetailFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         Bundle bundle = this.getArguments();
-        if (bundle != null) {
-            mQuery = bundle.getString("QUERY", "");
-        }
+        mBuildingId = bundle != null ? bundle.getString(ArgumentsKeys.BUILDING_ID, "") : "";
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.building_fragment, container, false);
 
-        iniVariables();
-        getBuilding(mAPI.getClient(), view);
+        iniVariables(view);
+        getBuilding(mAPI.getClient());
+        initListeners();
 
         return view;
     }
 
-    private void iniVariables() {
+    private void iniVariables(View view) {
         mBuilding = new Building();
         mActivity = getActivity();
         mAPI =  new API();
+        mNameTextView = (TextView) view.findViewById(R.id.building_detail_name);
+        mSpacesTextView = (TextView) view.findViewById(R.id.building_detail_spaces);
+        mEditButton = (Button) view.findViewById(R.id.building_detail_update);
+        mDeleteButton = (Button) view.findViewById(R.id.building_detail_delete);
+        mPowerTextView = (TextView) view.findViewById(R.id.building_detail_power);
+        mDevicesTextView = (TextView) view.findViewById(R.id.building_detail_devices);
+        mInfoTextView = (TextView) view.findViewById(R.id.building_detail_delete_info);
     }
 
     private void initListeners() {
+        mEditButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                BuildingUpdateFragment buildingUpdateFragment = new BuildingUpdateFragment();
+                Bundle bundle = new Bundle();
+                bundle.putString(ArgumentsKeys.BUILDING_ID, mBuilding.get_id());
+                buildingUpdateFragment.setArguments(bundle);
+                Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.BUILDING_DETAIL_FRAGMENT),
+                        buildingUpdateFragment, FragmentKeys.BUILDING_UPDATE_FRAGMENT, true);
+            }
+        });
+
+        mDeleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialog.Builder builder = Utils.createDialog(mActivity, "Delete Building", "Do you want to delete this Building?");
+
+                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        deleteBuilding(mAPI.getClient());
+                    }
+                });
+
+                builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+
+                // Create the AlertDialog
+                AlertDialog dialog = builder.create();
+                dialog.show();
+            }
+        });
 
     }
 
-    private void getBuilding(OkHttpClient client, final View view) {
-        Log.e("QUERY", mQuery);
+    private void deleteBuilding(OkHttpClient client) {
+        Log.e("QUERY", ArgumentsKeys.BUILDING_QUERY + "/" + mBuildingId);
         Request request = new Request.Builder()
-                .url(mQuery)
+                .url(ArgumentsKeys.BUILDING_QUERY + "/" + mBuildingId)
+                .delete()
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Log.e("Error", e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, final Response response) throws IOException {
+                if (!response.isSuccessful()) {
+                    Log.e("ERROR", response.body().string());
+                } else {
+                    mActivity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            mActivity.onBackPressed();
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    private void getBuilding(OkHttpClient client) {
+        Log.e("QUERY", ArgumentsKeys.BUILDING_QUERY + "/" + mBuildingId);
+        Request request = new Request.Builder()
+                .url(ArgumentsKeys.BUILDING_QUERY + "/" + mBuildingId)
                 .build();
 
         client.newCall(request).enqueue(new Callback() {
@@ -86,7 +173,7 @@ public class BuildingDetailFragment extends Fragment {
                     mActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            initDeviceView(mBuilding, view);
+                            initView(mBuilding);
                         }
                     });
                 }
@@ -94,18 +181,31 @@ public class BuildingDetailFragment extends Fragment {
         });
     }
 
-    private void initDeviceView( Building building, View view) {
+    private void initView( Building building) {
 
-        TextView name = (TextView) view.findViewById(R.id.building_detail_name);
-        TextView spaces = (TextView) view.findViewById(R.id.building_detail_spaces);
-        //TextView building = (TextView) view.findViewById(R.id.space_detail_building);
-        TextView power = (TextView) view.findViewById(R.id.building_detail_power);
-
-        name.setText(building.getName());
+        mNameTextView.setText(building.getName());
 
         if (building.getSpaces() != null) {
-            spaces.setText(building.getSpaces().size() + "");
+            mSpacesTextView.setText(building.getSpaces().size() + "");
+            int devices = getBuildingDevices();
+            mDevicesTextView.setText(devices + "");
+            if(devices >0) {
+                mDeleteButton.setClickable(false);
+                mInfoTextView.setVisibility(View.VISIBLE);
+                mDeleteButton.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.disabled));
+            } else {
+                mDeleteButton.setClickable(true);
+                mInfoTextView.setVisibility(View.GONE);
+                mDeleteButton.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.alert));
+            }
         }
-        //power.setText();
+    }
+
+    private int getBuildingDevices() {
+        int total = 0;
+        for(Space space: mBuilding.getSpaces()) {
+            total = space.getDevices().size() + total;
+        }
+        return total;
     }
 }

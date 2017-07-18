@@ -18,6 +18,7 @@ import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.UI.Devices.Fragments.DeviceListFragment;
 import com.example.martinjmartinez.proyectofinal.UI.Spaces.Adapters.SpaceListAdapter;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
+import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 
@@ -43,7 +44,6 @@ public class SpaceListFragment extends Fragment {
     private FloatingActionButton mAddSpaceButton;
     private API mAPI;
     private Activity mActivity;
-    private String mQuery;
     private String mBuildingId;
 
     public SpaceListFragment() {}
@@ -58,10 +58,9 @@ public class SpaceListFragment extends Fragment {
     public void getArgumentsBundle() {
         Bundle bundle = this.getArguments();
         if (bundle != null) {
-            mQuery = bundle.getString("QUERY", "http://192.168.1.17:3000/spaces");
-            mBuildingId = bundle.getString("BUILDING_ID", "");
+            mBuildingId = bundle.getString(ArgumentsKeys.BUILDING_ID, "");
         } else {
-            mQuery = "http://192.168.1.17:3000/spaces";
+            mBuildingId = "";
         }
     }
 
@@ -100,7 +99,7 @@ public class SpaceListFragment extends Fragment {
                     if (spaceSelected.getDevices() != null && !spaceSelected.getDevices().isEmpty()) {
                         DeviceListFragment deviceListFragment = new DeviceListFragment();
                         Bundle bundle = new Bundle();
-                        bundle.putString("QUERY", "http://192.168.1.17:3000/spaces/" + spaceSelected.get_id() + "/devices");
+                        bundle.putString(ArgumentsKeys.QUERY, ArgumentsKeys.SPACE_QUERY +"/" + spaceSelected.get_id() + "/devices");
                         deviceListFragment.setArguments(bundle);
                         Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.SPACE_LIST_FRAGMENT), deviceListFragment, FragmentKeys.DEVICE_LIST_FRAGMENT, true);
                     }
@@ -113,7 +112,7 @@ public class SpaceListFragment extends Fragment {
             public void onClick(View v) {
                 SpaceCreateFragment spaceCreateFragment = new SpaceCreateFragment();
                 Bundle bundle = new Bundle();
-                bundle.putString("BUILDING_ID", mBuildingId);
+                bundle.putString(ArgumentsKeys.BUILDING_ID, mBuildingId);
                 spaceCreateFragment.setArguments(bundle);
                 Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.SPACE_LIST_FRAGMENT), spaceCreateFragment, FragmentKeys.SPACE_CREATION_FRAGMENT, true);
             }
@@ -122,7 +121,7 @@ public class SpaceListFragment extends Fragment {
 
     public void getSpaces(OkHttpClient client) {
         Request request = new Request.Builder()
-                .url(mQuery)
+                .url(ArgumentsKeys.BUILDING_QUERY + "/" + mBuildingId + "/spaces")
                 .build();
 
         client.newCall(request).enqueue(new Callback() {

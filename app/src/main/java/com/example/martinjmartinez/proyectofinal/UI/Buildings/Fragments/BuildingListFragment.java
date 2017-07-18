@@ -18,6 +18,7 @@ import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.UI.Buildings.Adapters.BuildingListAdapter;
 import com.example.martinjmartinez.proyectofinal.UI.Spaces.Fragments.SpaceListFragment;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
+import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 
@@ -81,7 +82,7 @@ public class BuildingListFragment extends Fragment {
 
                     SpaceListFragment spaceListFragment = new SpaceListFragment();
                     Bundle bundle = new Bundle();
-                    bundle.putString("QUERY", "http://192.168.1.17:3000/buildings/" + buildingSelected.get_id() + "/spaces");
+                    bundle.putString(ArgumentsKeys.BUILDING_ID, buildingSelected.get_id());
                     spaceListFragment.setArguments(bundle);
                     Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.BUILDING_LIST_FRAGMENT), spaceListFragment, FragmentKeys.SPACE_LIST_FRAGMENT, true);
 

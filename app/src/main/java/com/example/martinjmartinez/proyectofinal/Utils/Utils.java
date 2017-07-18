@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.widget.EditText;
 
@@ -66,5 +67,16 @@ public class Utils {
 
     static public boolean isEditTextEmpty(EditText editText) {
         return editText.getText().toString().trim().length() == 0;
+    }
+
+    static public AlertDialog.Builder createDialog(Activity activity, String dialog_title, String dialog_message) {
+        // 1. Instantiate an AlertDialog.Builder with its constructor
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+
+        // 2. Chain together various setter methods to set the dialog characteristics
+        builder.setMessage(dialog_message)
+                .setTitle(dialog_title);
+
+        return builder;
     }
 }

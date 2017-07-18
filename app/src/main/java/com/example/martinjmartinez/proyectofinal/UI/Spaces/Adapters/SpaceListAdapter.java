@@ -13,6 +13,7 @@ import android.widget.TextView;
 import com.example.martinjmartinez.proyectofinal.Entities.Space;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.UI.Spaces.Fragments.SpaceDetailFragment;
+import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 
@@ -64,7 +65,7 @@ public class SpaceListAdapter extends ArrayAdapter<Space> {
             public void onClick(View v) {
                 SpaceDetailFragment spaceDetailFragment =  new SpaceDetailFragment();
                 Bundle bundle = new Bundle();
-                bundle.putString("QUERY", "http://192.168.1.17:3000/spaces/" + space.get_id());
+                bundle.putString(ArgumentsKeys.SPACE_ID, space.get_id());
                 spaceDetailFragment.setArguments(bundle);
                 Utils.loadContentFragment(((AppCompatActivity) getContext()).getSupportFragmentManager().findFragmentByTag(FragmentKeys.SPACE_LIST_FRAGMENT), spaceDetailFragment, FragmentKeys.SPACE_DETAIL_FRAGMENT, true);
             }

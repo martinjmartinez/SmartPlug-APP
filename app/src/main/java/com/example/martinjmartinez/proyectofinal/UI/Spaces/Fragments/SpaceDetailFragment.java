@@ -1,25 +1,38 @@
 package com.example.martinjmartinez.proyectofinal.UI.Spaces.Fragments;
 
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Space;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
+import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
+import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
+import com.example.martinjmartinez.proyectofinal.Utils.Utils;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 /**
@@ -31,7 +44,15 @@ public class SpaceDetailFragment extends Fragment{
     private Space mSpace;
     private API mAPI;
     private Activity mActivity;
-    private String mQuery;
+    private String mSpaceId;
+    private TextView mNameTextView;
+    private TextView mDevicesTextView;
+    private TextView mBuildingTextView;
+    private TextView mPowerTextView;
+    private TextView mInfoTextView;
+    private Button mEditButton;
+    private Button mDeleteButton;
+
 
     public SpaceDetailFragment() {}
 
@@ -40,35 +61,107 @@ public class SpaceDetailFragment extends Fragment{
         super.onCreate(savedInstanceState);
 
         Bundle bundle = this.getArguments();
-        if (bundle != null) {
-            mQuery = bundle.getString("QUERY", "");
-        }
+        mSpaceId = bundle != null ? bundle.getString(ArgumentsKeys.SPACE_ID, "") : "";
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.space_fragment, container, false);
 
-        iniVariables();
-        getSpace(mAPI.getClient(), view);
+        iniVariables(view);
+        getSpace(mAPI.getClient());
+        initListeners();
 
         return view;
     }
 
-    private void iniVariables() {
+    private void iniVariables(View view) {
         mSpace = new Space();
         mActivity = getActivity();
         mAPI =  new API();
+        mNameTextView = (TextView) view.findViewById(R.id.space_detail_name);
+        mDevicesTextView = (TextView) view.findViewById(R.id.space_detail_devices);
+        mBuildingTextView = (TextView) view.findViewById(R.id.space_detail_building);
+        mPowerTextView = (TextView) view.findViewById(R.id.space_detail_power);
+        mInfoTextView = (TextView) view.findViewById(R.id.space_detail_delete_info);
+        mEditButton = (Button) view.findViewById(R.id.space_detail_update);
+        mDeleteButton = (Button) view.findViewById(R.id.space_detail_delete);
     }
 
     private void initListeners() {
+        mEditButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SpaceUpdateFragment spaceUpdateFragment = new SpaceUpdateFragment();
+                Bundle bundle = new Bundle();
 
+                bundle.putString(ArgumentsKeys.SPACE_ID, mSpaceId);
+                spaceUpdateFragment.setArguments(bundle);
+                Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.SPACE_DETAIL_FRAGMENT),
+                        spaceUpdateFragment, FragmentKeys.SPACE_UPDATE_FRAGMENT, true);
+            }
+        });
+
+        mDeleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialog.Builder builder = Utils.createDialog(mActivity, "Delete Space", "Do you want to delete this Space?");
+
+                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        deleteSpace(mAPI.getClient());
+                    }
+                });
+
+                builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+
+                // Create the AlertDialog
+                AlertDialog dialog = builder.create();
+                dialog.show();
+
+            }
+        });
     }
 
-    private void getSpace(OkHttpClient client, final View view) {
-        Log.e("QUERY", mQuery);
+    private void deleteSpace(OkHttpClient client) {
+        Log.e("QUERY", ArgumentsKeys.SPACE_QUERY);
         Request request = new Request.Builder()
-                .url(mQuery)
+                .url(ArgumentsKeys.SPACE_QUERY + "/" + mSpaceId)
+                .delete()
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Log.e("Error", e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, final Response response) throws IOException {
+                if (!response.isSuccessful()) {
+                    Log.e("ERROR", response.body().string());
+                } else {
+                    mActivity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            mActivity.onBackPressed();
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    private void getSpace(OkHttpClient client) {
+        Log.e("QUERY", ArgumentsKeys.SPACE_QUERY + "/" + mSpaceId);
+        Request request = new Request.Builder()
+                .url(ArgumentsKeys.SPACE_QUERY + "/" + mSpaceId)
                 .build();
 
         client.newCall(request).enqueue(new Callback() {
@@ -82,11 +175,11 @@ public class SpaceDetailFragment extends Fragment{
                 if (!response.isSuccessful()) {
                     throw new IOException("Unexpected code " + response);
                 } else {
+                    mSpace = mAPI.getSpace(response);
                     mActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            mSpace = mAPI.getSpace(response);
-                            initSpaceView(mSpace, view);
+                            initSpaceView(mSpace);
                         }
                     });
                 }
@@ -94,22 +187,25 @@ public class SpaceDetailFragment extends Fragment{
         });
     }
 
-    private void initSpaceView( Space space, View view) {
-
-        TextView name = (TextView) view.findViewById(R.id.space_detail_name);
-        TextView devices = (TextView) view.findViewById(R.id.space_detail_devices);
-        TextView building = (TextView) view.findViewById(R.id.space_detail_building);
-        TextView power = (TextView) view.findViewById(R.id.space_detail_power);
-
-        name.setText(space.getName());
+    private void initSpaceView( Space space) {
+        mNameTextView.setText(space.getName());
 
         if (space.getDevices() != null) {
-            devices.setText(space.getDevices().size() + "");
+            mDevicesTextView.setText(space.getDevices().size() + "");
+            if(!space.getDevices().isEmpty()) {
+                mDeleteButton.setClickable(false);
+                mInfoTextView.setVisibility(View.VISIBLE);
+                mDeleteButton.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.disabled));
+            } else {
+                mDeleteButton.setClickable(true);
+                mInfoTextView.setVisibility(View.GONE);
+                mDeleteButton.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.alert));
+            }
 
             if (space.getBuilding() != null) {
-                building.setText(space.getBuilding().getName());
+                mBuildingTextView.setText(space.getBuilding().getName());
             }
         }
-        //power.setText();
+        //mPowerTextView.setText();
     }
 }
