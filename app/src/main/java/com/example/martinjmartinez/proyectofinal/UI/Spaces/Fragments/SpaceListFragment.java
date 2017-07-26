@@ -96,13 +96,13 @@ public class SpaceListFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if(!mSpacesList.isEmpty()) {
                     Space spaceSelected = mSpacesList.get(position);
-                    if (spaceSelected.getDevices() != null && !spaceSelected.getDevices().isEmpty()) {
+
                         DeviceListFragment deviceListFragment = new DeviceListFragment();
                         Bundle bundle = new Bundle();
-                        bundle.putString(ArgumentsKeys.QUERY, ArgumentsKeys.SPACE_QUERY +"/" + spaceSelected.get_id() + "/devices");
+                        bundle.putString(ArgumentsKeys.SPACE_ID, spaceSelected.get_id());
                         deviceListFragment.setArguments(bundle);
                         Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.SPACE_LIST_FRAGMENT), deviceListFragment, FragmentKeys.DEVICE_LIST_FRAGMENT, true);
-                    }
+
                 }
             }
         });

@@ -16,6 +16,16 @@ public class Space {
 
     private List<Device> devices;
 
+    private float power;
+
+    public float getPower() {
+        return power;
+    }
+
+    public void setPower(float power) {
+        this.power = power;
+    }
+
     public Space() {}
 
     public Space(String _id) {

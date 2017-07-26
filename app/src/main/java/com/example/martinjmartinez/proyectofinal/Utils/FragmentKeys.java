@@ -16,5 +16,6 @@ public class FragmentKeys {
     static public String BUILDING_UPDATE_FRAGMENT = "building_update_fragment";
     static public String SPACE_CREATION_FRAGMENT = "space_creation_fragment";
     static public String SPACE_UPDATE_FRAGMENT = "space_update_fragment";
+    static public String HOME_FRAGMENT = "home_fragment";
 
 }

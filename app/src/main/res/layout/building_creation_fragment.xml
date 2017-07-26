@@ -67,6 +67,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Name of the Building"
+                android:imeOptions="actionDone"
+                android:inputType="text"
                 android:maxLines="1"
                 android:maxLength="12"
                 android:textAppearance="?android:attr/textAppearanceMedium"/>

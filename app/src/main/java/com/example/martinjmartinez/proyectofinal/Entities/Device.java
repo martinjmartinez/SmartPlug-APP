@@ -18,6 +18,16 @@ public class Device {
 
     private Building building;
 
+    private double power;
+
+    public double getPower() {
+        return power;
+    }
+
+    public void setPower(double power) {
+        this.power = power;
+    }
+
     public String get_id() {
         return _id;
     }
@@ -66,4 +76,17 @@ public class Device {
         this.building = building;
     }
 
+    public String statusToString() {
+        return "{" +
+                "\"status\":" + status +
+                '}';
+    }
+
+    public String deviceToString() {
+        return "{" +
+                "\"name\":\"" + name + "\"," +
+                "\"ip_address\":\"" + ip_address + "\"," +
+                "\"status\":" + status +
+                '}';
+    }
 }

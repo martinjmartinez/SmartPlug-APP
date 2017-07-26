@@ -1,6 +1,5 @@
 package com.example.martinjmartinez.proyectofinal.Entities;
 
-import com.orm.SugarRecord;
 
 import java.util.Date;
 
@@ -8,7 +7,7 @@ import java.util.Date;
  * Created by MartinJMartinez on 6/27/2017.
  */
 
-public class Measures extends SugarRecord {
+public class Measures {
 
     private Device mDevice;
 

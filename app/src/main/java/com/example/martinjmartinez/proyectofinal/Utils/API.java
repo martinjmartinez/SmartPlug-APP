@@ -151,6 +151,22 @@ public class API {
         return null;
     }
 
+    public double getPower(Response response) {
+        try {
+            JSONObject deviceData = new JSONObject(response.body().string());
+            double power = 0;
+            power = deviceData.getJSONObject("variables").getDouble("potencia");
+            Log.e("power", power + "");
+
+            return power;
+
+        } catch (JSONException | IOException e) {
+            Log.e("getPower", e.getMessage());
+        }
+
+        return 0;
+    }
+
     public List<Space> getSpaceList(Response response) {
         List<Space> spacesList = new ArrayList<>();
 

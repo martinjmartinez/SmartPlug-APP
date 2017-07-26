@@ -23,6 +23,7 @@ import com.example.martinjmartinez.proyectofinal.UI.Buildings.Adapters.BuildingS
 import com.example.martinjmartinez.proyectofinal.UI.Buildings.Fragments.BuildingCreateFragment;
 import com.example.martinjmartinez.proyectofinal.UI.Buildings.Fragments.BuildingListFragment;
 import com.example.martinjmartinez.proyectofinal.UI.Devices.Fragments.DeviceListFragment;
+import com.example.martinjmartinez.proyectofinal.UI.Home.HomeFragment;
 import com.example.martinjmartinez.proyectofinal.UI.Spaces.Fragments.SpaceListFragment;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
 import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
@@ -40,14 +41,12 @@ import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
 
-
+    private DeviceListFragment mDeviceListFragment;
     private Toolbar mToolbar;
     private DrawerLayout mDrawerLayout;
     private NavigationView mNavigationView;
     private ActionBarDrawerToggle mActionBarDrawerToggle;
-    private DeviceListFragment mDeviceListFragment;
     private BuildingListFragment mBuildingListFragment;
-    private BuildingCreateFragment mBuildingCreateFragment;
     private Spinner mSelectBuildingSpinner;
     private BuildingSpinnerAdapter mBuildingSpinnerAdapter;
     private API mAPI;
@@ -60,11 +59,12 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         initDrawerMenu();
         initVariables();
         initListeners();
 
-        getBuildings(mAPI.getClient());
+        getBuildings(mAPI.getClient(), false);
 
     }
 
@@ -72,7 +72,6 @@ public class MainActivity extends AppCompatActivity {
     public void initVariables() {
         mDeviceListFragment = new DeviceListFragment();
         mBuildingListFragment = new BuildingListFragment();
-        mBuildingCreateFragment = new BuildingCreateFragment();
         mAPI = new API();
         mActivity = this;
         View headerView = mNavigationView.getHeaderView(0);
@@ -105,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
 
         if (mActionBarDrawerToggle.onOptionsItemSelected(item)) {
-            getBuildings(mAPI.getClient());
+            getBuildings(mAPI.getClient(), true);
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -116,24 +115,55 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 switch (item.getItemId()) {
+                    case (R.id.nav_home):
+                        HomeFragment homeFragment = (HomeFragment) getSupportFragmentManager().findFragmentByTag(FragmentKeys.HOME_FRAGMENT);
+                        if (homeFragment != null && !homeFragment.isVisible()) {
+                            prepareHomeFragment(false);
+                        }
+                        mDrawerLayout.closeDrawer(Gravity.START);
+                        break;
+
                     case (R.id.nav_spaces):
-                        prepareSpaceListFragment();
+                        SpaceListFragment spaceListFragment = (SpaceListFragment) getSupportFragmentManager().findFragmentByTag(FragmentKeys.SPACE_LIST_FRAGMENT);
+                        if (spaceListFragment != null) {
+                            if (!spaceListFragment.isVisible()) {
+                                prepareSpaceListFragment();
+                            }
+                        } else {
+                            prepareSpaceListFragment();
+                        }
                         mDrawerLayout.closeDrawer(Gravity.START);
                         break;
 
                     case (R.id.nav_devices):
-                        loadContentFragment(mDeviceListFragment, FragmentKeys.DEVICE_LIST_FRAGMENT);
+                        DeviceListFragment deviceListFragment = (DeviceListFragment) getSupportFragmentManager().findFragmentByTag(FragmentKeys.DEVICE_LIST_FRAGMENT);
+                        if (deviceListFragment != null) {
+                            if (!deviceListFragment.isVisible()) {
+                                prepareDeviceFragment(false);
+                            }
+                        } else {
+                            prepareDeviceFragment(true);
+                        }
                         mDrawerLayout.closeDrawer(Gravity.START);
                         break;
 
                     case (R.id.nav_buildings):
-                        loadContentFragment(mBuildingListFragment, FragmentKeys.BUILDING_LIST_FRAGMENT);
+                        BuildingListFragment buildingListFragment = (BuildingListFragment) getSupportFragmentManager().findFragmentByTag(FragmentKeys.BUILDING_LIST_FRAGMENT);
+                        if (buildingListFragment != null) {
+                            if (!buildingListFragment.isVisible()) {
+                                loadContentFragment(buildingListFragment, FragmentKeys.BUILDING_LIST_FRAGMENT, false);
+                            }
+                        } else {
+                            loadContentFragment(mBuildingListFragment, FragmentKeys.BUILDING_LIST_FRAGMENT, true);
+                        }
+
                         mDrawerLayout.closeDrawer(Gravity.START);
                         break;
                 }
                 return false;
             }
         });
+
 
         mSelectBuildingSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -147,10 +177,15 @@ public class MainActivity extends AppCompatActivity {
                     mLastBuildingSelected = position;
                     mSelectedBuilding = mBuildingList.get(position);
                     SpaceListFragment spaceListFragment = (SpaceListFragment) getSupportFragmentManager().findFragmentByTag(FragmentKeys.SPACE_LIST_FRAGMENT);
+                    HomeFragment homeFragment = (HomeFragment) getSupportFragmentManager().findFragmentByTag(FragmentKeys.HOME_FRAGMENT);
+
                     if (spaceListFragment != null && spaceListFragment.isVisible()) {
                         prepareSpaceListFragment();
+                    } else if (homeFragment != null && !homeFragment.isDetached()) {
+                        prepareHomeFragment(false);
                     }
                 }
+                mBuildingSpinnerAdapter.notifyDataSetChanged();
             }
 
             @Override
@@ -167,18 +202,45 @@ public class MainActivity extends AppCompatActivity {
         bundle.putString(ArgumentsKeys.BUILDING_ID, mSelectedBuilding.get_id());
         spaceListFragment.setArguments(bundle);
 
-        loadContentFragment(spaceListFragment, FragmentKeys.SPACE_LIST_FRAGMENT);
+        loadContentFragment(spaceListFragment, FragmentKeys.SPACE_LIST_FRAGMENT, true);
     }
 
-    public void loadContentFragment(final Fragment fragment, String fragment_key) {
+    public void prepareHomeFragment(boolean addToBackStack) {
+        HomeFragment homeFragment = new HomeFragment();
+        Bundle bundle = new Bundle();
+
+        if (mSelectedBuilding == null) {
+            mSelectedBuilding = mBuildingList.get(0);
+        }
+        bundle.putString(ArgumentsKeys.BUILDING_ID, mSelectedBuilding.get_id());
+        homeFragment.setArguments(bundle);
+
+        loadContentFragment(homeFragment, FragmentKeys.HOME_FRAGMENT, addToBackStack);
+    }
+
+    public void prepareDeviceFragment(boolean addToBackStack) {
+        DeviceListFragment deviceListFragment = new DeviceListFragment();
+        Bundle bundle = new Bundle();
+
+        bundle.putString(ArgumentsKeys.BUILDING_ID, mSelectedBuilding.get_id());
+        deviceListFragment.setArguments(bundle);
+
+        loadContentFragment(deviceListFragment, FragmentKeys.DEVICE_LIST_FRAGMENT, addToBackStack);
+    }
+
+    public void loadContentFragment(final Fragment fragment, String fragment_key, boolean addToStack) {
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out);
         fragmentTransaction.replace(R.id.frame_layout, fragment, fragment_key);
 
+        if (addToStack) {
+            fragmentTransaction.addToBackStack(null);
+        }
+
         fragmentTransaction.commitAllowingStateLoss();
     }
 
-    public void getBuildings(OkHttpClient client) {
+    public void getBuildings(OkHttpClient client, final boolean refreshSpinner) {
         Request request = new Request.Builder()
                 .url(ArgumentsKeys.BUILDING_QUERY)
                 .build();
@@ -199,7 +261,11 @@ public class MainActivity extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            setUpBuildingSpinner(mBuildingList);
+                            if (refreshSpinner ) {
+                                setUpBuildingSpinner(mBuildingList);
+                            } else {
+                                prepareHomeFragment(false);
+                            }
                         }
                     });
                 }

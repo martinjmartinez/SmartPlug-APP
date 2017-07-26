@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content"
+    android:layout_margin="6dp">
 
     <RelativeLayout
+        android:id="@+id/device_item"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
@@ -25,7 +27,8 @@
             android:layout_below="@id/image"
             android:layout_centerHorizontal="true"
             android:focusable="false"
-            android:focusableInTouchMode="false"/>
+            android:focusableInTouchMode="false"
+            android:thumb="@drawable/ic_power_button" />
 
         <TextView
             android:id="@+id/device_name"

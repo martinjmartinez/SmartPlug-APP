@@ -15,4 +15,8 @@ public class ArgumentsKeys {
     static public String DEVICE_ID = "DEVICE_ID";
     static public String SPACE_ID = "SPACE_ID";
 
+    static public String ON_QUERY = "/digital/2/0";
+    static public String OFF_QUERY = "/digital/2/1";
+
+
 }
