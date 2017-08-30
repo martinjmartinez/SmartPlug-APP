@@ -56,6 +56,7 @@ public class DeviceListFragment extends Fragment{
         super.onCreate(savedInstanceState);
 
         getArgumentsBundle();
+
     }
 
     public void getArgumentsBundle() {

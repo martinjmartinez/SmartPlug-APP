@@ -1,6 +1,7 @@
 package com.example.martinjmartinez.proyectofinal.UI.Buildings.Fragments;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -16,6 +17,7 @@ import android.widget.LinearLayout;
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.UI.Buildings.Adapters.BuildingListAdapter;
+import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.UI.Spaces.Fragments.SpaceListFragment;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
 import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
@@ -51,11 +53,27 @@ public class BuildingListFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.building_list_fragment, container, false);
 
+        Utils.setActionBarIcon(getActivity(), true);
         initVariables(view);
         initListeners();
 
         return view;
     }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        ((MainActivity)getActivity()).toggleDrawerIcon(0, null);
+
+    }
+
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);

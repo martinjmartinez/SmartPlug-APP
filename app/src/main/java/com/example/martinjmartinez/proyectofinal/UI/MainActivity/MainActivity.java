@@ -55,6 +55,26 @@ public class MainActivity extends AppCompatActivity {
     private Activity mActivity;
     private int mLastBuildingSelected;
 
+    public Toolbar getToolbar() {
+        return mToolbar;
+    }
+
+    public DrawerLayout getDrawerLayout() {
+        return mDrawerLayout;
+    }
+
+    public NavigationView getNavigationView() {
+        return mNavigationView;
+    }
+
+    public ActionBarDrawerToggle getActionBarDrawerToggle() {
+        return mActionBarDrawerToggle;
+    }
+
+    public Activity getActivity() {
+        return mActivity;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -261,10 +281,14 @@ public class MainActivity extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            if (refreshSpinner ) {
-                                setUpBuildingSpinner(mBuildingList);
+                            if (!mBuildingList.isEmpty()) {
+                                if (refreshSpinner) {
+                                    setUpBuildingSpinner(mBuildingList);
+                                } else {
+                                    prepareHomeFragment(false);
+                                }
                             } else {
-                                prepareHomeFragment(false);
+                                loadContentFragment(mBuildingListFragment, FragmentKeys.BUILDING_LIST_FRAGMENT, true);
                             }
                         }
                     });
@@ -273,6 +297,12 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    public void toggleDrawerIcon(int icon, View.OnClickListener onClickListener) {
+            mActionBarDrawerToggle.setDrawerIndicatorEnabled(true);
+            mActionBarDrawerToggle.setHomeAsUpIndicator(icon);
+            mActionBarDrawerToggle.setToolbarNavigationClickListener(onClickListener);
+
+    }
 }
 
 

@@ -18,8 +18,10 @@ import com.example.martinjmartinez.proyectofinal.Entities.Device;
 import com.example.martinjmartinez.proyectofinal.Entities.Space;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.UI.Devices.Adapters.DeviceListAdapter;
+import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
 import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
+import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.components.XAxis;
@@ -78,6 +80,10 @@ public class HomeFragment extends Fragment {
         return view;
     }
 
+    private void initListeners() {
+
+    }
+
     private void iniVariables(View view) {
         chart = (BarChart) view.findViewById(R.id.chart);
         mDeviceList = new ArrayList<>();
@@ -85,6 +91,7 @@ public class HomeFragment extends Fragment {
         mAPI = new API();
         mGridView = (RecyclerView) view.findViewById(R.id.most_used_devices);
         mActivity = getActivity();
+
     }
 
     private void setAdapter(List<Device> devicesList) {

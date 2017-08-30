@@ -41,6 +41,7 @@ public class API {
     public Device getDevice(Response response) {
         try {
             JSONObject deviceData = new JSONObject(response.body().string());
+            Log.e("DATA", deviceData.toString());
             Device device = new Device();
 
             device.set_id(deviceData.getString("_id"));
@@ -56,6 +57,16 @@ public class API {
                     space.setName(deviceData.getJSONObject("space").getString("name"));
 
                     device.setSpace(space);
+                }
+            }
+            if (deviceData.has("building")) {
+                if (deviceData.get("building") instanceof JSONObject) {
+                    Building building = new Building();
+                    Log.e("entro", "klkkk");
+                    building.set_id(deviceData.getJSONObject("building").getString("_id"));
+                    building.setName(deviceData.getJSONObject("building").getString("name"));
+
+                    device.setBuilding(building);
                 }
             }
 

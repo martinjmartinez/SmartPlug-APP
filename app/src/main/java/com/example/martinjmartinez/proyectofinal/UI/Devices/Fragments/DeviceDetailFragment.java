@@ -17,6 +17,7 @@ import com.example.martinjmartinez.proyectofinal.Entities.Device;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
 import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
+import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 
 import java.io.IOException;
 import java.util.List;
@@ -167,10 +168,10 @@ public class DeviceDetailFragment extends Fragment {
                 if (!response.isSuccessful()) {
                     throw new IOException("Unexpected code " + response);
                 } else {
+                    mDevice = mAPI.getDevice(response);
                     mActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            mDevice = mAPI.getDevice(response);
                             initDeviceView(mDevice, view);
                         }
                     });
@@ -189,7 +190,7 @@ public class DeviceDetailFragment extends Fragment {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException ex) {
-                Log.e("Error", "ghvhvj", ex);
+                Log.e("Error", "No se puso conectar al dispositivo", ex);
             }
 
             @Override
@@ -221,17 +222,11 @@ public class DeviceDetailFragment extends Fragment {
     }
 
     private void initDeviceView( Device device, View view) {
-
         name.setText(device.getName());
         ip_address.setText(device.getIp_address());
         status.setChecked(device.isStatus());
-        if (device.getSpace() != null) {
-            space.setText(device.getSpace().getName());
-
-            if (device.getSpace().getBuilding() != null) {
-                building.setText(device.getSpace().getBuilding().getName());
-            }
-        }
+        space.setText(device.getSpace().getName());
+        building.setText(device.getBuilding().getName());
 
         refreshPower(device, view);
     }

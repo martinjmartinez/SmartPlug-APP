@@ -6,9 +6,11 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
+import android.view.View;
 import android.widget.EditText;
 
 import com.example.martinjmartinez.proyectofinal.R;
+import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 
 import org.json.JSONObject;
 
@@ -78,5 +80,19 @@ public class Utils {
                 .setTitle(dialog_title);
 
         return builder;
+    }
+
+    static public void setActionBarIcon(Activity activity, boolean isBack) {
+        final MainActivity mainActivity = (MainActivity) activity;
+
+        mainActivity.getSupportActionBar().setDefaultDisplayHomeAsUpEnabled(!isBack);
+        mainActivity.getActionBarDrawerToggle().setDrawerIndicatorEnabled(!isBack);
+        mainActivity.getActionBarDrawerToggle().setToolbarNavigationClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mainActivity.onBackPressed();
+            }
+        });
+
     }
 }
