@@ -46,6 +46,7 @@ public class BuildingListFragment extends Fragment {
     private Activity mActivity;
     private FloatingActionButton mAddBuildingButton;
     private LinearLayout mEmptyBuildingListLayout;
+    private MainActivity mMainActivity;
 
     public BuildingListFragment() {}
 
@@ -64,13 +65,16 @@ public class BuildingListFragment extends Fragment {
     public void onAttach(Context context) {
         super.onAttach(context);
 
-
+        mMainActivity = (MainActivity) getActivity();
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
-        ((MainActivity)getActivity()).toggleDrawerIcon(0, null);
+
+        if(mMainActivity.getSupportFragmentManager().getBackStackEntryCount() <= 1){
+            mMainActivity.toggleDrawerIcon(true, 0, null);
+        }
 
     }
 
@@ -84,13 +88,20 @@ public class BuildingListFragment extends Fragment {
         mBuildingList = new ArrayList<>();
         mActivity = getActivity();
         mGridView = (GridView) view.findViewById(R.id.building_grid);
-        mAPI =  new API();
+        mAPI = new API();
         mEmptyBuildingListLayout = (LinearLayout) view.findViewById(R.id.empty_building_list_layout);
         mAddBuildingButton = (FloatingActionButton) view.findViewById(R.id.add_building_button);
 
     }
 
     private void initListeners() {
+        mMainActivity.toggleDrawerIcon(false, R.drawable.ic_action_back, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mMainActivity.onBackPressed();
+            }
+        });
+
         mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {

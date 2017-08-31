@@ -1,6 +1,7 @@
 package com.example.martinjmartinez.proyectofinal.UI.Devices.Fragments;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
@@ -15,6 +16,7 @@ import android.widget.TextView;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Device;
 import com.example.martinjmartinez.proyectofinal.R;
+import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
 import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
@@ -47,6 +49,7 @@ public class DeviceDetailFragment extends Fragment {
     private TextView building;
     private Switch status;
     private TextView power;
+    private MainActivity mMainActivity;
 
 
     public DeviceDetailFragment() {}
@@ -69,6 +72,23 @@ public class DeviceDetailFragment extends Fragment {
         getDevice(mAPI.getClient(), view);
         initListeners();
         return view;
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        mMainActivity = (MainActivity) getActivity();
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+
+        if(mMainActivity.getSupportFragmentManager().getBackStackEntryCount() <= 1){
+            mMainActivity.toggleDrawerIcon(true, 0, null);
+        }
+
     }
 
     private void iniVariables(View view) {
@@ -94,6 +114,13 @@ public class DeviceDetailFragment extends Fragment {
                     changeStatus(new API().getClient(), ArgumentsKeys.OFF_QUERY);
                 }
 
+            }
+        });
+
+        mMainActivity.toggleDrawerIcon(false, R.drawable.ic_action_back, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mMainActivity.onBackPressed();
             }
         });
     }

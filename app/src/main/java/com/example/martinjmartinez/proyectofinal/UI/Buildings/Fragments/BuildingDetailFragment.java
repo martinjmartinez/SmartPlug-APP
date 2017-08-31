@@ -1,6 +1,7 @@
 package com.example.martinjmartinez.proyectofinal.UI.Buildings.Fragments;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -17,6 +18,7 @@ import android.widget.TextView;
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
 import com.example.martinjmartinez.proyectofinal.Entities.Space;
 import com.example.martinjmartinez.proyectofinal.R;
+import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
 import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
@@ -47,6 +49,7 @@ public class BuildingDetailFragment extends Fragment {
     private Button mDeleteButton;
     private TextView mPowerTextView;
     private TextView mInfoTextView;
+    private MainActivity mMainActivity;
 
 
     public BuildingDetailFragment() {}
@@ -68,6 +71,23 @@ public class BuildingDetailFragment extends Fragment {
         initListeners();
 
         return view;
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        mMainActivity = (MainActivity) getActivity();
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+
+        if(mMainActivity.getSupportFragmentManager().getBackStackEntryCount() <= 1){
+            mMainActivity.toggleDrawerIcon(true, 0, null);
+        }
+
     }
 
     private void iniVariables(View view) {
@@ -118,6 +138,13 @@ public class BuildingDetailFragment extends Fragment {
                 // Create the AlertDialog
                 AlertDialog dialog = builder.create();
                 dialog.show();
+            }
+        });
+
+        mMainActivity.toggleDrawerIcon(false, R.drawable.ic_action_back, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mMainActivity.onBackPressed();
             }
         });
 
