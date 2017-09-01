@@ -109,15 +109,12 @@ public class MainActivity extends AppCompatActivity {
         mToolbar = (Toolbar) findViewById(R.id.nav_actionbar);
         mNavigationView = (NavigationView) findViewById(R.id.design_navigation_view);
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        mActionBarDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.drawer_open, R.string.drawer_close);
+        mActionBarDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, mToolbar, R.string.drawer_open, R.string.drawer_close);
 
         setSupportActionBar(mToolbar);
         mNavigationView.setItemIconTintList(null);
         mDrawerLayout.addDrawerListener(mActionBarDrawerToggle);
         mActionBarDrawerToggle.syncState();
-
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
     }
 
     @Override
@@ -297,11 +294,18 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void toggleDrawerIcon(int icon, View.OnClickListener onClickListener) {
-            mActionBarDrawerToggle.setDrawerIndicatorEnabled(true);
-            mActionBarDrawerToggle.setHomeAsUpIndicator(icon);
-            mActionBarDrawerToggle.setToolbarNavigationClickListener(onClickListener);
+    public void toggleDrawerIcon(boolean status, int icon, View.OnClickListener onClickListener) {
 
+        if (status) {
+            initDrawerMenu();
+
+            mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
+        } else {
+            mActionBarDrawerToggle.setHomeAsUpIndicator(icon);
+            mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+            mToolbar.setNavigationOnClickListener(onClickListener);
+            mActionBarDrawerToggle.setDrawerIndicatorEnabled(false);
+        }
     }
 }
 

@@ -1,6 +1,7 @@
 package com.example.martinjmartinez.proyectofinal.UI.Devices.Fragments;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -19,6 +20,7 @@ import com.example.martinjmartinez.proyectofinal.Entities.Device;
 import com.example.martinjmartinez.proyectofinal.Entities.Space;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.UI.Devices.Adapters.DeviceListAdapter;
+import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
 import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
@@ -48,6 +50,7 @@ public class DeviceListFragment extends Fragment{
     private Activity mActivity;
     private Space mSpace;
     private List<Device> mDevicesList;
+    private MainActivity mMainActivity;
 
     public DeviceListFragment() {}
 
@@ -56,6 +59,23 @@ public class DeviceListFragment extends Fragment{
         super.onCreate(savedInstanceState);
 
         getArgumentsBundle();
+
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        mMainActivity = (MainActivity) getActivity();
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+
+        if(mMainActivity.getSupportFragmentManager().getBackStackEntryCount() <= 1){
+            mMainActivity.toggleDrawerIcon(true, 0, null);
+        }
 
     }
 
@@ -99,6 +119,13 @@ public class DeviceListFragment extends Fragment{
                 bundle.putString(ArgumentsKeys.SPACE_ID, mSpaceId);
                 deviceCreateFragment.setArguments(bundle);
                 Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.DEVICE_LIST_FRAGMENT), deviceCreateFragment, FragmentKeys.DEVICE_DETAIL_FRAGMENT, true);
+            }
+        });
+
+        mMainActivity.toggleDrawerIcon(false, R.drawable.ic_action_back, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mMainActivity.onBackPressed();
             }
         });
     }

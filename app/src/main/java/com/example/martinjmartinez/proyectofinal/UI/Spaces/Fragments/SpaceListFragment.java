@@ -1,6 +1,7 @@
 package com.example.martinjmartinez.proyectofinal.UI.Spaces.Fragments;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -16,6 +17,7 @@ import android.widget.LinearLayout;
 import com.example.martinjmartinez.proyectofinal.Entities.Space;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.UI.Devices.Fragments.DeviceListFragment;
+import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.UI.Spaces.Adapters.SpaceListAdapter;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
 import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
@@ -45,6 +47,7 @@ public class SpaceListFragment extends Fragment {
     private API mAPI;
     private Activity mActivity;
     private String mBuildingId;
+    private MainActivity mMainActivity;
 
     public SpaceListFragment() {}
 
@@ -81,6 +84,23 @@ public class SpaceListFragment extends Fragment {
         getSpaces(mAPI.getClient());
     }
 
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        mMainActivity = (MainActivity) getActivity();
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+
+        if(mMainActivity.getSupportFragmentManager().getBackStackEntryCount() <= 1){
+            mMainActivity.toggleDrawerIcon(true, 0, null);
+        }
+
+    }
+
     private void initVariables(View view) {
         mSpacesList = new ArrayList<>();
         mActivity = getActivity();
@@ -115,6 +135,13 @@ public class SpaceListFragment extends Fragment {
                 bundle.putString(ArgumentsKeys.BUILDING_ID, mBuildingId);
                 spaceCreateFragment.setArguments(bundle);
                 Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.SPACE_LIST_FRAGMENT), spaceCreateFragment, FragmentKeys.SPACE_CREATION_FRAGMENT, true);
+            }
+        });
+
+        mMainActivity.toggleDrawerIcon(false, R.drawable.ic_action_back, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mMainActivity.onBackPressed();
             }
         });
     }
