@@ -66,7 +66,9 @@ public class DeviceListFragment extends Fragment{
     public void onAttach(Context context) {
         super.onAttach(context);
 
-        mMainActivity = (MainActivity) getActivity();
+        mActivity = getActivity();
+        mMainActivity = (MainActivity) mActivity;
+
     }
 
     @Override
@@ -101,10 +103,16 @@ public class DeviceListFragment extends Fragment{
         return view;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        mMainActivity.getSupportActionBar().setTitle("Devices");
+    }
+
     private void iniVariables(View view) {
         mDevicesList =  new ArrayList<>();
         mGridView = (RecyclerView) view.findViewById(R.id.devices_grid);
-        mActivity = getActivity();
         mAPI =  new API();
         mAddDeviceButton = (FloatingActionButton) view.findViewById(R.id.add_device_button);
     }

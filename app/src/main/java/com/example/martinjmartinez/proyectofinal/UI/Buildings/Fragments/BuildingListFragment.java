@@ -65,7 +65,16 @@ public class BuildingListFragment extends Fragment {
     public void onAttach(Context context) {
         super.onAttach(context);
 
-        mMainActivity = (MainActivity) getActivity();
+        mActivity = getActivity();
+        mMainActivity = (MainActivity) mActivity;
+
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        mMainActivity.getSupportActionBar().setTitle("Buildings");
     }
 
     @Override
@@ -86,7 +95,6 @@ public class BuildingListFragment extends Fragment {
 
     private void initVariables(View view) {
         mBuildingList = new ArrayList<>();
-        mActivity = getActivity();
         mGridView = (GridView) view.findViewById(R.id.building_grid);
         mAPI = new API();
         mEmptyBuildingListLayout = (LinearLayout) view.findViewById(R.id.empty_building_list_layout);

@@ -81,7 +81,15 @@ public class SpaceCreateFragment extends Fragment {
     public void onAttach(Context context) {
         super.onAttach(context);
 
-        mMainActivity = (MainActivity) getActivity();
+        mActivity = getActivity();
+        mMainActivity = (MainActivity) mActivity;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        mMainActivity.getSupportActionBar().setTitle("New Space");
     }
 
     @Override

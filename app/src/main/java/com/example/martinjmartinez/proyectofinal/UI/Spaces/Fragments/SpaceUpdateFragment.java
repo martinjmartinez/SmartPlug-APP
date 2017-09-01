@@ -79,7 +79,15 @@ public class SpaceUpdateFragment extends Fragment {
     public void onAttach(Context context) {
         super.onAttach(context);
 
-        mMainActivity = (MainActivity) getActivity();
+        mActivity = getActivity();
+        mMainActivity = (MainActivity) mActivity;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        mMainActivity.getSupportActionBar().setTitle("Space Edit");
     }
 
     @Override
@@ -93,7 +101,6 @@ public class SpaceUpdateFragment extends Fragment {
     }
 
     private void iniVariables(View view) {
-        mActivity = getActivity();
         mAPI =  new API();
         name = (EditText) view.findViewById(R.id.space_create_name);
         displayName = (TextView) view.findViewById(R.id.space_create_display_name);

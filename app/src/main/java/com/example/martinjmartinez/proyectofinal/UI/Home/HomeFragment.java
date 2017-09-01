@@ -2,6 +2,7 @@ package com.example.martinjmartinez.proyectofinal.UI.Home;
 
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -55,6 +56,7 @@ public class HomeFragment extends Fragment {
     private List<Device> mDeviceList;
     private API mAPI;
     private Activity mActivity;
+    private MainActivity mMainActivity;
 
     public HomeFragment() {}
 
@@ -63,6 +65,21 @@ public class HomeFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         getArgumentsBundle();
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        mActivity = getActivity();
+        mMainActivity = (MainActivity) mActivity;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        mMainActivity.getSupportActionBar().setTitle("Home");
     }
 
     public void getArgumentsBundle() {
@@ -90,7 +107,7 @@ public class HomeFragment extends Fragment {
         mSpacesList = new ArrayList<>();
         mAPI = new API();
         mGridView = (RecyclerView) view.findViewById(R.id.most_used_devices);
-        mActivity = getActivity();
+
 
     }
 

@@ -78,7 +78,16 @@ public class DeviceDetailFragment extends Fragment {
     public void onAttach(Context context) {
         super.onAttach(context);
 
-        mMainActivity = (MainActivity) getActivity();
+        mActivity = getActivity();
+        mMainActivity = (MainActivity) mActivity;
+
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        mMainActivity.getSupportActionBar().setTitle("Device Details");
     }
 
     @Override
@@ -93,7 +102,6 @@ public class DeviceDetailFragment extends Fragment {
 
     private void iniVariables(View view) {
         mDevice = new Device();
-        mActivity = getActivity();
         mAPI =  new API();
         name = (TextView) view.findViewById(R.id.device_detail_name);
         ip_address = (TextView) view.findViewById(R.id.device_detail_ip);
