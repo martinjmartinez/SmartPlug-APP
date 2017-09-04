@@ -3,6 +3,7 @@ package com.example.martinjmartinez.proyectofinal.UI.Devices.Fragments;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
@@ -51,6 +52,7 @@ public class DeviceListFragment extends Fragment{
     private Space mSpace;
     private List<Device> mDevicesList;
     private MainActivity mMainActivity;
+    private DeviceListAdapter mDevicesListAdapter;
 
     public DeviceListFragment() {}
 
@@ -99,7 +101,7 @@ public class DeviceListFragment extends Fragment{
             getDevicesBySpace(mAPI.getClient());
         }
         initListeners();
-
+        
         return view;
     }
 
@@ -199,7 +201,7 @@ public class DeviceListFragment extends Fragment{
 
     private void initDevicesList(List<Device> devicesList) {
         mGridView.setLayoutManager(new GridLayoutManager(mActivity, 3));
-        DeviceListAdapter mDevicesListAdapter = new DeviceListAdapter(devicesList);
+        mDevicesListAdapter = new DeviceListAdapter(devicesList);
         mGridView.setAdapter(mDevicesListAdapter);
     }
 }

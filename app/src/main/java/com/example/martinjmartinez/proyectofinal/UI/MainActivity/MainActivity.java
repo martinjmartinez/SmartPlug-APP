@@ -330,6 +330,8 @@ public class MainActivity extends AppCompatActivity {
                     doubleBackToExitPressedOnce=false;
                 }
             }, 2000);
+        } else {
+            super.onBackPressed();
         }
 
     }

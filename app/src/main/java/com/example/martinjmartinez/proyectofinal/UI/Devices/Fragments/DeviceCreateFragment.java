@@ -157,6 +157,7 @@ public class DeviceCreateFragment extends Fragment {
                     mDevice.setStatus(false);
 
                     createDevice(mAPI.getClient(), mDevice.deviceToString());
+                    mMainActivity.onBackPressed();
                 } else {
                     Toast.makeText(getActivity(), "Please, name your Space.", Toast.LENGTH_SHORT).show();
                 }

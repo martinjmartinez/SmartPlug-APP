@@ -141,7 +141,6 @@ public class DeviceDetailFragment extends Fragment {
         client.newCall(requestAction).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                Log.e("me1", "cago en seuta");
                 call.cancel();
             }
 
@@ -171,7 +170,6 @@ public class DeviceDetailFragment extends Fragment {
         client.newCall(requestUpdate).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                Log.e("me2", "cago en seuta");
                 call.cancel();
             }
 
