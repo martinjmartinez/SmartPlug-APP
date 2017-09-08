@@ -43,6 +43,8 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
 
     private List<Device> deviceList;
     public API mAPI;
+    private Handler updatePowerHandler;
+    private Runnable updatePowerRunnable;
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         // each data item is just a string in this case
@@ -80,25 +82,21 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
         holder.mName.setText(device.getName());
         holder.mStatus.setChecked(device.isStatus());
 
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                getPower(mAPI.getClient(), holder, device);
-                String power = String.format("%.1f", device.getPower());
-                holder.mPower.setText( power + " W");
-                notifyDataSetChanged();
-            }
-        }, 3000);
-
-
-
+        if (device.isStatus()) {
+            refreshPower(device, holder);
+        }
 
         holder.mStatus.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
+                    refreshPower(device, holder);
                     changeStatus(new API().getClient(), ArgumentsKeys.ON_QUERY, device);
                 } else {
+                    if(updatePowerHandler != null) {
+                        holder.mPower.setText("0 W");
+                        updatePowerHandler.removeCallbacks(updatePowerRunnable);
+                    }
                     changeStatus(new API().getClient(), ArgumentsKeys.OFF_QUERY, device);
                 }
             }
@@ -148,6 +146,7 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
                     throw new IOException("Unexpected code " + response);
                 } else {
                     updateStatus(new API().getClient(), action, device);
+                    device.setStatus(action.equals(ArgumentsKeys.ON_QUERY) ? true : false);
                 }
             }
         });
@@ -182,7 +181,7 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
         });
     }
 
-    private void getPower(OkHttpClient client, final ViewHolder holder, final Device mDevice) {
+    private void getPower(OkHttpClient client, final Device mDevice) {
         Log.e("QUERY", mDevice.getIp_address());
         Request request = new Request.Builder()
                 .url("http://" + mDevice.getIp_address() + "?format=json")
@@ -206,5 +205,20 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
                 }
             }
         });
+    }
+
+    private void refreshPower(final Device device, final ViewHolder holder) {
+        updatePowerHandler = new Handler();
+        updatePowerRunnable = new Runnable() {
+            @Override
+            public void run() {
+                getPower(mAPI.getClient(), device);
+                String power = String.format("%.1f", device.getPower());
+                holder.mPower.setText(power + " W");
+                notifyDataSetChanged();
+            }
+        };
+
+        updatePowerHandler.postDelayed(updatePowerRunnable, 3000);
     }
 }

@@ -19,14 +19,11 @@ import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
 import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
-import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 
 import java.io.IOException;
-import java.util.List;
 
 import okhttp3.Call;
 import okhttp3.Callback;
-import okhttp3.Headers;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -50,6 +47,8 @@ public class DeviceDetailFragment extends Fragment {
     private Switch status;
     private TextView power;
     private MainActivity mMainActivity;
+    private Handler updatePowerHandler;
+    private Runnable updatePowerRunnableDetails;
 
 
     public DeviceDetailFragment() {}
@@ -117,8 +116,13 @@ public class DeviceDetailFragment extends Fragment {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
+                    refreshPower();
                     changeStatus(new API().getClient(), ArgumentsKeys.ON_QUERY);
                 } else {
+                    if(updatePowerHandler != null) {
+                        power.setText("0 W");
+                        updatePowerHandler.removeCallbacksAndMessages(null);
+                    }
                     changeStatus(new API().getClient(), ArgumentsKeys.OFF_QUERY);
                 }
 
@@ -205,7 +209,7 @@ public class DeviceDetailFragment extends Fragment {
                     mActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            initDeviceView(mDevice, view);
+                            initDeviceView(mDevice);
                         }
                     });
                 }
@@ -213,7 +217,7 @@ public class DeviceDetailFragment extends Fragment {
         });
     }
 
-    private void getPower(OkHttpClient client, final View view) {
+    private void getPower(OkHttpClient client) {
         Log.e("QUERY", mDevice.getIp_address());
         Request request = new Request.Builder()
                 .url("http://" + mDevice.getIp_address() + "?format=json")
@@ -232,35 +236,36 @@ public class DeviceDetailFragment extends Fragment {
                     throw new IOException("Unexpected code " + response);
                 } else {
                     final double powerd = mAPI.getPower(response);
-                    mActivity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mDevice.setPower(powerd);
-                            power.setText(Double.toString(mDevice.getPower()) + " W");
-                        }
-                    });
+                    mDevice.setPower(powerd);
                 }
             }
         });
     }
 
-    private void refreshPower(Device device, final View view) {
-        final Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
+    private void refreshPower() {
+        updatePowerHandler = new Handler();
+        updatePowerRunnableDetails = new Runnable() {
+            @Override
             public void run() {
-                getPower(mAPI.getClient(), view);
-                handler.postDelayed(this, 3000);
+                getPower(mAPI.getClient());
+                String powerS = String.format("%.1f", mDevice.getPower());
+                power.setText(powerS + " W");
+                updatePowerHandler.postDelayed(this, 3000);
             }
-        }, 3000);
+        };
+
+        updatePowerHandler.postDelayed(updatePowerRunnableDetails, 3000);
     }
 
-    private void initDeviceView( Device device, View view) {
+    private void initDeviceView( Device device) {
         name.setText(device.getName());
         ip_address.setText(device.getIp_address());
         status.setChecked(device.isStatus());
         space.setText(device.getSpace().getName());
         building.setText(device.getBuilding().getName());
 
-        refreshPower(device, view);
+        if (device.isStatus()) {
+            refreshPower();
+        }
     }
 }
