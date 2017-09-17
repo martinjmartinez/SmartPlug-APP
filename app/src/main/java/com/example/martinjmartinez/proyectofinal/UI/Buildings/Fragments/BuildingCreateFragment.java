@@ -69,7 +69,16 @@ public class BuildingCreateFragment extends Fragment {
     public void onAttach(Context context) {
         super.onAttach(context);
 
-        mMainActivity = (MainActivity) getActivity();
+        mActivity = getActivity();
+        mMainActivity = (MainActivity) mActivity;
+
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        mMainActivity.getSupportActionBar().setTitle("New Building");
     }
 
     @Override
@@ -83,7 +92,6 @@ public class BuildingCreateFragment extends Fragment {
     }
 
     private void iniVariables() {
-        mActivity = getActivity();
         mAPI =  new API();
     }
 

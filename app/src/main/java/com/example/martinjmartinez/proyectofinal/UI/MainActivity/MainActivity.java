@@ -1,6 +1,7 @@
 package com.example.martinjmartinez.proyectofinal.UI.MainActivity;
 
 import android.app.Activity;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
@@ -16,6 +17,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
 import com.example.martinjmartinez.proyectofinal.R;
@@ -54,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
     private Building mSelectedBuilding;
     private Activity mActivity;
     private int mLastBuildingSelected;
+    private boolean doubleBackToExitPressedOnce;
 
     public Toolbar getToolbar() {
         return mToolbar;
@@ -306,6 +309,31 @@ public class MainActivity extends AppCompatActivity {
             mToolbar.setNavigationOnClickListener(onClickListener);
             mActionBarDrawerToggle.setDrawerIndicatorEnabled(false);
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if(getSupportFragmentManager().getBackStackEntryCount() == 0){
+
+            if (doubleBackToExitPressedOnce) {
+                super.onBackPressed();
+                return;
+            }
+
+            this.doubleBackToExitPressedOnce = true;
+            Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
+
+            new Handler().postDelayed(new Runnable() {
+
+                @Override
+                public void run() {
+                    doubleBackToExitPressedOnce=false;
+                }
+            }, 2000);
+        } else {
+            super.onBackPressed();
+        }
+
     }
 }
 

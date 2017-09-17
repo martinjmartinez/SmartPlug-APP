@@ -77,7 +77,15 @@ public class BuildingDetailFragment extends Fragment {
     public void onAttach(Context context) {
         super.onAttach(context);
 
-        mMainActivity = (MainActivity) getActivity();
+        mActivity = getActivity();
+        mMainActivity = (MainActivity) mActivity;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        mMainActivity.getSupportActionBar().setTitle("Building Details");
     }
 
     @Override
@@ -92,7 +100,6 @@ public class BuildingDetailFragment extends Fragment {
 
     private void iniVariables(View view) {
         mBuilding = new Building();
-        mActivity = getActivity();
         mAPI =  new API();
         mNameTextView = (TextView) view.findViewById(R.id.building_detail_name);
         mSpacesTextView = (TextView) view.findViewById(R.id.building_detail_spaces);

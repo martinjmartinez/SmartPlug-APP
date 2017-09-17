@@ -97,7 +97,15 @@ public class DeviceCreateFragment extends Fragment {
     public void onAttach(Context context) {
         super.onAttach(context);
 
-        mMainActivity = (MainActivity) getActivity();
+        mActivity = getActivity();
+        mMainActivity = (MainActivity) mActivity;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        mMainActivity.getSupportActionBar().setTitle("New Device");
     }
 
     @Override
@@ -111,7 +119,6 @@ public class DeviceCreateFragment extends Fragment {
     }
 
     private void iniVariables(View view) {
-        mActivity = getActivity();
         mAPI =  new API();
         name = (EditText) view.findViewById(R.id.device_create_name);
         ipAddress = (EditText) view.findViewById(R.id.device_create_ip);
@@ -150,6 +157,7 @@ public class DeviceCreateFragment extends Fragment {
                     mDevice.setStatus(false);
 
                     createDevice(mAPI.getClient(), mDevice.deviceToString());
+                    mMainActivity.onBackPressed();
                 } else {
                     Toast.makeText(getActivity(), "Please, name your Space.", Toast.LENGTH_SHORT).show();
                 }

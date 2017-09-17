@@ -88,7 +88,15 @@ public class SpaceListFragment extends Fragment {
     public void onAttach(Context context) {
         super.onAttach(context);
 
-        mMainActivity = (MainActivity) getActivity();
+        mActivity = getActivity();
+        mMainActivity = (MainActivity) mActivity;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        mMainActivity.getSupportActionBar().setTitle("Spaces");
     }
 
     @Override
@@ -103,7 +111,6 @@ public class SpaceListFragment extends Fragment {
 
     private void initVariables(View view) {
         mSpacesList = new ArrayList<>();
-        mActivity = getActivity();
         mGridView = (GridView) view.findViewById(R.id.spaces_grid);
         mAPI =  new API();
         mEmptySpaceListLayout = (LinearLayout) view.findViewById(R.id.empty_space_list_layout);

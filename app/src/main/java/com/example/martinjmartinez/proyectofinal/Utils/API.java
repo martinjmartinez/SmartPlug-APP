@@ -1,7 +1,9 @@
 package com.example.martinjmartinez.proyectofinal.Utils;
 
 
+import android.os.Handler;
 import android.util.Log;
+import android.view.View;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
 import com.example.martinjmartinez.proyectofinal.Entities.Device;

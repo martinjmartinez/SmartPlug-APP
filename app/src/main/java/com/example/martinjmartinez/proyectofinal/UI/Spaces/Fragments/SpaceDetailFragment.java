@@ -82,7 +82,16 @@ public class SpaceDetailFragment extends Fragment{
     public void onAttach(Context context) {
         super.onAttach(context);
 
-        mMainActivity = (MainActivity) getActivity();
+        mActivity = getActivity();
+        mMainActivity = (MainActivity) mActivity;
+
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        mMainActivity.getSupportActionBar().setTitle("Space Details");
     }
 
     @Override
@@ -97,7 +106,6 @@ public class SpaceDetailFragment extends Fragment{
 
     private void iniVariables(View view) {
         mSpace = new Space();
-        mActivity = getActivity();
         mAPI =  new API();
         mNameTextView = (TextView) view.findViewById(R.id.space_detail_name);
         mDevicesTextView = (TextView) view.findViewById(R.id.space_detail_devices);
