@@ -180,6 +180,21 @@ public class API {
         return 0;
     }
 
+    public int getStatus(Response response) {
+        try {
+            JSONObject deviceData = new JSONObject(response.body().string());
+            int status = 0;
+            status = deviceData.getJSONObject("variables").getInt("status");
+
+            return status;
+
+        } catch (JSONException | IOException e) {
+            Log.e("getStatus", e.getMessage());
+        }
+
+        return 0;
+    }
+
     public List<Space> getSpaceList(Response response) {
         List<Space> spacesList = new ArrayList<>();
 

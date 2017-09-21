@@ -80,6 +80,9 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
     public void onBindViewHolder(final ViewHolder holder, int position) {
         final Device device = deviceList.get(position);
         holder.mName.setText(device.getName());
+
+        getStatus(mAPI.getClient(), device);
+
         holder.mStatus.setChecked(device.isStatus());
 
         if (device.isStatus()) {
@@ -202,6 +205,32 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
                     final double powerd = mAPI.getPower(response);
 
                     mDevice.setPower(powerd);
+                }
+            }
+        });
+    }
+
+    private void getStatus(OkHttpClient client, final Device mDevice) {
+        Log.e("QUERY", mDevice.getIp_address());
+        Request request = new Request.Builder()
+                .url("http://" + mDevice.getIp_address() + "?format=json")
+                .addHeader("Connection", "close")
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException ex) {
+                Log.e("Error", "No se puso conectar al dispositivo", ex);
+            }
+
+            @Override
+            public void onResponse(Call call, final Response response) throws IOException {
+                if (!response.isSuccessful()) {
+                    throw new IOException("Unexpected code " + response);
+                } else {
+                    final int status = mAPI.getStatus(response);
+
+                    mDevice.setStatus(status == 1);
                 }
             }
         });
