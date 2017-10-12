@@ -3,11 +3,13 @@ package com.example.martinjmartinez.proyectofinal.Entities;
 
 import java.util.Date;
 
-/**
- * Created by MartinJMartinez on 6/27/2017.
- */
+import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
 
-public class Measures {
+public class Measures extends RealmObject {
+
+    @PrimaryKey
+    private String _id;
 
     private Device mDevice;
 
@@ -21,6 +23,14 @@ public class Measures {
         this.mDevice = mDevice;
         this.mDate = mDate;
         this.mPower = mPower;
+    }
+
+    public String get_id() {
+        return _id;
+    }
+
+    public void set_id(String _id) {
+        this._id = _id;
     }
 
     public Device getmDevice() {

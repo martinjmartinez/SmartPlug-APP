@@ -1,11 +1,11 @@
 package com.example.martinjmartinez.proyectofinal.Entities;
 
-/**
- * Created by MartinJMartinez on 6/20/2017.
- */
+import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
 
-public class Device {
+public class Device extends RealmObject {
 
+    @PrimaryKey
     private String _id;
 
     private String name;
@@ -96,7 +96,9 @@ public class Device {
         return "{" +
                 "\"name\":\"" + name + "\"," +
                 "\"ip_address\":\"" + ip_address + "\"," +
-                "\"status\":" + status +
+                "\"status\":" + status + "," +
+                "\"building\":\"" + building.get_id() + "\"," +
+                "\"space\":\"" + space.get_id() + "\"" +
                 '}';
     }
 }

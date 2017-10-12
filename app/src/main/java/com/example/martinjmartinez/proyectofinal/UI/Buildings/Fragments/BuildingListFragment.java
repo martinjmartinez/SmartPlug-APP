@@ -16,6 +16,7 @@ import android.widget.LinearLayout;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
 import com.example.martinjmartinez.proyectofinal.R;
+import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.UI.Buildings.Adapters.BuildingListAdapter;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.UI.Spaces.Fragments.SpaceListFragment;
@@ -28,6 +29,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.realm.Realm;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
@@ -47,8 +49,10 @@ public class BuildingListFragment extends Fragment {
     private FloatingActionButton mAddBuildingButton;
     private LinearLayout mEmptyBuildingListLayout;
     private MainActivity mMainActivity;
+    private BuildingService buildingService;
 
-    public BuildingListFragment() {}
+    public BuildingListFragment() {
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -81,7 +85,7 @@ public class BuildingListFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
 
-        if(mMainActivity.getSupportFragmentManager().getBackStackEntryCount() <= 1){
+        if (mMainActivity.getSupportFragmentManager().getBackStackEntryCount() <= 1) {
             mMainActivity.toggleDrawerIcon(true, 0, null);
         }
 
@@ -94,6 +98,7 @@ public class BuildingListFragment extends Fragment {
     }
 
     private void initVariables(View view) {
+        buildingService = new BuildingService(Realm.getDefaultInstance());
         mBuildingList = new ArrayList<>();
         mGridView = (GridView) view.findViewById(R.id.building_grid);
         mAPI = new API();
@@ -137,39 +142,15 @@ public class BuildingListFragment extends Fragment {
     }
 
     public void getBuildings(OkHttpClient client) {
-        Request request = new Request.Builder()
-                .url(ArgumentsKeys.BUILDING_QUERY)
-                .build();
+        mBuildingList = buildingService.allBuildings();
 
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.e("Error", e.getMessage());
-            }
-
-            @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                if (!response.isSuccessful()) {
-                    throw new IOException("Unexpected code " + response);
-                } else {
-                    mBuildingList = mAPI.getBuildingList(response);
-                    mActivity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (!mBuildingList.isEmpty()) {
-                                initSpacesList(mBuildingList);
-                                mEmptyBuildingListLayout.setVisibility(View.GONE);
-                            } else {
-                                mGridView.setVisibility(View.GONE);
-                                mEmptyBuildingListLayout.setVisibility(View.VISIBLE);
-                            }
-                        }
-                    });
-
-                }
-
-            }
-        });
+        if (!mBuildingList.isEmpty()) {
+            initSpacesList(mBuildingList);
+            mEmptyBuildingListLayout.setVisibility(View.GONE);
+        } else {
+            mGridView.setVisibility(View.GONE);
+            mEmptyBuildingListLayout.setVisibility(View.VISIBLE);
+        }
     }
 
 

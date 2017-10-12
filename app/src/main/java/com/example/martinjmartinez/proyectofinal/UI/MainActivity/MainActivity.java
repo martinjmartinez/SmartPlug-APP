@@ -21,6 +21,7 @@ import android.widget.Toast;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
 import com.example.martinjmartinez.proyectofinal.R;
+import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.UI.Buildings.Adapters.BuildingSpinnerAdapter;
 import com.example.martinjmartinez.proyectofinal.UI.Buildings.Fragments.BuildingCreateFragment;
 import com.example.martinjmartinez.proyectofinal.UI.Buildings.Fragments.BuildingListFragment;
@@ -34,6 +35,8 @@ import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
 import java.io.IOException;
 import java.util.List;
 
+import io.realm.Realm;
+import io.realm.RealmConfiguration;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
@@ -57,18 +60,7 @@ public class MainActivity extends AppCompatActivity {
     private Activity mActivity;
     private int mLastBuildingSelected;
     private boolean doubleBackToExitPressedOnce;
-
-    public Toolbar getToolbar() {
-        return mToolbar;
-    }
-
-    public DrawerLayout getDrawerLayout() {
-        return mDrawerLayout;
-    }
-
-    public NavigationView getNavigationView() {
-        return mNavigationView;
-    }
+    private BuildingService buildingService;
 
     public ActionBarDrawerToggle getActionBarDrawerToggle() {
         return mActionBarDrawerToggle;
@@ -93,6 +85,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void initVariables() {
+        buildingService = new BuildingService(Realm.getDefaultInstance());
         mDeviceListFragment = new DeviceListFragment();
         mBuildingListFragment = new BuildingListFragment();
         mAPI = new API();
@@ -276,11 +269,13 @@ public class MainActivity extends AppCompatActivity {
                 if (!response.isSuccessful()) {
                     throw new IOException("Unexpected code " + response);
                 } else {
-                    mBuildingList = mAPI.getBuildingList(response);
 
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+                            mAPI.getBuildingsFromCloud(response);
+
+                            mBuildingList = buildingService.allBuildings();
                             if (!mBuildingList.isEmpty()) {
                                 if (refreshSpinner) {
                                     setUpBuildingSpinner(mBuildingList);

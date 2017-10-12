@@ -18,6 +18,7 @@ import android.widget.TextView;
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
 import com.example.martinjmartinez.proyectofinal.Entities.Space;
 import com.example.martinjmartinez.proyectofinal.R;
+import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
 import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
@@ -26,6 +27,7 @@ import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 
 import java.io.IOException;
 
+import io.realm.Realm;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
@@ -50,9 +52,11 @@ public class BuildingDetailFragment extends Fragment {
     private TextView mPowerTextView;
     private TextView mInfoTextView;
     private MainActivity mMainActivity;
+    private BuildingService buildingService;
 
 
-    public BuildingDetailFragment() {}
+    public BuildingDetailFragment() {
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -67,7 +71,7 @@ public class BuildingDetailFragment extends Fragment {
         View view = inflater.inflate(R.layout.building_fragment, container, false);
 
         iniVariables(view);
-        getBuilding(mAPI.getClient());
+        getBuilding();
         initListeners();
 
         return view;
@@ -92,15 +96,16 @@ public class BuildingDetailFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
 
-        if(mMainActivity.getSupportFragmentManager().getBackStackEntryCount() <= 1){
+        if (mMainActivity.getSupportFragmentManager().getBackStackEntryCount() <= 1) {
             mMainActivity.toggleDrawerIcon(true, 0, null);
         }
 
     }
 
     private void iniVariables(View view) {
+        buildingService = new BuildingService(Realm.getDefaultInstance());
         mBuilding = new Building();
-        mAPI =  new API();
+        mAPI = new API();
         mNameTextView = (TextView) view.findViewById(R.id.building_detail_name);
         mSpacesTextView = (TextView) view.findViewById(R.id.building_detail_spaces);
         mEditButton = (Button) view.findViewById(R.id.building_detail_update);
@@ -186,36 +191,13 @@ public class BuildingDetailFragment extends Fragment {
         });
     }
 
-    private void getBuilding(OkHttpClient client) {
-        Log.e("QUERY", ArgumentsKeys.BUILDING_QUERY + "/" + mBuildingId);
-        Request request = new Request.Builder()
-                .url(ArgumentsKeys.BUILDING_QUERY + "/" + mBuildingId)
-                .build();
+    private void getBuilding() {
+        mBuilding = buildingService.getBuildingById(mBuildingId);
 
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.e("Error", e.getMessage());
-            }
-
-            @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                if (!response.isSuccessful()) {
-                    throw new IOException("Unexpected code " + response);
-                } else {
-                    mBuilding = mAPI.getBuilding(response);
-                    mActivity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            initView(mBuilding);
-                        }
-                    });
-                }
-            }
-        });
+        initView(mBuilding);
     }
 
-    private void initView( Building building) {
+    private void initView(Building building) {
 
         mNameTextView.setText(building.getName());
 
@@ -223,7 +205,7 @@ public class BuildingDetailFragment extends Fragment {
             mSpacesTextView.setText(building.getSpaces().size() + "");
             int devices = getBuildingDevices();
             mDevicesTextView.setText(devices + "");
-            if(devices >0) {
+            if (devices > 0) {
                 mDeleteButton.setClickable(false);
                 mInfoTextView.setVisibility(View.VISIBLE);
                 mDeleteButton.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.disabled));
@@ -237,7 +219,7 @@ public class BuildingDetailFragment extends Fragment {
 
     private int getBuildingDevices() {
         int total = 0;
-        for(Space space: mBuilding.getSpaces()) {
+        for (Space space : mBuilding.getSpaces()) {
             total = space.getDevices().size() + total;
         }
         return total;

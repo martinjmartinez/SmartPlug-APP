@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Device;
 import com.example.martinjmartinez.proyectofinal.R;
+import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
 import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
@@ -26,6 +27,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.Date;
 
+import io.realm.Realm;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.MediaType;
@@ -46,16 +48,18 @@ public class DeviceDetailFragment extends Fragment {
     private String mDeviceId;
     private TextView name;
     private TextView ip_address;
-    private TextView space ;
+    private TextView space;
     private TextView building;
     private Switch status;
     private TextView power;
     private MainActivity mMainActivity;
     private Handler updatePowerHandler;
     private Runnable updatePowerRunnableDetails;
+    private DeviceService deviceService;
 
 
-    public DeviceDetailFragment() {}
+    public DeviceDetailFragment() {
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -66,8 +70,7 @@ public class DeviceDetailFragment extends Fragment {
             mDeviceId = bundle.getString(ArgumentsKeys.DEVICE_ID, "");
         }
         mDevice = new Device();
-        mAPI =  new API();
-        getDevice(mAPI.getClient());
+        mAPI = new API();
     }
 
     @Override
@@ -75,6 +78,7 @@ public class DeviceDetailFragment extends Fragment {
         View view = inflater.inflate(R.layout.device_fragment, container, false);
 
         iniVariables(view);
+        getDevice();
         status.setEnabled(false);
         initListeners();
         return view;
@@ -100,14 +104,14 @@ public class DeviceDetailFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
 
-        if(mMainActivity.getSupportFragmentManager().getBackStackEntryCount() <= 1){
+        if (mMainActivity.getSupportFragmentManager().getBackStackEntryCount() <= 1) {
             mMainActivity.toggleDrawerIcon(true, 0, null);
         }
 
     }
 
     private void iniVariables(View view) {
-
+        deviceService = new DeviceService(Realm.getDefaultInstance());
         name = (TextView) view.findViewById(R.id.device_detail_name);
         ip_address = (TextView) view.findViewById(R.id.device_detail_ip);
         space = (TextView) view.findViewById(R.id.device_detail_space);
@@ -125,7 +129,7 @@ public class DeviceDetailFragment extends Fragment {
                     refreshPower();
                     changeStatus(new API().getClient(), ArgumentsKeys.ON_QUERY);
                 } else {
-                    if(updatePowerHandler != null) {
+                    if (updatePowerHandler != null) {
                         power.setText("0 W");
                         updatePowerHandler.removeCallbacksAndMessages(null);
                     }
@@ -288,33 +292,9 @@ public class DeviceDetailFragment extends Fragment {
         });
     }
 
-    private void getDevice(OkHttpClient client) {
-        Log.e("getDevice", ArgumentsKeys.DEVICE_QUERY + "/" + mDeviceId);
-        Request request = new Request.Builder()
-                .url(ArgumentsKeys.DEVICE_QUERY + "/" + mDeviceId)
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.e("Error at getDevice", e.getMessage());
-            }
-
-            @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                if (!response.isSuccessful()) {
-                    throw new IOException("Unexpected code at getDevice" + response);
-                } else {
-                    mDevice = mAPI.getDevice(response);
-                    mActivity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            initDeviceView(mDevice);
-                        }
-                    });
-                }
-            }
-        });
+    private void getDevice() {
+        mDevice = deviceService.getDeviceById(mDeviceId);
+        initDeviceView(mDevice);
     }
 
     private void getDeviceInfo(OkHttpClient client) {
@@ -364,7 +344,7 @@ public class DeviceDetailFragment extends Fragment {
         updatePowerHandler.postDelayed(updatePowerRunnableDetails, 7000);
     }
 
-    private void initDeviceView( Device device) {
+    private void initDeviceView(Device device) {
         name.setText(device.getName());
         ip_address.setText(device.getIp_address());
         status.setChecked(device.isStatus());

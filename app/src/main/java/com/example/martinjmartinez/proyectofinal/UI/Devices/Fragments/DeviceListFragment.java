@@ -20,6 +20,7 @@ import com.example.martinjmartinez.proyectofinal.Entities.Building;
 import com.example.martinjmartinez.proyectofinal.Entities.Device;
 import com.example.martinjmartinez.proyectofinal.Entities.Space;
 import com.example.martinjmartinez.proyectofinal.R;
+import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
 import com.example.martinjmartinez.proyectofinal.UI.Devices.Adapters.DeviceListAdapter;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
@@ -31,6 +32,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.realm.Realm;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
@@ -53,6 +55,7 @@ public class DeviceListFragment extends Fragment{
     private List<Device> mDevicesList;
     private MainActivity mMainActivity;
     private DeviceListAdapter mDevicesListAdapter;
+    private DeviceService deviceService;
 
     public DeviceListFragment() {}
 
@@ -113,6 +116,7 @@ public class DeviceListFragment extends Fragment{
     }
 
     private void iniVariables(View view) {
+        deviceService = new DeviceService(Realm.getDefaultInstance());
         mDevicesList =  new ArrayList<>();
         mGridView = (RecyclerView) view.findViewById(R.id.devices_grid);
         mAPI =  new API();
@@ -156,11 +160,12 @@ public class DeviceListFragment extends Fragment{
                 if (!response.isSuccessful()) {
                     throw new IOException("Unexpected code " + response);
                 } else {
-                    mDevicesList = mAPI.getDeviceList(response);
-                    mActivity.runOnUiThread(new Runnable() {
+
+                            mActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-
+                            mAPI.getDevicesFromCloud(response);
+                            mDevicesList = deviceService.allDevices();
                             initDevicesList(mDevicesList);
                         }
                     });
@@ -186,11 +191,12 @@ public class DeviceListFragment extends Fragment{
                 if (!response.isSuccessful()) {
                     throw new IOException("Unexpected code " + response);
                 } else {
-                    mDevicesList = mAPI.getDeviceList(response);
+                    //change todo
+
                     mActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-
+                            mDevicesList = deviceService.allDevices();
                             initDevicesList(mDevicesList);
                         }
                     });

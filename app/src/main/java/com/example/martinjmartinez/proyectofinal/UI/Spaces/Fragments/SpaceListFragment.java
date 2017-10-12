@@ -16,6 +16,7 @@ import android.widget.LinearLayout;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Space;
 import com.example.martinjmartinez.proyectofinal.R;
+import com.example.martinjmartinez.proyectofinal.Services.SpaceService;
 import com.example.martinjmartinez.proyectofinal.UI.Devices.Fragments.DeviceListFragment;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.UI.Spaces.Adapters.SpaceListAdapter;
@@ -28,15 +29,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.realm.Realm;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-
-/**
- * Created by MartinJMartinez on 7/13/2017.
- */
 
 public class SpaceListFragment extends Fragment {
 
@@ -48,14 +46,16 @@ public class SpaceListFragment extends Fragment {
     private Activity mActivity;
     private String mBuildingId;
     private MainActivity mMainActivity;
+    private SpaceService spaceService;
 
-    public SpaceListFragment() {}
+    public SpaceListFragment() {
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-       getArgumentsBundle();
+        getArgumentsBundle();
     }
 
     public void getArgumentsBundle() {
@@ -103,16 +103,17 @@ public class SpaceListFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
 
-        if(mMainActivity.getSupportFragmentManager().getBackStackEntryCount() <= 1){
+        if (mMainActivity.getSupportFragmentManager().getBackStackEntryCount() <= 1) {
             mMainActivity.toggleDrawerIcon(true, 0, null);
         }
 
     }
 
     private void initVariables(View view) {
+        spaceService = new SpaceService(Realm.getDefaultInstance());
         mSpacesList = new ArrayList<>();
         mGridView = (GridView) view.findViewById(R.id.spaces_grid);
-        mAPI =  new API();
+        mAPI = new API();
         mEmptySpaceListLayout = (LinearLayout) view.findViewById(R.id.empty_space_list_layout);
         mAddSpaceButton = (FloatingActionButton) view.findViewById(R.id.add_space_button);
     }
@@ -121,14 +122,14 @@ public class SpaceListFragment extends Fragment {
         mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if(!mSpacesList.isEmpty()) {
+                if (!mSpacesList.isEmpty()) {
                     Space spaceSelected = mSpacesList.get(position);
 
-                        DeviceListFragment deviceListFragment = new DeviceListFragment();
-                        Bundle bundle = new Bundle();
-                        bundle.putString(ArgumentsKeys.SPACE_ID, spaceSelected.get_id());
-                        deviceListFragment.setArguments(bundle);
-                        Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.SPACE_LIST_FRAGMENT), deviceListFragment, FragmentKeys.DEVICE_LIST_FRAGMENT, true);
+                    DeviceListFragment deviceListFragment = new DeviceListFragment();
+                    Bundle bundle = new Bundle();
+                    bundle.putString(ArgumentsKeys.SPACE_ID, spaceSelected.get_id());
+                    deviceListFragment.setArguments(bundle);
+                    Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.SPACE_LIST_FRAGMENT), deviceListFragment, FragmentKeys.DEVICE_LIST_FRAGMENT, true);
 
                 }
             }
@@ -169,10 +170,13 @@ public class SpaceListFragment extends Fragment {
                 if (!response.isSuccessful()) {
                     throw new IOException("Unexpected code " + response);
                 } else {
-                    mSpacesList = mAPI.getSpaceList(response);
+
+
                     mActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+                            mAPI.getSpacesFromCloud(response);
+                            mSpacesList = spaceService.allSpaces();
                             if (!mSpacesList.isEmpty()) {
                                 mEmptySpaceListLayout.setVisibility(View.GONE);
                                 initSpacesList(mSpacesList);

@@ -2,27 +2,36 @@ package com.example.martinjmartinez.proyectofinal.Entities;
 
 import java.util.List;
 
+import io.realm.RealmList;
+import io.realm.RealmObject;
+
+import io.realm.RealmResults;
+import io.realm.annotations.LinkingObjects;
+import io.realm.annotations.PrimaryKey;
+
 /**
  * Created by MartinJMartinez on 6/20/2017.
  */
 
-public class Space {
+public class Space extends RealmObject {
 
+    @PrimaryKey
     private String _id;
 
     private String name;
 
     private Building building;
 
-    private List<Device> devices;
+    @LinkingObjects("space")
+    private final RealmResults<Device> devices = null;
 
-    private float power;
+    private double power;
 
-    public float getPower() {
+    public double getPower() {
         return power;
     }
 
-    public void setPower(float power) {
+    public void setPower(double power) {
         this.power = power;
     }
 
@@ -56,18 +65,15 @@ public class Space {
         this.building = building;
     }
 
-    public List<Device> getDevices() {
+    public RealmResults<Device> getDevices() {
         return devices;
-    }
-
-    public void setDevices(List<Device> devices) {
-        this.devices = devices;
     }
 
     @Override
     public String toString() {
         return "{" +
-                "\"name\":\"" + name + "\"" +
+                "\"name\":\"" + name + "\"," +
+                "\"building\":\"" + building.get_id() + "\"" +
                 '}';
     }
 }

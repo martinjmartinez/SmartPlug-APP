@@ -18,6 +18,7 @@ import android.widget.Toast;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
 import com.example.martinjmartinez.proyectofinal.R;
+import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
 import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
@@ -25,6 +26,7 @@ import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 
 import java.io.IOException;
 
+import io.realm.Realm;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.MediaType;
@@ -38,7 +40,7 @@ import okhttp3.Response;
  */
 
 public class BuildingUpdateFragment extends Fragment {
-    
+
     private Building mBuilding;
     private API mAPI;
     private Activity mActivity;
@@ -47,8 +49,10 @@ public class BuildingUpdateFragment extends Fragment {
     private TextView displayName;
     private Button updateBuilding;
     private MainActivity mMainActivity;
+    private BuildingService buildingService;
 
-    public BuildingUpdateFragment() {}
+    public BuildingUpdateFragment() {
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -93,15 +97,16 @@ public class BuildingUpdateFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
 
-        if(mMainActivity.getSupportFragmentManager().getBackStackEntryCount() <= 1){
+        if (mMainActivity.getSupportFragmentManager().getBackStackEntryCount() <= 1) {
             mMainActivity.toggleDrawerIcon(true, 0, null);
         }
 
     }
 
     private void iniVariables(View view) {
+        buildingService = new BuildingService(Realm.getDefaultInstance());
         mBuilding = new Building();
-        mAPI =  new API();
+        mAPI = new API();
         name = (EditText) view.findViewById(R.id.building_create_name);
         displayName = (TextView) view.findViewById(R.id.building_create_display_name);
         updateBuilding = (Button) view.findViewById(R.id.building_create_save_button);
@@ -128,11 +133,13 @@ public class BuildingUpdateFragment extends Fragment {
         updateBuilding.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(!Utils.isEditTextEmpty(name)) {
+                if (!Utils.isEditTextEmpty(name)) {
                     if (!name.getText().toString().equals(mBuilding.getName())) {
-                        Building building = new Building();
-                        building.setName(name.getText().toString());
-                        updateBuilding(mAPI.getClient(),building.toString());
+                        buildingService.updateBuildingName(mBuildingId, name.getText().toString());
+
+                        Building building = buildingService.getBuildingById(mBuildingId);
+
+                        updateBuilding(mAPI.getClient(), building.toString());
                     } else {
                         Toast.makeText(getActivity(), "Please, update something.", Toast.LENGTH_SHORT).show();
                     }
@@ -151,32 +158,8 @@ public class BuildingUpdateFragment extends Fragment {
     }
 
     private void getBuilding(OkHttpClient client) {
-        Log.e("QUERY", ArgumentsKeys.BUILDING_QUERY + "/" + mBuildingId);
-        Request request = new Request.Builder()
-                .url(ArgumentsKeys.BUILDING_QUERY + "/" + mBuildingId)
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.e("Error", e.getMessage());
-            }
-
-            @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                if (!response.isSuccessful()) {
-                    throw new IOException("Unexpected code " + response);
-                } else {
-                    mBuilding = mAPI.getBuilding(response);
-                    mActivity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            initView(mBuilding);
-                        }
-                    });
-                }
-            }
-        });
+        mBuilding = buildingService.getBuildingById(mBuildingId);
+        initView(mBuilding);
     }
 
     private void updateBuilding(OkHttpClient client, String data) {

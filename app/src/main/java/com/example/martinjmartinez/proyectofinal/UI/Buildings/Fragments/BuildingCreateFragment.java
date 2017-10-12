@@ -18,14 +18,19 @@ import android.widget.Toast;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
 import com.example.martinjmartinez.proyectofinal.R;
+import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
 import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 
+import io.realm.Realm;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.MediaType;
@@ -41,13 +46,14 @@ import okhttp3.Response;
 public class BuildingCreateFragment extends Fragment {
     private API mAPI;
     private Activity mActivity;
-    private String mQuery;
     private EditText name;
     private TextView displayName;
     private Button saveBuilding;
     private MainActivity mMainActivity;
+    private BuildingService buildingService;
 
-    public BuildingCreateFragment() {}
+    public BuildingCreateFragment() {
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -85,14 +91,15 @@ public class BuildingCreateFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
 
-        if(mMainActivity.getSupportFragmentManager().getBackStackEntryCount() <= 1){
+        if (mMainActivity.getSupportFragmentManager().getBackStackEntryCount() <= 1) {
             mMainActivity.toggleDrawerIcon(true, 0, null);
         }
 
     }
 
     private void iniVariables() {
-        mAPI =  new API();
+        buildingService = new BuildingService(Realm.getDefaultInstance());
+        mAPI = new API();
     }
 
     private void initListeners() {
@@ -116,10 +123,10 @@ public class BuildingCreateFragment extends Fragment {
         saveBuilding.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(!Utils.isEditTextEmpty(name)){
+                if (!Utils.isEditTextEmpty(name)) {
                     Building building = new Building();
                     building.setName(name.getText().toString());
-                    createBuilding(mAPI.getClient(),building.toString());
+                    createBuilding(mAPI.getClient(), building.toString());
                 } else {
                     Toast.makeText(getActivity(), "Please, name your building.", Toast.LENGTH_SHORT).show();
                 }
@@ -155,10 +162,10 @@ public class BuildingCreateFragment extends Fragment {
                 if (!response.isSuccessful()) {
                     Log.e("ERROR", response.body().string());
                 } else {
-                    Log.e("RESPONSE", response.body().string());
                     mActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+                            mAPI.getBuildingFromCloud(response);
                             mActivity.onBackPressed();
                         }
                     });

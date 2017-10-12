@@ -18,6 +18,9 @@ import com.example.martinjmartinez.proyectofinal.Entities.Building;
 import com.example.martinjmartinez.proyectofinal.Entities.Device;
 import com.example.martinjmartinez.proyectofinal.Entities.Space;
 import com.example.martinjmartinez.proyectofinal.R;
+import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
+import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
+import com.example.martinjmartinez.proyectofinal.Services.SpaceService;
 import com.example.martinjmartinez.proyectofinal.UI.Devices.Adapters.DeviceListAdapter;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
@@ -36,6 +39,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import io.realm.Realm;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
@@ -57,6 +61,9 @@ public class HomeFragment extends Fragment {
     private API mAPI;
     private Activity mActivity;
     private MainActivity mMainActivity;
+    private BuildingService buildingService;
+    private SpaceService spaceService;
+    private DeviceService deviceService;
 
     public HomeFragment() {}
 
@@ -102,6 +109,9 @@ public class HomeFragment extends Fragment {
     }
 
     private void iniVariables(View view) {
+        spaceService = new SpaceService(Realm.getDefaultInstance());
+        deviceService = new DeviceService(Realm.getDefaultInstance());
+        buildingService = new BuildingService(Realm.getDefaultInstance());
         chart = (BarChart) view.findViewById(R.id.chart);
         mDeviceList = new ArrayList<>();
         mSpacesList = new ArrayList<>();
@@ -127,9 +137,9 @@ public class HomeFragment extends Fragment {
         int counter = 0;
 
         for (Space space : mBuilding.getSpaces()) {
-            space.setPower(r.nextInt(1500 - 500) + 500);
+            spaceService.updateSpacePower(space.get_id(), 651.2);
             xVals.add(space.getName());
-            yVals.add(new BarEntry(counter, space.getPower()));
+            yVals.add(new BarEntry(counter, ((float) space.getPower())));
 
             counter++;
         }
@@ -185,11 +195,12 @@ public class HomeFragment extends Fragment {
                 if (!response.isSuccessful()) {
                     throw new IOException("Unexpected code " + response);
                 } else {
-                    mBuilding = mAPI.getBuilding(response);
+                    //todo
+
                     mActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-
+                            mBuilding = buildingService.getBuildingById(mBuildingId);
                             if (!mBuilding.getSpaces().isEmpty()) {
                                 generateFakeData();
                                 //TODO get devices with more measures
