@@ -20,7 +20,9 @@ import com.example.martinjmartinez.proyectofinal.Entities.Building;
 import com.example.martinjmartinez.proyectofinal.Entities.Device;
 import com.example.martinjmartinez.proyectofinal.Entities.Space;
 import com.example.martinjmartinez.proyectofinal.R;
+import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
+import com.example.martinjmartinez.proyectofinal.Services.SpaceService;
 import com.example.martinjmartinez.proyectofinal.UI.Devices.Adapters.DeviceListAdapter;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
@@ -28,22 +30,17 @@ import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import io.realm.Realm;
-import okhttp3.Call;
-import okhttp3.Callback;
 import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 
 /**
  * Created by MartinJMartinez on 7/14/2017.
  */
 
-public class DeviceListFragment extends Fragment{
+public class DeviceListFragment extends Fragment {
 
     private RecyclerView mGridView;
     private API mAPI;
@@ -56,8 +53,11 @@ public class DeviceListFragment extends Fragment{
     private MainActivity mMainActivity;
     private DeviceListAdapter mDevicesListAdapter;
     private DeviceService deviceService;
+    private BuildingService buildingService;
+    private SpaceService spaceService;
 
-    public DeviceListFragment() {}
+    public DeviceListFragment() {
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -80,7 +80,7 @@ public class DeviceListFragment extends Fragment{
     public void onDetach() {
         super.onDetach();
 
-        if(mMainActivity.getSupportFragmentManager().getBackStackEntryCount() <= 1){
+        if (mMainActivity.getSupportFragmentManager().getBackStackEntryCount() <= 1) {
             mMainActivity.toggleDrawerIcon(true, 0, null);
         }
 
@@ -99,12 +99,12 @@ public class DeviceListFragment extends Fragment{
 
         iniVariables(view);
         if (!mBuildingId.isEmpty() && mSpaceId.isEmpty()) {
-            getDevicesByBuilding(mAPI.getClient());
+            getDevicesByBuilding();
         } else if (mBuildingId.isEmpty() && !mSpaceId.isEmpty()) {
-            getDevicesBySpace(mAPI.getClient());
+            getDevicesBySpace();
         }
         initListeners();
-        
+
         return view;
     }
 
@@ -117,9 +117,11 @@ public class DeviceListFragment extends Fragment{
 
     private void iniVariables(View view) {
         deviceService = new DeviceService(Realm.getDefaultInstance());
-        mDevicesList =  new ArrayList<>();
+        buildingService = new BuildingService(Realm.getDefaultInstance());
+        spaceService = new SpaceService(Realm.getDefaultInstance());
+        mDevicesList = new ArrayList<>();
         mGridView = (RecyclerView) view.findViewById(R.id.devices_grid);
-        mAPI =  new API();
+        mAPI = new API();
         mAddDeviceButton = (FloatingActionButton) view.findViewById(R.id.add_device_button);
     }
 
@@ -143,66 +145,16 @@ public class DeviceListFragment extends Fragment{
             }
         });
     }
-    private void getDevicesByBuilding(OkHttpClient client) {
-        Log.e("QUERY", ArgumentsKeys.BUILDING_QUERY + "/" + mBuildingId + "/devices");
-        Request request = new Request.Builder()
-                .url(ArgumentsKeys.BUILDING_QUERY + "/" + mBuildingId + "/devices")
-                .build();
 
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.e("Error", e.getMessage());
-            }
-
-            @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                if (!response.isSuccessful()) {
-                    throw new IOException("Unexpected code " + response);
-                } else {
-
-                            mActivity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mAPI.getDevicesFromCloud(response);
-                            mDevicesList = deviceService.allDevices();
-                            initDevicesList(mDevicesList);
-                        }
-                    });
-                }
-            }
-        });
+    private void getDevicesByBuilding() {
+        mDevicesList = buildingService.getBuildingById(mBuildingId).getDevices();
+        initDevicesList(mDevicesList);
     }
 
-    private void getDevicesBySpace(OkHttpClient client) {
-        Log.e("QUERY", ArgumentsKeys.SPACE_QUERY + "/" + mSpaceId +"/devices");
-        Request request = new Request.Builder()
-                .url(ArgumentsKeys.SPACE_QUERY + "/" + mSpaceId +"/devices")
-                .build();
+    private void getDevicesBySpace() {
+        mDevicesList = spaceService.getSpaceById(mSpaceId).getDevices();
+        initDevicesList(mDevicesList);
 
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.e("Error", e.getMessage());
-            }
-
-            @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                if (!response.isSuccessful()) {
-                    throw new IOException("Unexpected code " + response);
-                } else {
-                    //change todo
-
-                    mActivity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mDevicesList = deviceService.allDevices();
-                            initDevicesList(mDevicesList);
-                        }
-                    });
-                }
-            }
-        });
     }
 
     private void initDevicesList(List<Device> devicesList) {

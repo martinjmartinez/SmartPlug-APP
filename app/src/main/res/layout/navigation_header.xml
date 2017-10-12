@@ -2,7 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="144dp"
-    android:background="#2aa9ff"
+    android:background="@drawable/parallax_scroll"
     android:padding="16dp">
 
     <TextView
@@ -10,6 +10,9 @@
         android:layout_height="wrap_content"
         android:textColor="@android:color/white"
         android:text="Smart Plug App"
+        android:textStyle="bold"
+        android:shadowRadius="9"
+        android:shadowColor="@android:color/black"
         android:textAppearance="?android:attr/textAppearanceLarge"/>
 
     <LinearLayout
@@ -23,15 +26,22 @@
             android:layout_height="wrap_content"
             android:text="Building: "
             android:textColor="@android:color/white"
+            android:shadowRadius="6"
+            android:textStyle="bold"
+            android:shadowColor="@android:color/black"
             android:textAppearance="?android:attr/textAppearanceMedium"/>
 
-        <Spinner
-            android:id="@+id/buildings_spinner"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:spinnerMode="dropdown">
-
-        </Spinner>
+            android:background="@color/cardview_light_background">
+            <Spinner
+                android:id="@+id/buildings_spinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:spinnerMode="dropdown"
+                android:backgroundTint="@color/colorPrimaryDark">
+            </Spinner>
+        </LinearLayout>
     </LinearLayout>
-
 </RelativeLayout>

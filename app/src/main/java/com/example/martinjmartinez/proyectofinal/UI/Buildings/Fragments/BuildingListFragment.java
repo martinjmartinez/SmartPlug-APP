@@ -94,7 +94,7 @@ public class BuildingListFragment extends Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        getBuildings(mAPI.getClient());
+        getBuildings();
     }
 
     private void initVariables(View view) {
@@ -141,7 +141,7 @@ public class BuildingListFragment extends Fragment {
         });
     }
 
-    public void getBuildings(OkHttpClient client) {
+    public void getBuildings() {
         mBuildingList = buildingService.allBuildings();
 
         if (!mBuildingList.isEmpty()) {

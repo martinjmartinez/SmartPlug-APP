@@ -1,17 +1,9 @@
 package com.example.martinjmartinez.proyectofinal.Entities;
 
-import java.util.List;
-
-import io.realm.RealmList;
 import io.realm.RealmObject;
-
 import io.realm.RealmResults;
 import io.realm.annotations.LinkingObjects;
 import io.realm.annotations.PrimaryKey;
-
-/**
- * Created by MartinJMartinez on 6/20/2017.
- */
 
 public class Space extends RealmObject {
 

@@ -21,7 +21,7 @@ public class DeviceService {
     public List<Device> allDevices() {
         RealmResults<Device> results = realm.where(Device.class).findAll();
 
-        return realm.copyFromRealm(results);
+        return results;
     }
 
     public void createDevice(String _id, String name, Boolean isOn, String ip_address, String spaceId, String buildingId) {

@@ -16,6 +16,7 @@ import android.widget.LinearLayout;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Space;
 import com.example.martinjmartinez.proyectofinal.R;
+import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.Services.SpaceService;
 import com.example.martinjmartinez.proyectofinal.UI.Devices.Fragments.DeviceListFragment;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
@@ -47,6 +48,7 @@ public class SpaceListFragment extends Fragment {
     private String mBuildingId;
     private MainActivity mMainActivity;
     private SpaceService spaceService;
+    private BuildingService buildingService;
 
     public SpaceListFragment() {
     }
@@ -81,7 +83,7 @@ public class SpaceListFragment extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         getArgumentsBundle();
-        getSpaces(mAPI.getClient());
+        getSpaces();
     }
 
     @Override
@@ -111,6 +113,7 @@ public class SpaceListFragment extends Fragment {
 
     private void initVariables(View view) {
         spaceService = new SpaceService(Realm.getDefaultInstance());
+        buildingService = new BuildingService(Realm.getDefaultInstance());
         mSpacesList = new ArrayList<>();
         mGridView = (GridView) view.findViewById(R.id.spaces_grid);
         mAPI = new API();
@@ -130,7 +133,6 @@ public class SpaceListFragment extends Fragment {
                     bundle.putString(ArgumentsKeys.SPACE_ID, spaceSelected.get_id());
                     deviceListFragment.setArguments(bundle);
                     Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.SPACE_LIST_FRAGMENT), deviceListFragment, FragmentKeys.DEVICE_LIST_FRAGMENT, true);
-
                 }
             }
         });
@@ -154,41 +156,17 @@ public class SpaceListFragment extends Fragment {
         });
     }
 
-    public void getSpaces(OkHttpClient client) {
-        Request request = new Request.Builder()
-                .url(ArgumentsKeys.BUILDING_QUERY + "/" + mBuildingId + "/spaces")
-                .build();
+    public void getSpaces() {
+        mSpacesList = buildingService.getBuildingById(mBuildingId).getSpaces();
 
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.e("Error", e.getMessage());
-            }
+        if (!mSpacesList.isEmpty()) {
+            mEmptySpaceListLayout.setVisibility(View.GONE);
+            initSpacesList(mSpacesList);
+        } else {
+            mGridView.setVisibility(View.GONE);
+            mEmptySpaceListLayout.setVisibility(View.VISIBLE);
 
-            @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                if (!response.isSuccessful()) {
-                    throw new IOException("Unexpected code " + response);
-                } else {
-
-
-                    mActivity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mAPI.getSpacesFromCloud(response);
-                            mSpacesList = spaceService.allSpaces();
-                            if (!mSpacesList.isEmpty()) {
-                                mEmptySpaceListLayout.setVisibility(View.GONE);
-                                initSpacesList(mSpacesList);
-                            } else {
-                                mGridView.setVisibility(View.GONE);
-                                mEmptySpaceListLayout.setVisibility(View.VISIBLE);
-                            }
-                        }
-                    });
-                }
-            }
-        });
+        }
     }
 
     void initSpacesList(List<Space> spacesList) {

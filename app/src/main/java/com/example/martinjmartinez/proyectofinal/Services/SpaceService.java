@@ -19,7 +19,7 @@ public class SpaceService {
     public List<Space> allSpaces() {
         RealmResults<Space> results = realm.where(Space.class).findAll();
 
-        return realm.copyFromRealm(results);
+        return results;
     }
 
     public void createSpace(String _id, String name, String buildingId) {

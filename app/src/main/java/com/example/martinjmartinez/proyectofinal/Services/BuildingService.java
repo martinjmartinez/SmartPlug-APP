@@ -19,7 +19,7 @@ public class BuildingService extends SmartPLugApplication {
     public List<Building> allBuildings() {
         RealmResults<Building> results = realm.where(Building.class).findAll();
 
-        return realm.copyFromRealm(results);
+        return results;
     }
 
     public void createBuilding(String _id, String name) {

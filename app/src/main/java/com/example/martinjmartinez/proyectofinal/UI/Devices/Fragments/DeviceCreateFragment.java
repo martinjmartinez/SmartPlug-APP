@@ -220,7 +220,6 @@ public class DeviceCreateFragment extends Fragment {
                 if (!response.isSuccessful()) {
                     Log.e("ERROR1", response.body().string());
                 } else {
-                    Log.e("ERROR12", response.body().string());
                     mActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {

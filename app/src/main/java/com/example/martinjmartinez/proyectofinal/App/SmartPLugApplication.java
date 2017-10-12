@@ -41,5 +41,8 @@ public class SmartPLugApplication extends Application {
                 .build();
 
         Realm.setDefaultConfiguration(realmConfiguration);
+
+        //Delete Database
+        //Realm.deleteRealm(realmConfiguration);
     }
 }
