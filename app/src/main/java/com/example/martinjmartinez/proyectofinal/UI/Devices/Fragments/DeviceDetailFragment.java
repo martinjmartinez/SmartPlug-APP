@@ -20,7 +20,11 @@ import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
 import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
+import java.util.Date;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -61,6 +65,9 @@ public class DeviceDetailFragment extends Fragment {
         if (bundle != null) {
             mDeviceId = bundle.getString(ArgumentsKeys.DEVICE_ID, "");
         }
+        mDevice = new Device();
+        mAPI =  new API();
+        getDevice(mAPI.getClient());
     }
 
     @Override
@@ -68,7 +75,7 @@ public class DeviceDetailFragment extends Fragment {
         View view = inflater.inflate(R.layout.device_fragment, container, false);
 
         iniVariables(view);
-        getDevice(mAPI.getClient(), view);
+        status.setEnabled(false);
         initListeners();
         return view;
     }
@@ -100,8 +107,7 @@ public class DeviceDetailFragment extends Fragment {
     }
 
     private void iniVariables(View view) {
-        mDevice = new Device();
-        mAPI =  new API();
+
         name = (TextView) view.findViewById(R.id.device_detail_name);
         ip_address = (TextView) view.findViewById(R.id.device_detail_ip);
         space = (TextView) view.findViewById(R.id.device_detail_space);
@@ -138,6 +144,7 @@ public class DeviceDetailFragment extends Fragment {
     }
 
     public void changeStatus(final OkHttpClient client, final String action) {
+        Log.e("changeStatus", "http://" + mDevice.getIp_address() + action);
         Request requestAction = new Request.Builder()
                 .url("http://" + mDevice.getIp_address() + action)
                 .build();
@@ -151,7 +158,7 @@ public class DeviceDetailFragment extends Fragment {
             @Override
             public void onResponse(Call call, final Response response) throws IOException {
                 if (!response.isSuccessful()) {
-                    throw new IOException("Unexpected code " + response);
+                    throw new IOException("Unexpected code at changeStatus" + response);
                 } else {
                     updateStatus(new API().getClient(), action);
                 }
@@ -159,12 +166,13 @@ public class DeviceDetailFragment extends Fragment {
         });
     }
 
-    public void updateStatus(final OkHttpClient client, String action) {
+    public void updateStatus(final OkHttpClient client, final String action) {
         MediaType JSON = MediaType.parse("application/json; charset=utf-8");
         Device d = new Device();
         d.setStatus(action.equals(ArgumentsKeys.ON_QUERY) ? true : false);
         RequestBody body = RequestBody.create(JSON, d.statusToString());
-
+        Log.e("updateStatus", ArgumentsKeys.DEVICE_QUERY + "/" + mDevice.get_id());
+        Log.e("JSON", d.statusToString());
 
         final Request requestUpdate = new Request.Builder()
                 .url(ArgumentsKeys.DEVICE_QUERY + "/" + mDevice.get_id())
@@ -180,18 +188,52 @@ public class DeviceDetailFragment extends Fragment {
             @Override
             public void onResponse(Call call, final Response response) throws IOException {
                 if (!response.isSuccessful()) {
-                    throw new IOException("Unexpected code " + response);
+                    throw new IOException("Unexpected code at updateStatus" + response);
                 } else {
-
+                    mDevice.setStatus(action.equals(ArgumentsKeys.ON_QUERY) ? true : false);
+                    if (action.equals(ArgumentsKeys.ON_QUERY)) {
+                        createHistory(mAPI.getClient(), mDevice);
+                    } else {
+                        closeHistory(mAPI.getClient(), mDevice.getLastHistoryId());
+                    }
                 }
             }
         });
     }
 
-    private void getDevice(OkHttpClient client, final View view) {
-        Log.e("QUERY", ArgumentsKeys.DEVICE_QUERY + "/" + mDeviceId);
+
+    public void sendHistoryIdToArduino(final OkHttpClient client, String historyId, Device device) {
+        Log.e("sendHistoryIdToArduino", "http://" + device.getIp_address() + "/historyId?params=" + historyId);
+        Request requestAction = new Request.Builder()
+                .url("http://" + device.getIp_address() + "/historyId?params=" + historyId)
+                .build();
+
+        client.newCall(requestAction).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                call.cancel();
+            }
+
+            @Override
+            public void onResponse(Call call, final Response response) throws IOException {
+                if (!response.isSuccessful()) {
+                    throw new IOException("sendHistoryIdToArduino" + response);
+                } else {
+                    Log.e("sendHistoryIdToArduino", "id sent to arduino");
+                }
+            }
+        });
+    }
+
+    private void createHistory(OkHttpClient client, final Device device) {
+        Log.e("createHistory", ArgumentsKeys.HISTORY_QUERY + "/device/" + device.get_id());
+        String data = "{ \"startDate\": \"" + new Date().getTime() + "\"}";
+        MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+        RequestBody body = RequestBody.create(JSON, data);
+        Log.e("JSON", data);
         Request request = new Request.Builder()
-                .url(ArgumentsKeys.DEVICE_QUERY + "/" + mDeviceId)
+                .url(ArgumentsKeys.HISTORY_QUERY + "/device/" + device.get_id())
+                .post(body)
                 .build();
 
         client.newCall(request).enqueue(new Callback() {
@@ -203,7 +245,65 @@ public class DeviceDetailFragment extends Fragment {
             @Override
             public void onResponse(Call call, final Response response) throws IOException {
                 if (!response.isSuccessful()) {
-                    throw new IOException("Unexpected code " + response);
+                    Log.e("createHistory", response.body().string());
+                } else {
+                    try {
+                        JSONObject historyData = new JSONObject(response.body().string());
+                        String historyid = historyData.getString("_id");
+                        device.setLastHistoryId(historyid);
+                        sendHistoryIdToArduino(mAPI.getClient(), historyid, device);
+                    } catch (JSONException e) {
+                        Log.e("createHistory", e.getMessage());
+                    }
+                }
+            }
+        });
+    }
+
+    private void closeHistory(OkHttpClient client, String historyId) {
+        Log.e("closeHistory", ArgumentsKeys.HISTORY_QUERY + "/" + historyId);
+        String data = "{ \"endDate\": \"" + new Date().getTime() + "\"}";
+        MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+        RequestBody body = RequestBody.create(JSON, data);
+        Log.e("JSON", data);
+        Request request = new Request.Builder()
+                .url(ArgumentsKeys.HISTORY_QUERY + "/" + historyId)
+                .patch(body)
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Log.e("Error at closeHistory", e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, final Response response) throws IOException {
+                if (!response.isSuccessful()) {
+                    Log.e("closeHistory", response.body().string());
+                } else {
+
+                }
+            }
+        });
+    }
+
+    private void getDevice(OkHttpClient client) {
+        Log.e("getDevice", ArgumentsKeys.DEVICE_QUERY + "/" + mDeviceId);
+        Request request = new Request.Builder()
+                .url(ArgumentsKeys.DEVICE_QUERY + "/" + mDeviceId)
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Log.e("Error at getDevice", e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, final Response response) throws IOException {
+                if (!response.isSuccessful()) {
+                    throw new IOException("Unexpected code at getDevice" + response);
                 } else {
                     mDevice = mAPI.getDevice(response);
                     mActivity.runOnUiThread(new Runnable() {
@@ -217,8 +317,8 @@ public class DeviceDetailFragment extends Fragment {
         });
     }
 
-    private void getPower(OkHttpClient client) {
-        Log.e("QUERY", mDevice.getIp_address());
+    private void getDeviceInfo(OkHttpClient client) {
+        Log.e("getArduinoInfoDetails", mDevice.getIp_address());
         Request request = new Request.Builder()
                 .url("http://" + mDevice.getIp_address() + "?format=json")
                 .addHeader("Connection", "close")
@@ -227,16 +327,22 @@ public class DeviceDetailFragment extends Fragment {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException ex) {
-                Log.e("Error", "No se puso conectar al dispositivo", ex);
+                Log.e("Error at getArduinoInfo", "No se puso conectar al dispositivo", ex);
             }
 
             @Override
             public void onResponse(Call call, final Response response) throws IOException {
                 if (!response.isSuccessful()) {
-                    throw new IOException("Unexpected code " + response);
+                    throw new IOException("Unexpected code at getArduinoInfo" + response);
                 } else {
-                    final double powerd = mAPI.getPower(response);
-                    mDevice.setPower(powerd);
+                    String[] data = mAPI.getArduinoInfo(response);
+                    if (data[0] != null) {
+                        final double power = Double.parseDouble(data[0]);
+                        mDevice.setPower(power);
+                        final boolean status = data[1].equals("1");
+                        mDevice.setStatus(status);
+                    }
+
                 }
             }
         });
@@ -247,14 +353,15 @@ public class DeviceDetailFragment extends Fragment {
         updatePowerRunnableDetails = new Runnable() {
             @Override
             public void run() {
-                getPower(mAPI.getClient());
+                getDeviceInfo(mAPI.getClient());
                 String powerS = String.format("%.1f", mDevice.getPower());
                 power.setText(powerS + " W");
-                updatePowerHandler.postDelayed(this, 3000);
+                //status.setChecked(mDevice.isStatus());
+                updatePowerHandler.postDelayed(this, 7000);
             }
         };
 
-        updatePowerHandler.postDelayed(updatePowerRunnableDetails, 3000);
+        updatePowerHandler.postDelayed(updatePowerRunnableDetails, 7000);
     }
 
     private void initDeviceView( Device device) {
@@ -262,6 +369,7 @@ public class DeviceDetailFragment extends Fragment {
         ip_address.setText(device.getIp_address());
         status.setChecked(device.isStatus());
         space.setText(device.getSpace().getName());
+        status.setEnabled(true);
         building.setText(device.getBuilding().getName());
 
         if (device.isStatus()) {

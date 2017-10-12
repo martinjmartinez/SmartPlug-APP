@@ -1,9 +1,7 @@
 package com.example.martinjmartinez.proyectofinal.UI.Devices.Adapters;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -23,9 +21,12 @@ import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -81,11 +82,11 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
         final Device device = deviceList.get(position);
         holder.mName.setText(device.getName());
 
-        getStatus(mAPI.getClient(), device);
+        getDeviceInfo(mAPI.getClient(), device);
+
 
         holder.mStatus.setChecked(device.isStatus());
-
-        if (device.isStatus()) {
+        if (holder.mStatus.isChecked()) {
             refreshPower(device, holder);
         }
 
@@ -96,7 +97,7 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
                     refreshPower(device, holder);
                     changeStatus(new API().getClient(), ArgumentsKeys.ON_QUERY, device);
                 } else {
-                    if(updatePowerHandler != null) {
+                    if (updatePowerHandler != null) {
                         holder.mPower.setText("0 W");
                         updatePowerHandler.removeCallbacks(updatePowerRunnable);
                     }
@@ -123,8 +124,6 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
 
             }
         });
-
-
     }
 
     @Override
@@ -133,6 +132,7 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
     }
 
     public void changeStatus(final OkHttpClient client, final String action, final Device device) {
+        Log.e("changeStatus", "http://" + device.getIp_address() + action);
         Request requestAction = new Request.Builder()
                 .url("http://" + device.getIp_address() + action)
                 .build();
@@ -146,21 +146,107 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
             @Override
             public void onResponse(Call call, final Response response) throws IOException {
                 if (!response.isSuccessful()) {
-                    throw new IOException("Unexpected code " + response);
+                    throw new IOException("Unexpected code at changeStatus" + response);
                 } else {
                     updateStatus(new API().getClient(), action, device);
-                    device.setStatus(action.equals(ArgumentsKeys.ON_QUERY) ? true : false);
                 }
             }
         });
     }
 
-    public void updateStatus(final OkHttpClient client, String action, Device device) {
+    private void createHistory(OkHttpClient client, final Device device) {
+        Log.e("createHistory", ArgumentsKeys.HISTORY_QUERY + "/device/" + device.get_id());
+        String data = "{ \"startDate\": \"" + new Date().getTime() + "\"}";
+        MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+        RequestBody body = RequestBody.create(JSON, data);
+        Log.e("JSON", data);
+        Request request = new Request.Builder()
+                .url(ArgumentsKeys.HISTORY_QUERY + "/device/" + device.get_id())
+                .post(body)
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Log.e("Error", e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, final Response response) throws IOException {
+                if (!response.isSuccessful()) {
+                    Log.e("createHistory", response.body().string());
+                } else {
+                    try {
+                        JSONObject historyData = new JSONObject(response.body().string());
+                        String historyid = historyData.getString("_id");
+                        device.setLastHistoryId(historyid);
+                        sendHistoryIdToArduino(mAPI.getClient(), historyid, device);
+                    } catch (JSONException e) {
+                        Log.e("createHistory", e.getMessage());
+                    }
+                }
+            }
+        });
+    }
+
+    public void sendHistoryIdToArduino(final OkHttpClient client, String historyId, Device device) {
+        Log.e("sendHistoryIdToArduino", "http://" + device.getIp_address() + "/historyId?params=" + historyId);
+        Request requestAction = new Request.Builder()
+                .url("http://" + device.getIp_address() + "/historyId?params=" + historyId)
+                .build();
+
+        client.newCall(requestAction).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                call.cancel();
+            }
+
+            @Override
+            public void onResponse(Call call, final Response response) throws IOException {
+                if (!response.isSuccessful()) {
+                    throw new IOException("sendHistoryIdToArduino" + response);
+                } else {
+                    Log.e("sendHistoryIdToArduino", "id sent to arduino");
+                }
+            }
+        });
+    }
+
+    private void closeHistory(OkHttpClient client, String historyId) {
+        Log.e("closeHistory", ArgumentsKeys.HISTORY_QUERY + "/" + historyId);
+        String data = "{ \"endDate\": \"" + new Date().getTime() + "\"}";
+        MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+        RequestBody body = RequestBody.create(JSON, data);
+        Log.e("JSON", data);
+        Request request = new Request.Builder()
+                .url(ArgumentsKeys.HISTORY_QUERY + "/" + historyId)
+                .patch(body)
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Log.e("Error at closeHistory", e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, final Response response) throws IOException {
+                if (!response.isSuccessful()) {
+                    Log.e("closeHistory", response.body().string());
+                } else {
+
+                }
+            }
+        });
+    }
+
+    public void updateStatus(final OkHttpClient client, final String action, final Device device) {
         MediaType JSON = MediaType.parse("application/json; charset=utf-8");
         Device d = new Device();
         d.setStatus(action.equals(ArgumentsKeys.ON_QUERY) ? true : false);
         RequestBody body = RequestBody.create(JSON, d.statusToString());
-
+        Log.e("updateStatus", ArgumentsKeys.DEVICE_QUERY + "/" + device.get_id());
+        Log.e("JSON", d.statusToString());
 
         final Request requestUpdate = new Request.Builder()
                 .url(ArgumentsKeys.DEVICE_QUERY + "/" + device.get_id())
@@ -176,16 +262,22 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
             @Override
             public void onResponse(Call call, final Response response) throws IOException {
                 if (!response.isSuccessful()) {
-                    throw new IOException("Unexpected code " + response);
+                    throw new IOException("Unexpected code at updateStatus" + response);
                 } else {
+                    device.setStatus(action.equals(ArgumentsKeys.ON_QUERY) ? true : false);
+                    if (action.equals(ArgumentsKeys.ON_QUERY)) {
+                        createHistory(mAPI.getClient(), device);
+                    } else {
+                        closeHistory(mAPI.getClient(), device.getLastHistoryId());
+                    }
 
                 }
             }
         });
     }
 
-    private void getPower(OkHttpClient client, final Device mDevice) {
-        Log.e("QUERY", mDevice.getIp_address());
+    private void getDeviceInfo(OkHttpClient client, final Device mDevice) {
+        Log.e("getArduinoInfoAdapter", mDevice.getIp_address());
         Request request = new Request.Builder()
                 .url("http://" + mDevice.getIp_address() + "?format=json")
                 .addHeader("Connection", "close")
@@ -194,43 +286,21 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException ex) {
-                Log.e("Error", "No se puso conectar al dispositivo", ex);
+                Log.e("Error at getArduinoInfo", "No se puso conectar al dispositivo", ex);
             }
 
             @Override
             public void onResponse(Call call, final Response response) throws IOException {
                 if (!response.isSuccessful()) {
-                    throw new IOException("Unexpected code " + response);
+                    throw new IOException("Unexpected code at getArduinoInfo" + response);
                 } else {
-                    final double powerd = mAPI.getPower(response);
-
-                    mDevice.setPower(powerd);
-                }
-            }
-        });
-    }
-
-    private void getStatus(OkHttpClient client, final Device mDevice) {
-        Log.e("QUERY", mDevice.getIp_address());
-        Request request = new Request.Builder()
-                .url("http://" + mDevice.getIp_address() + "?format=json")
-                .addHeader("Connection", "close")
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException ex) {
-                Log.e("Error", "No se puso conectar al dispositivo", ex);
-            }
-
-            @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                if (!response.isSuccessful()) {
-                    throw new IOException("Unexpected code " + response);
-                } else {
-                    final int status = mAPI.getStatus(response);
-
-                    mDevice.setStatus(status == 1);
+                    String[] data = mAPI.getArduinoInfo(response);
+                    if (data[0] != null) {
+                        final double power = Double.parseDouble(data[0]);
+                        mDevice.setPower(power);
+                        final boolean status = data[1].equals("1");
+                        mDevice.setStatus(status);
+                    }
                 }
             }
         });
@@ -241,13 +311,13 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
         updatePowerRunnable = new Runnable() {
             @Override
             public void run() {
-                getPower(mAPI.getClient(), device);
+                getDeviceInfo(mAPI.getClient(), device);
                 String power = String.format("%.1f", device.getPower());
                 holder.mPower.setText(power + " W");
                 notifyDataSetChanged();
             }
         };
 
-        updatePowerHandler.postDelayed(updatePowerRunnable, 3000);
+        updatePowerHandler.postDelayed(updatePowerRunnable, 7000);
     }
 }

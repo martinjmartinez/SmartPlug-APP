@@ -50,6 +50,10 @@ public class API {
             device.setName(deviceData.getString("name"));
             device.setIp_address(deviceData.getString("ip_address"));
             device.setStatus(deviceData.getBoolean("status"));
+            if (deviceData.has("lastHistoryId")) {
+                device.setLastHistoryId(deviceData.getString("lastHistoryId"));
+            }
+
 
             if (deviceData.has("space")) {
                 if (deviceData.get("space") instanceof JSONObject) {
@@ -94,6 +98,10 @@ public class API {
                 device.setName(devices.getJSONObject(i).getString("name"));
                 device.setIp_address(devices.getJSONObject(i).getString("ip_address"));
                 device.setStatus(devices.getJSONObject(i).getBoolean("status"));
+                if (devices.getJSONObject(i).has("lastHistoryId")) {
+                    device.setLastHistoryId(devices.getJSONObject(i).getString("lastHistoryId"));
+                }
+
 
                 if (devices.getJSONObject(i).has("space")) {
                     if (devices.getJSONObject(i).get("space") instanceof JSONObject) {
@@ -148,6 +156,9 @@ public class API {
                         device.setName(devices.getJSONObject(j).getString("name"));
                         device.setStatus(devices.getJSONObject(j).getBoolean("status"));
                         device.setIp_address(devices.getJSONObject(j).getString("ip_address"));
+                        if (devices.getJSONObject(j).has("lastHistoryId")) {
+                            device.setLastHistoryId(devices.getJSONObject(j).getString("lastHistoryId"));
+                        }
 
                         devicesList.add(device);
                     }
@@ -164,35 +175,28 @@ public class API {
         return null;
     }
 
-    public double getPower(Response response) {
+    public String[] getArduinoInfo(Response response) {
+        String[] data = new String[2];
         try {
             JSONObject deviceData = new JSONObject(response.body().string());
             double power = 0;
-            power = deviceData.getJSONObject("variables").getDouble("potencia");
-            Log.e("power", power + "");
-
-            return power;
-
-        } catch (JSONException | IOException e) {
-            Log.e("getPower", e.getMessage());
-        }
-
-        return 0;
-    }
-
-    public int getStatus(Response response) {
-        try {
-            JSONObject deviceData = new JSONObject(response.body().string());
             int status = 0;
+            power = deviceData.getJSONObject("variables").getDouble("potencia");
             status = deviceData.getJSONObject("variables").getInt("status");
 
-            return status;
+            Log.e("power", power + "");
+            Log.e("status", status + "");
+
+            data[0] = String.valueOf(power);
+            data[1] = String.valueOf(status);
+
+            return data;
 
         } catch (JSONException | IOException e) {
-            Log.e("getStatus", e.getMessage());
+            Log.e("getArduinoInfo", e.getMessage());
         }
 
-        return 0;
+        return data;
     }
 
     public List<Space> getSpaceList(Response response) {
@@ -219,6 +223,9 @@ public class API {
                             device.setName(devices.getJSONObject(j).getString("name"));
                             device.setStatus(devices.getJSONObject(j).getBoolean("status"));
                             device.setIp_address(devices.getJSONObject(j).getString("ip_address"));
+                            if (devices.getJSONObject(j).has("lastHistoryId")) {
+                                device.setLastHistoryId(devices.getJSONObject(j).getString("lastHistoryId"));
+                            }
 
                             devicesList.add(device);
                         }
@@ -311,6 +318,10 @@ public class API {
                                     device.setName(devices.getJSONObject(z).getString("name"));
                                     device.setStatus(devices.getJSONObject(z).getBoolean("status"));
                                     device.setIp_address(devices.getJSONObject(z).getString("ip_address"));
+                                    if (devices.getJSONObject(z).has("lastHistoryId")) {
+                                        device.setLastHistoryId(devices.getJSONObject(z).getString("lastHistoryId"));
+                                    }
+
 
                                     buildingDevices.add(device);
                                 }

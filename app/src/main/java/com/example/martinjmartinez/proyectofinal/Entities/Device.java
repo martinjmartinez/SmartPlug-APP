@@ -20,6 +20,16 @@ public class Device {
 
     private double power;
 
+    private String lastHistoryId;
+
+    public String getLastHistoryId() {
+        return lastHistoryId;
+    }
+
+    public void setLastHistoryId(String lastHistoryId) {
+        this.lastHistoryId = lastHistoryId;
+    }
+
     public double getPower() {
         return power;
     }

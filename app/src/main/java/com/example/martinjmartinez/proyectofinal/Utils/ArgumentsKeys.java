@@ -9,6 +9,7 @@ public class ArgumentsKeys {
     static public String BUILDING_QUERY = "https://smartplug-api.herokuapp.com/buildings";
     static public String SPACE_QUERY = "https://smartplug-api.herokuapp.com/spaces";
     static public String DEVICE_QUERY = "https://smartplug-api.herokuapp.com/devices";
+    static public String HISTORY_QUERY = "https://smartplug-api.herokuapp.com/histories";
 
     static public String QUERY = "QUERY";
     static public String BUILDING_ID = "BUILDING_ID";
