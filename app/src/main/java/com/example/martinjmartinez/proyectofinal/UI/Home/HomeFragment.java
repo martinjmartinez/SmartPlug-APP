@@ -65,7 +65,8 @@ public class HomeFragment extends Fragment {
     private SpaceService spaceService;
     private DeviceService deviceService;
 
-    public HomeFragment() {}
+    public HomeFragment() {
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -99,7 +100,7 @@ public class HomeFragment extends Fragment {
         View view = inflater.inflate(R.layout.home_fragment, container, false);
 
         iniVariables(view);
-        getBuilding(mAPI.getClient(), view);
+        getBuilding();
 
         return view;
     }
@@ -171,45 +172,14 @@ public class HomeFragment extends Fragment {
         chart.invalidate(); // refresh
     }
 
-    private void getDevices(List<Space> spaces) {
-        for (Space space : spaces) {
-            mDeviceList.addAll(space.getDevices());
+    private void getBuilding() {
+        mBuilding = buildingService.getBuildingById(mBuildingId);
+        if (!mBuilding.getSpaces().isEmpty()) {
+            generateFakeData();
+            //TODO get devices with more measures
         }
+
+        mDeviceList = mBuilding.getDevices();
         setAdapter(mDeviceList);
-    }
-
-    private void getBuilding(OkHttpClient client, final View view) {
-        Log.e("QUERY", ArgumentsKeys.BUILDING_QUERY + "/" + mBuildingId);
-        Request request = new Request.Builder()
-                .url(ArgumentsKeys.BUILDING_QUERY + "/" + mBuildingId)
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.e("Error", e.getMessage());
-            }
-
-            @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                if (!response.isSuccessful()) {
-                    throw new IOException("Unexpected code " + response);
-                } else {
-                    //todo
-
-                    mActivity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mBuilding = buildingService.getBuildingById(mBuildingId);
-                            if (!mBuilding.getSpaces().isEmpty()) {
-                                generateFakeData();
-                                //TODO get devices with more measures
-                                getDevices(mBuilding.getSpaces());
-                            }
-                        }
-                    });
-                }
-            }
-        });
     }
 }

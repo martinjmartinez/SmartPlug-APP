@@ -2,14 +2,17 @@ package com.example.martinjmartinez.proyectofinal.UI.Devices.Fragments;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -18,8 +21,11 @@ import com.example.martinjmartinez.proyectofinal.Entities.Device;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
+import com.example.martinjmartinez.proyectofinal.UI.Spaces.Fragments.SpaceUpdateFragment;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
 import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
+import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
+import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -56,6 +62,8 @@ public class DeviceDetailFragment extends Fragment {
     private Handler updatePowerHandler;
     private Runnable updatePowerRunnableDetails;
     private DeviceService deviceService;
+    private Button mEditButton;
+    private Button mDeleteButton;
 
 
     public DeviceDetailFragment() {
@@ -118,9 +126,50 @@ public class DeviceDetailFragment extends Fragment {
         building = (TextView) view.findViewById(R.id.device_detail_building);
         power = (TextView) view.findViewById(R.id.device_detail_power);
         status = (Switch) view.findViewById(R.id.device_detail_status);
+        mEditButton = (Button) view.findViewById(R.id.device_detail_update);
+        mDeleteButton = (Button) view.findViewById(R.id.device_detail_delete);
     }
 
     private void initListeners() {
+        mEditButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DeviceUpdateFragment deviceUpdateFragment = new DeviceUpdateFragment();
+                Bundle bundle = new Bundle();
+
+                bundle.putString(ArgumentsKeys.DEVICE_ID, mDeviceId);
+                deviceUpdateFragment.setArguments(bundle);
+
+                Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.DEVICE_DETAIL_FRAGMENT),
+                        deviceUpdateFragment, FragmentKeys.DEVICE_UPDATE_FRAGMENT, true);
+            }
+        });
+
+        mDeleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialog.Builder builder = Utils.createDialog(mActivity, "Delete Device", "Do you want to delete this Device?");
+
+                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        deleteSpace(mAPI.getClient());
+                    }
+                });
+
+                builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+
+                // Create the AlertDialog
+                AlertDialog dialog = builder.create();
+                dialog.show();
+
+            }
+        });
 
         status.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -143,6 +192,36 @@ public class DeviceDetailFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 mMainActivity.onBackPressed();
+            }
+        });
+    }
+
+    private void deleteSpace(OkHttpClient client) {
+        Log.e("QUERY", ArgumentsKeys.DEVICE_QUERY);
+        Request request = new Request.Builder()
+                .url(ArgumentsKeys.DEVICE_QUERY + "/" + mDeviceId)
+                .delete()
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Log.e("Error", e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, final Response response) throws IOException {
+                if (!response.isSuccessful()) {
+                    Log.e("ERROR", response.body().string());
+                } else {
+                    mActivity.runOnUiThread(new Runnable( ) {
+                        @Override
+                        public void run() {
+                            deviceService.deleteDevice(mDeviceId);
+                            mActivity.onBackPressed();
+                        }
+                    });
+                }
             }
         });
     }
@@ -348,7 +427,7 @@ public class DeviceDetailFragment extends Fragment {
         name.setText(device.getName());
         ip_address.setText(device.getIp_address());
         status.setChecked(device.isStatus());
-        space.setText(device.getSpace().getName());
+        space.setText(device.getSpace() == null ? "" : device.getSpace().getName());
         status.setEnabled(true);
         building.setText(device.getBuilding().getName());
 

@@ -93,12 +93,14 @@ public class Device extends RealmObject {
     }
 
     public String deviceToString() {
+        String id = space == null ? "" : ",\"space\":\"" + space.get_id() + "\"";
+
         return "{" +
                 "\"name\":\"" + name + "\"," +
                 "\"ip_address\":\"" + ip_address + "\"," +
                 "\"status\":" + status + "," +
-                "\"building\":\"" + building.get_id() + "\"," +
-                "\"space\":\"" + space.get_id() + "\"" +
+                "\"building\":\"" + building.get_id() + "\"" +
+                  id +
                 '}';
     }
 }

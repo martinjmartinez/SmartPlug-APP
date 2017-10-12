@@ -19,6 +19,7 @@ import android.widget.Toast;
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
+import com.example.martinjmartinez.proyectofinal.UI.Home.HomeFragment;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
 import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
@@ -166,7 +167,11 @@ public class BuildingCreateFragment extends Fragment {
                         @Override
                         public void run() {
                             mAPI.getBuildingFromCloud(response);
-                            mActivity.onBackPressed();
+                            if (buildingService.allBuildings().size() > 1 ) {
+                                mActivity.onBackPressed();
+                            } else {
+                                mMainActivity.prepareHomeFragment(false);
+                            }
                         }
                     });
                 }

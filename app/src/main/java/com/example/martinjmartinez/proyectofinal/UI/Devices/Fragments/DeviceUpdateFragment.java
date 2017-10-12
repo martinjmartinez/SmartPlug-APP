@@ -25,15 +25,11 @@ import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
 import com.example.martinjmartinez.proyectofinal.Services.SpaceService;
-import com.example.martinjmartinez.proyectofinal.UI.Buildings.Adapters.BuildingSpinnerAdapter;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.UI.Spaces.Adapters.SpaceSpinnerAdapter;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
 import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.List;
@@ -48,10 +44,10 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 /**
- * Created by MartinJMartinez on 7/19/2017.
+ * Created by MartinJMartinez on 10/12/2017.
  */
 
-public class DeviceCreateFragment extends Fragment {
+public class DeviceUpdateFragment extends Fragment {
 
     private Device mDevice;
     private API mAPI;
@@ -73,7 +69,8 @@ public class DeviceCreateFragment extends Fragment {
     private SpaceService spaceService;
     private BuildingService buildingService;
 
-    public DeviceCreateFragment() {
+    public DeviceUpdateFragment() {
+
     }
 
     @Override
@@ -81,8 +78,7 @@ public class DeviceCreateFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         Bundle bundle = this.getArguments();
-        mSpaceId = bundle != null ? bundle.getString(ArgumentsKeys.SPACE_ID, "") : "";
-        mBuildingId = bundle != null ? bundle.getString(ArgumentsKeys.BUILDING_ID, "") : "";
+        mDeviceId = bundle != null ? bundle.getString(ArgumentsKeys.DEVICE_ID, "") : "";
     }
 
     @Override
@@ -90,16 +86,8 @@ public class DeviceCreateFragment extends Fragment {
         View view = inflater.inflate(R.layout.device_creation_fragment, container, false);
 
         iniVariables(view);
+        getDevice();
         initListeners();
-        if (!mSpaceId.isEmpty()) {
-            mSpace = spaceService.getSpaceById(mSpaceId);
-            mBuilding = mSpace.getBuilding();
-        } else {
-            mBuilding = buildingService.getBuildingById(mBuildingId);
-
-        }
-
-        initView();
 
         return view;
     }
@@ -116,7 +104,7 @@ public class DeviceCreateFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        mMainActivity.getSupportActionBar().setTitle("New Device");
+        mMainActivity.getSupportActionBar().setTitle("Device Edit");
     }
 
     @Override
@@ -126,14 +114,13 @@ public class DeviceCreateFragment extends Fragment {
         if (mMainActivity.getSupportFragmentManager().getBackStackEntryCount() <= 1) {
             mMainActivity.toggleDrawerIcon(true, 0, null);
         }
-
     }
 
     private void iniVariables(View view) {
-        mAPI = new API();
         deviceService = new DeviceService(Realm.getDefaultInstance());
         buildingService = new BuildingService(Realm.getDefaultInstance());
         spaceService = new SpaceService(Realm.getDefaultInstance());
+        mAPI = new API();
         name = (EditText) view.findViewById(R.id.device_create_name);
         ipAddress = (EditText) view.findViewById(R.id.device_create_ip);
         displayName = (TextView) view.findViewById(R.id.device_create_display_name);
@@ -147,12 +134,12 @@ public class DeviceCreateFragment extends Fragment {
         mSpaceSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                mSpace = mBuilding.getSpaces().get(position);
+                mSpace = mDevice.getBuilding().getSpaces().get(position);
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-                mSpace = mBuilding.getSpaces().get(0);
+                mSpace = mDevice.getBuilding().getSpaces().get(0);
             }
         });
 
@@ -176,17 +163,12 @@ public class DeviceCreateFragment extends Fragment {
         saveDevice.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mDevice = new Device();
-                if (!Utils.isEditTextEmpty(name) && mDevice != null) {
-                    mDevice.setName(name.getText().toString());
-                    mDevice.setIp_address(ipAddress.getText().toString());
-                    mDevice.setStatus(false);
-                    mDevice.setBuilding(mBuilding);
-                    mDevice.setSpace(mSpace);
-                    createDevice(mAPI.getClient(), mDevice.deviceToString());
-                    mMainActivity.onBackPressed();
+                if (!Utils.isEditTextEmpty(name)) {
+                    deviceService.updateDevice(mDeviceId, name.getText().toString(), mDevice.isStatus(), ipAddress.getText().toString(), mSpace.get_id(), mSpace.getBuilding().get_id());
+                    Device newDevice = deviceService.getDeviceById(mDeviceId);
+                    updateDevice(mAPI.getClient(), newDevice.deviceToString());
                 } else {
-                    Toast.makeText(getActivity(), "Please, name your Space.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), "Please, name your device.", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -199,14 +181,14 @@ public class DeviceCreateFragment extends Fragment {
         });
     }
 
-    private void createDevice(OkHttpClient client, String data) {
+    private void updateDevice(OkHttpClient client, String data) {
         Log.e("QUERY", ArgumentsKeys.DEVICE_QUERY);
         MediaType JSON = MediaType.parse("application/json; charset=utf-8");
         RequestBody body = RequestBody.create(JSON, data);
         Log.e("JSON", data);
         Request request = new Request.Builder()
-                .url(ArgumentsKeys.DEVICE_QUERY)
-                .post(body)
+                .url(ArgumentsKeys.DEVICE_QUERY + "/" + mDeviceId)
+                .patch(body)
                 .build();
 
         client.newCall(request).enqueue(new Callback() {
@@ -218,12 +200,12 @@ public class DeviceCreateFragment extends Fragment {
             @Override
             public void onResponse(Call call, final Response response) throws IOException {
                 if (!response.isSuccessful()) {
-                    Log.e("ERROR1", response.body().string());
+                    Log.e("ERROR12", response.body().string());
                 } else {
+                    Log.e("RESPONSE12", response.body().string());
                     mActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            mAPI.getDeviceFromCloud(response, mSpaceId, mBuildingId);
                             mActivity.onBackPressed();
                         }
                     });
@@ -232,6 +214,17 @@ public class DeviceCreateFragment extends Fragment {
         });
     }
 
+    private void getDevice() {
+        mDevice = deviceService.getDeviceById(mDeviceId);
+
+        name.setText(mDevice.getName());
+        ipAddress.setText(mDevice.getIp_address());
+        displayName.setText(mDevice.getName());
+        deviceBuilding.setText(mDevice.getBuilding().getName());
+        mSpaceSpinner.setVisibility(View.VISIBLE);
+        deviceSpace.setVisibility(View.GONE);
+        setUpSpacesSpinner(mDevice.getBuilding().getSpaces());
+    }
 
     public void setUpSpacesSpinner(List<Space> items) {
         if (items.size() != 0) {
@@ -241,20 +234,5 @@ public class DeviceCreateFragment extends Fragment {
             mSpaceSpinner.setEnabled(false);
         }
 
-    }
-
-    private void initView() {
-        if (mSpace != null) {
-            mSpaceSpinner.setVisibility(View.GONE);
-            deviceSpace.setVisibility(View.VISIBLE);
-            deviceBuilding.setText(mSpace.getBuilding().getName());
-            deviceSpace.setText(mSpace.getName());
-
-        } else {
-            mSpaceSpinner.setVisibility(View.VISIBLE);
-            deviceSpace.setVisibility(View.GONE);
-            setUpSpacesSpinner(mBuilding.getSpaces());
-            deviceBuilding.setText(mBuilding.getName());
-        }
     }
 }

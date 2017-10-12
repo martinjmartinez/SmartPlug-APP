@@ -135,7 +135,8 @@ public class BuildingListFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 BuildingCreateFragment buildingCreateFragment = new BuildingCreateFragment();
-                Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.BUILDING_LIST_FRAGMENT), buildingCreateFragment, FragmentKeys.BUILDING_CREATION_FRAGMENT, true);
+                boolean addToBackStack = buildingService.allBuildings().size() == 0 ? false : true;
+                Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.BUILDING_LIST_FRAGMENT), buildingCreateFragment, FragmentKeys.BUILDING_CREATION_FRAGMENT, addToBackStack);
 
             }
         });

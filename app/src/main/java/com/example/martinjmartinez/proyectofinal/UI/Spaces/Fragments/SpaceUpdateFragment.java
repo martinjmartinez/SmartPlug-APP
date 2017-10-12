@@ -25,9 +25,6 @@ import com.example.martinjmartinez.proyectofinal.Utils.API;
 import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.IOException;
 
 import io.realm.Realm;
@@ -38,10 +35,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-
-/**
- * Created by MartinJMartinez on 7/17/2017.
- */
 
 public class SpaceUpdateFragment extends Fragment {
 
@@ -101,7 +94,6 @@ public class SpaceUpdateFragment extends Fragment {
         if (mMainActivity.getSupportFragmentManager().getBackStackEntryCount() <= 1) {
             mMainActivity.toggleDrawerIcon(true, 0, null);
         }
-
     }
 
     private void iniVariables(View view) {

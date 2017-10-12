@@ -187,10 +187,10 @@ public class SpaceDetailFragment extends Fragment {
                 if (!response.isSuccessful()) {
                     Log.e("ERROR", response.body().string());
                 } else {
-                    spaceService.deleteSpace(mSpaceId);
-                    mActivity.runOnUiThread(new Runnable() {
+                    mActivity.runOnUiThread(new Runnable( ) {
                         @Override
                         public void run() {
+                            spaceService.deleteSpace(mSpaceId);
                             mActivity.onBackPressed();
                         }
                     });

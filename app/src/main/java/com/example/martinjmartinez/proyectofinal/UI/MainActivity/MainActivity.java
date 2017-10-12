@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
         initVariables();
         initListeners();
 
-        getBuildings(mAPI.getClient(), false);
+        getBuildings(false);
 
     }
 
@@ -117,7 +117,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
 
         if (mActionBarDrawerToggle.onOptionsItemSelected(item)) {
-            getBuildings(mAPI.getClient(), true);
+            getBuildings(true);
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -253,47 +253,22 @@ public class MainActivity extends AppCompatActivity {
         fragmentTransaction.commitAllowingStateLoss();
     }
 
-    public void getBuildings(OkHttpClient client, final boolean refreshSpinner) {
-        Request request = new Request.Builder()
-                .url(ArgumentsKeys.BUILDING_QUERY)
-                .build();
+    public void getBuildings(final boolean refreshSpinner) {
+        mBuildingList = buildingService.allBuildings();
 
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.e("Error", e.getMessage());
+        if (!mBuildingList.isEmpty()) {
+            if (refreshSpinner) {
+                setUpBuildingSpinner(mBuildingList);
+            } else {
+                prepareHomeFragment(false);
             }
+        } else {
+            loadContentFragment(mBuildingListFragment, FragmentKeys.BUILDING_LIST_FRAGMENT, false);
+        }
 
-            @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                if (!response.isSuccessful()) {
-                    throw new IOException("Unexpected code " + response);
-                } else {
-
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mAPI.getBuildingsFromCloud(response);
-
-                            mBuildingList = buildingService.allBuildings();
-                            if (!mBuildingList.isEmpty()) {
-                                if (refreshSpinner) {
-                                    setUpBuildingSpinner(mBuildingList);
-                                } else {
-                                    prepareHomeFragment(false);
-                                }
-                            } else {
-                                loadContentFragment(mBuildingListFragment, FragmentKeys.BUILDING_LIST_FRAGMENT, true);
-                            }
-                        }
-                    });
-                }
-            }
-        });
     }
 
     public void toggleDrawerIcon(boolean status, int icon, View.OnClickListener onClickListener) {
-
         if (status) {
             initDrawerMenu();
 
@@ -308,8 +283,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if(getSupportFragmentManager().getBackStackEntryCount() == 0){
-
+        if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
             if (doubleBackToExitPressedOnce) {
                 super.onBackPressed();
                 return;
@@ -322,13 +296,12 @@ public class MainActivity extends AppCompatActivity {
 
                 @Override
                 public void run() {
-                    doubleBackToExitPressedOnce=false;
+                    doubleBackToExitPressedOnce = false;
                 }
             }, 2000);
         } else {
             super.onBackPressed();
         }
-
     }
 }
 

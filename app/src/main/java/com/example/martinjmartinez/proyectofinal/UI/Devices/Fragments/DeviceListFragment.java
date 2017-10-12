@@ -134,7 +134,7 @@ public class DeviceListFragment extends Fragment {
                 bundle.putString(ArgumentsKeys.BUILDING_ID, mBuildingId);
                 bundle.putString(ArgumentsKeys.SPACE_ID, mSpaceId);
                 deviceCreateFragment.setArguments(bundle);
-                Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.DEVICE_LIST_FRAGMENT), deviceCreateFragment, FragmentKeys.DEVICE_DETAIL_FRAGMENT, true);
+                Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.DEVICE_LIST_FRAGMENT), deviceCreateFragment, FragmentKeys.DEVICE_CREATION_FRAGMENT, true);
             }
         });
 
