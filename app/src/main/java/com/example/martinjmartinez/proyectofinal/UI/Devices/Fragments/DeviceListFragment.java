@@ -3,7 +3,6 @@ package com.example.martinjmartinez.proyectofinal.UI.Devices.Fragments;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
@@ -13,13 +12,15 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.GridView;
+import android.widget.LinearLayout;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
 import com.example.martinjmartinez.proyectofinal.Entities.Device;
 import com.example.martinjmartinez.proyectofinal.Entities.Space;
 import com.example.martinjmartinez.proyectofinal.R;
+import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
+import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
+import com.example.martinjmartinez.proyectofinal.Services.SpaceService;
 import com.example.martinjmartinez.proyectofinal.UI.Devices.Adapters.DeviceListAdapter;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
@@ -27,21 +28,16 @@ import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import io.realm.Realm;
 
 /**
  * Created by MartinJMartinez on 7/14/2017.
  */
 
-public class DeviceListFragment extends Fragment{
+public class DeviceListFragment extends Fragment {
 
     private RecyclerView mGridView;
     private API mAPI;
@@ -53,8 +49,13 @@ public class DeviceListFragment extends Fragment{
     private List<Device> mDevicesList;
     private MainActivity mMainActivity;
     private DeviceListAdapter mDevicesListAdapter;
+    private DeviceService deviceService;
+    private BuildingService buildingService;
+    private SpaceService spaceService;
+    private LinearLayout mEmptyDeviceListLayout;
 
-    public DeviceListFragment() {}
+    public DeviceListFragment() {
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -77,7 +78,7 @@ public class DeviceListFragment extends Fragment{
     public void onDetach() {
         super.onDetach();
 
-        if(mMainActivity.getSupportFragmentManager().getBackStackEntryCount() <= 1){
+        if (mMainActivity.getSupportFragmentManager().getBackStackEntryCount() <= 1) {
             mMainActivity.toggleDrawerIcon(true, 0, null);
         }
 
@@ -96,12 +97,14 @@ public class DeviceListFragment extends Fragment{
 
         iniVariables(view);
         if (!mBuildingId.isEmpty() && mSpaceId.isEmpty()) {
-            getDevicesByBuilding(mAPI.getClient());
+            Log.e("DEVICES", "POR BUILDING");
+            getDevicesByBuilding();
         } else if (mBuildingId.isEmpty() && !mSpaceId.isEmpty()) {
-            getDevicesBySpace(mAPI.getClient());
+            Log.e("DEVICES", "POR SPACES");
+            getDevicesBySpace();
         }
         initListeners();
-        
+
         return view;
     }
 
@@ -113,10 +116,14 @@ public class DeviceListFragment extends Fragment{
     }
 
     private void iniVariables(View view) {
-        mDevicesList =  new ArrayList<>();
+        deviceService = new DeviceService(Realm.getDefaultInstance());
+        buildingService = new BuildingService(Realm.getDefaultInstance());
+        spaceService = new SpaceService(Realm.getDefaultInstance());
+        mDevicesList = new ArrayList<>();
         mGridView = (RecyclerView) view.findViewById(R.id.devices_grid);
-        mAPI =  new API();
+        mAPI = new API();
         mAddDeviceButton = (FloatingActionButton) view.findViewById(R.id.add_device_button);
+        mEmptyDeviceListLayout = (LinearLayout) view.findViewById(R.id.empty_device_list_layout);
     }
 
     private void initListeners() {
@@ -128,7 +135,7 @@ public class DeviceListFragment extends Fragment{
                 bundle.putString(ArgumentsKeys.BUILDING_ID, mBuildingId);
                 bundle.putString(ArgumentsKeys.SPACE_ID, mSpaceId);
                 deviceCreateFragment.setArguments(bundle);
-                Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.DEVICE_LIST_FRAGMENT), deviceCreateFragment, FragmentKeys.DEVICE_DETAIL_FRAGMENT, true);
+                Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.DEVICE_LIST_FRAGMENT), deviceCreateFragment, FragmentKeys.DEVICE_CREATION_FRAGMENT, true);
             }
         });
 
@@ -139,69 +146,30 @@ public class DeviceListFragment extends Fragment{
             }
         });
     }
-    private void getDevicesByBuilding(OkHttpClient client) {
-        Log.e("QUERY", ArgumentsKeys.BUILDING_QUERY + "/" + mBuildingId + "/devices");
-        Request request = new Request.Builder()
-                .url(ArgumentsKeys.BUILDING_QUERY + "/" + mBuildingId + "/devices")
-                .build();
 
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.e("Error", e.getMessage());
-            }
-
-            @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                if (!response.isSuccessful()) {
-                    throw new IOException("Unexpected code " + response);
-                } else {
-                    mDevicesList = mAPI.getDeviceList(response);
-                    mActivity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-
-                            initDevicesList(mDevicesList);
-                        }
-                    });
-                }
-            }
-        });
+    private void getDevicesByBuilding() {
+        mDevicesList = buildingService.getBuildingById(mBuildingId).getDevices();
+        shouldEmptyMessageShow(mDevicesList);
     }
 
-    private void getDevicesBySpace(OkHttpClient client) {
-        Log.e("QUERY", ArgumentsKeys.SPACE_QUERY + "/" + mSpaceId +"/devices");
-        Request request = new Request.Builder()
-                .url(ArgumentsKeys.SPACE_QUERY + "/" + mSpaceId +"/devices")
-                .build();
+    private void getDevicesBySpace() {
+        mDevicesList = spaceService.getSpaceById(mSpaceId).getDevices();
+       shouldEmptyMessageShow(mDevicesList);
+    }
 
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.e("Error", e.getMessage());
-            }
-
-            @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                if (!response.isSuccessful()) {
-                    throw new IOException("Unexpected code " + response);
-                } else {
-                    mDevicesList = mAPI.getDeviceList(response);
-                    mActivity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-
-                            initDevicesList(mDevicesList);
-                        }
-                    });
-                }
-            }
-        });
+    private void shouldEmptyMessageShow(List<Device> deviceList) {
+        if (!mDevicesList.isEmpty()) {
+            mEmptyDeviceListLayout.setVisibility(View.GONE);
+            initDevicesList(mDevicesList);
+        } else {
+            mGridView.setVisibility(View.GONE);
+            mEmptyDeviceListLayout.setVisibility(View.VISIBLE);
+        }
     }
 
     private void initDevicesList(List<Device> devicesList) {
-        mGridView.setLayoutManager(new GridLayoutManager(mActivity, 3));
-        mDevicesListAdapter = new DeviceListAdapter(devicesList);
+        mGridView.setLayoutManager(new GridLayoutManager(mActivity, 2));
+        mDevicesListAdapter = new DeviceListAdapter(devicesList, getActivity(), this);
         mGridView.setAdapter(mDevicesListAdapter);
     }
 }

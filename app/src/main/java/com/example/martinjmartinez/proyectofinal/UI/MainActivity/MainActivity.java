@@ -21,6 +21,7 @@ import android.widget.Toast;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
 import com.example.martinjmartinez.proyectofinal.R;
+import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.UI.Buildings.Adapters.BuildingSpinnerAdapter;
 import com.example.martinjmartinez.proyectofinal.UI.Buildings.Fragments.BuildingCreateFragment;
 import com.example.martinjmartinez.proyectofinal.UI.Buildings.Fragments.BuildingListFragment;
@@ -34,6 +35,8 @@ import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
 import java.io.IOException;
 import java.util.List;
 
+import io.realm.Realm;
+import io.realm.RealmConfiguration;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
@@ -57,18 +60,7 @@ public class MainActivity extends AppCompatActivity {
     private Activity mActivity;
     private int mLastBuildingSelected;
     private boolean doubleBackToExitPressedOnce;
-
-    public Toolbar getToolbar() {
-        return mToolbar;
-    }
-
-    public DrawerLayout getDrawerLayout() {
-        return mDrawerLayout;
-    }
-
-    public NavigationView getNavigationView() {
-        return mNavigationView;
-    }
+    private BuildingService buildingService;
 
     public ActionBarDrawerToggle getActionBarDrawerToggle() {
         return mActionBarDrawerToggle;
@@ -87,12 +79,13 @@ public class MainActivity extends AppCompatActivity {
         initVariables();
         initListeners();
 
-        getBuildings(mAPI.getClient(), false);
+        getBuildings(false);
 
     }
 
 
     public void initVariables() {
+        buildingService = new BuildingService(Realm.getDefaultInstance());
         mDeviceListFragment = new DeviceListFragment();
         mBuildingListFragment = new BuildingListFragment();
         mAPI = new API();
@@ -124,7 +117,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
 
         if (mActionBarDrawerToggle.onOptionsItemSelected(item)) {
-            getBuildings(mAPI.getClient(), true);
+            getBuildings(true);
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -178,6 +171,20 @@ public class MainActivity extends AppCompatActivity {
                         }
 
                         mDrawerLayout.closeDrawer(Gravity.START);
+                        break;
+
+                    case (R.id.nav_statistics):
+                        //TODO create statistics fragment
+//                        BuildingListFragment buildingListFragment = (BuildingListFragment) getSupportFragmentManager().findFragmentByTag(FragmentKeys.BUILDING_LIST_FRAGMENT);
+//                        if (buildingListFragment != null) {
+//                            if (!buildingListFragment.isVisible()) {
+//                                loadContentFragment(buildingListFragment, FragmentKeys.BUILDING_LIST_FRAGMENT, false);
+//                            }
+//                        } else {
+//                            loadContentFragment(mBuildingListFragment, FragmentKeys.BUILDING_LIST_FRAGMENT, true);
+//                        }
+//
+//                        mDrawerLayout.closeDrawer(Gravity.START);
                         break;
                 }
                 return false;
@@ -260,45 +267,22 @@ public class MainActivity extends AppCompatActivity {
         fragmentTransaction.commitAllowingStateLoss();
     }
 
-    public void getBuildings(OkHttpClient client, final boolean refreshSpinner) {
-        Request request = new Request.Builder()
-                .url(ArgumentsKeys.BUILDING_QUERY)
-                .build();
+    public void getBuildings(final boolean refreshSpinner) {
+        mBuildingList = buildingService.allBuildings();
 
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.e("Error", e.getMessage());
+        if (!mBuildingList.isEmpty()) {
+            if (refreshSpinner) {
+                setUpBuildingSpinner(mBuildingList);
+            } else {
+                prepareHomeFragment(false);
             }
+        } else {
+            loadContentFragment(mBuildingListFragment, FragmentKeys.BUILDING_LIST_FRAGMENT, false);
+        }
 
-            @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                if (!response.isSuccessful()) {
-                    throw new IOException("Unexpected code " + response);
-                } else {
-                    mBuildingList = mAPI.getBuildingList(response);
-
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (!mBuildingList.isEmpty()) {
-                                if (refreshSpinner) {
-                                    setUpBuildingSpinner(mBuildingList);
-                                } else {
-                                    prepareHomeFragment(false);
-                                }
-                            } else {
-                                loadContentFragment(mBuildingListFragment, FragmentKeys.BUILDING_LIST_FRAGMENT, true);
-                            }
-                        }
-                    });
-                }
-            }
-        });
     }
 
     public void toggleDrawerIcon(boolean status, int icon, View.OnClickListener onClickListener) {
-
         if (status) {
             initDrawerMenu();
 
@@ -313,8 +297,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if(getSupportFragmentManager().getBackStackEntryCount() == 0){
-
+        if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
             if (doubleBackToExitPressedOnce) {
                 super.onBackPressed();
                 return;
@@ -327,13 +310,12 @@ public class MainActivity extends AppCompatActivity {
 
                 @Override
                 public void run() {
-                    doubleBackToExitPressedOnce=false;
+                    doubleBackToExitPressedOnce = false;
                 }
             }, 2000);
         } else {
             super.onBackPressed();
         }
-
     }
 }
 

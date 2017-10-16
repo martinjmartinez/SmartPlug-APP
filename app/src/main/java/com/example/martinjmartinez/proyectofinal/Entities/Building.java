@@ -1,18 +1,37 @@
 package com.example.martinjmartinez.proyectofinal.Entities;
 
-import java.util.List;
+import io.realm.RealmObject;
+import io.realm.RealmResults;
+import io.realm.annotations.LinkingObjects;
+import io.realm.annotations.PrimaryKey;
 
-/**
- * Created by MartinJMartinez on 7/9/2017.
- */
+public class Building  extends RealmObject{
 
-public class Building {
-
+    @PrimaryKey
     private String _id;
 
     private String name;
 
-    private List<Space> spaces;
+    private double averageConsumption;
+
+    @LinkingObjects("building")
+    private final RealmResults<Space> spaces = null;
+
+    @LinkingObjects("building")
+    private final RealmResults<Device> devices = null;
+
+
+    public RealmResults<Device> getDevices() {
+        return devices;
+    }
+
+    public double getAverageConsumption() {
+        return averageConsumption;
+    }
+
+    public void setAverageConsumption(double averageConsumption) {
+        this.averageConsumption = averageConsumption;
+    }
 
     public String get_id() {
         return _id;
@@ -30,12 +49,8 @@ public class Building {
         this.name = name;
     }
 
-    public List<Space> getSpaces() {
+    public RealmResults<Space> getSpaces() {
         return spaces;
-    }
-
-    public void setSpaces(List<Space> spaces) {
-        this.spaces = spaces;
     }
 
     @Override

@@ -1,4 +1,4 @@
-package com.example.martinjmartinez.proyectofinal.UI.Buildings.Fragments;
+package com.example.martinjmartinez.proyectofinal.UI.Devices.Fragments;
 
 import android.app.Activity;
 import android.content.Context;
@@ -11,20 +11,28 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
+import com.example.martinjmartinez.proyectofinal.Entities.Device;
+import com.example.martinjmartinez.proyectofinal.Entities.Space;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
+import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
+import com.example.martinjmartinez.proyectofinal.Services.SpaceService;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
+import com.example.martinjmartinez.proyectofinal.UI.Spaces.Adapters.SpaceSpinnerAdapter;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
 import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 
 import java.io.IOException;
+import java.util.List;
 
 import io.realm.Realm;
 import okhttp3.Call;
@@ -36,22 +44,33 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 /**
- * Created by MartinJMartinez on 7/17/2017.
+ * Created by MartinJMartinez on 10/12/2017.
  */
 
-public class BuildingUpdateFragment extends Fragment {
+public class DeviceUpdateFragment extends Fragment {
 
-    private Building mBuilding;
+    private Device mDevice;
     private API mAPI;
     private Activity mActivity;
     private String mBuildingId;
     private EditText name;
+    private EditText ipAddress;
     private TextView displayName;
-    private Button updateBuilding;
+    private TextView deviceBuilding;
+    private TextView deviceSpace;
+    private Button saveDevice;
+    private String mSpaceId, mDeviceId;
+    private Space mSpace;
+    private Building mBuilding;
+    private Spinner mSpaceSpinner;
+    private SpaceSpinnerAdapter mSpaceSpinnerAdapter;
     private MainActivity mMainActivity;
+    private DeviceService deviceService;
+    private SpaceService spaceService;
     private BuildingService buildingService;
 
-    public BuildingUpdateFragment() {
+    public DeviceUpdateFragment() {
+
     }
 
     @Override
@@ -59,19 +78,15 @@ public class BuildingUpdateFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         Bundle bundle = this.getArguments();
-        if (bundle != null) {
-            mBuildingId = bundle.getString(ArgumentsKeys.BUILDING_ID, "");
-        } else {
-            mBuildingId = "";
-        }
+        mDeviceId = bundle != null ? bundle.getString(ArgumentsKeys.DEVICE_ID, "") : "";
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.building_creation_fragment, container, false);
+        View view = inflater.inflate(R.layout.device_creation_fragment, container, false);
 
         iniVariables(view);
-        getBuilding(mAPI.getClient());
+        getDevice();
         initListeners();
 
         return view;
@@ -83,14 +98,13 @@ public class BuildingUpdateFragment extends Fragment {
 
         mActivity = getActivity();
         mMainActivity = (MainActivity) mActivity;
-
     }
 
     @Override
     public void onResume() {
         super.onResume();
 
-        mMainActivity.getSupportActionBar().setTitle("Building Edit");
+        mMainActivity.getSupportActionBar().setTitle("Device Edit");
     }
 
     @Override
@@ -100,19 +114,35 @@ public class BuildingUpdateFragment extends Fragment {
         if (mMainActivity.getSupportFragmentManager().getBackStackEntryCount() <= 1) {
             mMainActivity.toggleDrawerIcon(true, 0, null);
         }
-
     }
 
     private void iniVariables(View view) {
+        deviceService = new DeviceService(Realm.getDefaultInstance());
         buildingService = new BuildingService(Realm.getDefaultInstance());
-        mBuilding = new Building();
+        spaceService = new SpaceService(Realm.getDefaultInstance());
         mAPI = new API();
-        name = (EditText) view.findViewById(R.id.building_create_name);
-        displayName = (TextView) view.findViewById(R.id.building_create_display_name);
-        updateBuilding = (Button) view.findViewById(R.id.building_create_save_button);
+        name = (EditText) view.findViewById(R.id.device_create_name);
+        ipAddress = (EditText) view.findViewById(R.id.device_create_ip);
+        displayName = (TextView) view.findViewById(R.id.device_create_display_name);
+        deviceBuilding = (TextView) view.findViewById(R.id.device_create_building);
+        deviceSpace = (TextView) view.findViewById(R.id.device_create_space);
+        saveDevice = (Button) view.findViewById(R.id.device_create_save_button);
+        mSpaceSpinner = (Spinner) view.findViewById(R.id.device_create_space_spinner);
     }
 
     private void initListeners() {
+        mSpaceSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                mSpace = mDevice.getBuilding().getSpaces().get(position);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                mSpace = mDevice.getBuilding().getSpaces().get(0);
+            }
+        });
+
         name.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -130,21 +160,15 @@ public class BuildingUpdateFragment extends Fragment {
             }
         });
 
-        updateBuilding.setOnClickListener(new View.OnClickListener() {
+        saveDevice.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (!Utils.isEditTextEmpty(name)) {
-                    if (!name.getText().toString().equals(mBuilding.getName())) {
-                        buildingService.updateBuildingName(mBuildingId, name.getText().toString());
-
-                        Building building = buildingService.getBuildingById(mBuildingId);
-
-                        updateBuilding(mAPI.getClient(), building.toString());
-                    } else {
-                        Toast.makeText(getActivity(), "Please, update something.", Toast.LENGTH_SHORT).show();
-                    }
+                    deviceService.updateDevice(mDeviceId, name.getText().toString(), mDevice.isStatus(), ipAddress.getText().toString(), mSpace.get_id(), mSpace.getBuilding().get_id(), mDevice.getAverageConsumption());
+                    Device newDevice = deviceService.getDeviceById(mDeviceId);
+                    updateDevice(mAPI.getClient(), newDevice.deviceToString());
                 } else {
-                    Toast.makeText(getActivity(), "Please, name your building.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), "Please, name your device.", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -157,17 +181,13 @@ public class BuildingUpdateFragment extends Fragment {
         });
     }
 
-    private void getBuilding(OkHttpClient client) {
-        mBuilding = buildingService.getBuildingById(mBuildingId);
-        initView(mBuilding);
-    }
-
-    private void updateBuilding(OkHttpClient client, String data) {
+    private void updateDevice(OkHttpClient client, String data) {
+        Log.e("QUERY", ArgumentsKeys.DEVICE_QUERY);
         MediaType JSON = MediaType.parse("application/json; charset=utf-8");
         RequestBody body = RequestBody.create(JSON, data);
         Log.e("JSON", data);
         Request request = new Request.Builder()
-                .url(ArgumentsKeys.BUILDING_QUERY + "/" + mBuildingId)
+                .url(ArgumentsKeys.DEVICE_QUERY + "/" + mDeviceId)
                 .patch(body)
                 .build();
 
@@ -180,9 +200,9 @@ public class BuildingUpdateFragment extends Fragment {
             @Override
             public void onResponse(Call call, final Response response) throws IOException {
                 if (!response.isSuccessful()) {
-                    Log.e("ERROR", response.body().string());
+                    Log.e("ERROR12", response.body().string());
                 } else {
-                    Log.e("RESPONSE", response.body().string());
+                    Log.e("RESPONSE12", response.body().string());
                     mActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -194,8 +214,25 @@ public class BuildingUpdateFragment extends Fragment {
         });
     }
 
-    private void initView(Building building) {
-        name.setText(building.getName());
-        displayName.setText(name.getText());
+    private void getDevice() {
+        mDevice = deviceService.getDeviceById(mDeviceId);
+
+        name.setText(mDevice.getName());
+        ipAddress.setText(mDevice.getIp_address());
+        displayName.setText(mDevice.getName());
+        deviceBuilding.setText(mDevice.getBuilding().getName());
+        mSpaceSpinner.setVisibility(View.VISIBLE);
+        deviceSpace.setVisibility(View.GONE);
+        setUpSpacesSpinner(mDevice.getBuilding().getSpaces());
+    }
+
+    public void setUpSpacesSpinner(List<Space> items) {
+        if (items.size() != 0) {
+            mSpaceSpinnerAdapter = new SpaceSpinnerAdapter(getContext(), R.layout.spaces_item_spinner, items);
+            mSpaceSpinner.setAdapter(mSpaceSpinnerAdapter);
+        } else {
+            mSpaceSpinner.setEnabled(false);
+        }
+
     }
 }

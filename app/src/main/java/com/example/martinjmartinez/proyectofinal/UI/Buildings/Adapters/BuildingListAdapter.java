@@ -50,9 +50,7 @@ public class BuildingListAdapter extends ArrayAdapter<Building> {
             initListener(detailsImage, building);
 
             name.setText(building.getName());
-            if (building.getSpaces() != null && !building.getSpaces().isEmpty()) {
-                spaces.setText(building.getSpaces().size() + "");
-            }
+            spaces.setText(building.getSpaces().size() + "");
         }
 
         return view;

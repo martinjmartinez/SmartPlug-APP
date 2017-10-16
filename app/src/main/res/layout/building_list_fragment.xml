@@ -18,12 +18,13 @@
         android:id="@+id/empty_building_list_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_margin="16dp"
         android:visibility="gone">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:text="It appears you don't have any Building"
+            android:text="It appears you don't have any Building. Create a new Building by pressing the add button below."
             android:gravity="center"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:textColor="@android:color/darker_gray"/>

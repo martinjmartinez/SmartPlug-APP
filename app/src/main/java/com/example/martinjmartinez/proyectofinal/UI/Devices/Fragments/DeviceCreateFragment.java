@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
@@ -21,19 +22,20 @@ import com.example.martinjmartinez.proyectofinal.Entities.Building;
 import com.example.martinjmartinez.proyectofinal.Entities.Device;
 import com.example.martinjmartinez.proyectofinal.Entities.Space;
 import com.example.martinjmartinez.proyectofinal.R;
-import com.example.martinjmartinez.proyectofinal.UI.Buildings.Adapters.BuildingSpinnerAdapter;
+import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
+import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
+import com.example.martinjmartinez.proyectofinal.Services.SpaceService;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.UI.Spaces.Adapters.SpaceSpinnerAdapter;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
 import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.List;
 
+import io.realm.Realm;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.MediaType;
@@ -41,10 +43,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-
-/**
- * Created by MartinJMartinez on 7/19/2017.
- */
 
 public class DeviceCreateFragment extends Fragment {
 
@@ -64,8 +62,12 @@ public class DeviceCreateFragment extends Fragment {
     private Spinner mSpaceSpinner;
     private SpaceSpinnerAdapter mSpaceSpinnerAdapter;
     private MainActivity mMainActivity;
+    private DeviceService deviceService;
+    private SpaceService spaceService;
+    private BuildingService buildingService;
 
-    public DeviceCreateFragment() {}
+    public DeviceCreateFragment() {
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -83,12 +85,13 @@ public class DeviceCreateFragment extends Fragment {
         iniVariables(view);
         initListeners();
         if (!mSpaceId.isEmpty()) {
-            getSpace(mAPI.getClient());
+            mSpace = spaceService.getSpaceById(mSpaceId);
+            mBuilding = mSpace.getBuilding();
         } else {
-            getBuilding(mAPI.getClient());
+            mBuilding = buildingService.getBuildingById(mBuildingId);
         }
 
-
+        initView();
 
         return view;
     }
@@ -112,14 +115,17 @@ public class DeviceCreateFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
 
-        if(mMainActivity.getSupportFragmentManager().getBackStackEntryCount() <= 1){
+        if (mMainActivity.getSupportFragmentManager().getBackStackEntryCount() <= 1) {
             mMainActivity.toggleDrawerIcon(true, 0, null);
         }
 
     }
 
     private void iniVariables(View view) {
-        mAPI =  new API();
+        mAPI = new API();
+        deviceService = new DeviceService(Realm.getDefaultInstance());
+        buildingService = new BuildingService(Realm.getDefaultInstance());
+        spaceService = new SpaceService(Realm.getDefaultInstance());
         name = (EditText) view.findViewById(R.id.device_create_name);
         ipAddress = (EditText) view.findViewById(R.id.device_create_ip);
         displayName = (TextView) view.findViewById(R.id.device_create_display_name);
@@ -130,6 +136,18 @@ public class DeviceCreateFragment extends Fragment {
     }
 
     private void initListeners() {
+        mSpaceSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                mSpace = mBuilding.getSpaces().get(position);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                mSpace = mBuilding.getSpaces().get(0);
+            }
+        });
+
         name.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -151,11 +169,14 @@ public class DeviceCreateFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 mDevice = new Device();
-                if(!Utils.isEditTextEmpty(name) && mDevice != null){
+                if (!Utils.isEditTextEmpty(name) && mDevice != null) {
                     mDevice.setName(name.getText().toString());
                     mDevice.setIp_address(ipAddress.getText().toString());
                     mDevice.setStatus(false);
-
+                    mDevice.setBuilding(mBuilding);
+                    Log.e("BUILDING", mBuilding.get_id());
+                    mDevice.setSpace(mSpace);
+                    Log.e("SPACE", mSpace.get_id());
                     createDevice(mAPI.getClient(), mDevice.deviceToString());
                     mMainActivity.onBackPressed();
                 } else {
@@ -191,82 +212,13 @@ public class DeviceCreateFragment extends Fragment {
             @Override
             public void onResponse(Call call, final Response response) throws IOException {
                 if (!response.isSuccessful()) {
-                    Log.e("ERROR", response.body().string());
-                } else {
-                    try{
-                        JSONObject deviceData = new JSONObject(response.body().string());
-                        mDeviceId = deviceData.getString("_id");
-                        addSpaceToDevice(mAPI.getClient());
-                    } catch (JSONException e) {
-                        Log.e("ERROR", e.getMessage());
-                    }
-                }
-            }
-        });
-    }
-
-    private void addSpaceToDevice(OkHttpClient client) {
-        Space selectedSpace = (Space) mSpaceSpinner.getSelectedItem();
-        String query;
-        if (!mSpaceId.isEmpty()) {
-            query =  ArgumentsKeys.DEVICE_QUERY + "/" + mDeviceId + "/space/" + mSpaceId;
-        } else {
-            query =  ArgumentsKeys.DEVICE_QUERY + "/" + mDeviceId + "/space/" + selectedSpace.get_id();
-        }
-
-        Log.e("QUERY", query);
-        RequestBody body = RequestBody.create(null, new byte[]{});
-        Request request = new Request.Builder()
-                .url(query)
-                .post(body)
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.e("Error", e.getMessage());
-            }
-
-            @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                if (!response.isSuccessful()) {
-                    Log.e("ERROR", response.body().string());
-                } else {
-                    addBuildingToDevice(mAPI.getClient());
-                }
-            }
-        });
-    }
-
-    private void addBuildingToDevice(OkHttpClient client) {
-        Space selectedSpace = (Space) mSpaceSpinner.getSelectedItem();
-        String query;
-        if (!mSpaceId.isEmpty()) {
-            query =  ArgumentsKeys.DEVICE_QUERY + "/" + mDeviceId + "/building/" + mSpace.getBuilding().get_id();
-        } else {
-            query =  ArgumentsKeys.DEVICE_QUERY + "/" + mDeviceId + "/building/" + mBuildingId;
-        }
-        Log.e("QUERY", query);
-        RequestBody body = RequestBody.create(null, new byte[]{});
-        Request request = new Request.Builder()
-                .url(query)
-                .post(body)
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.e("Error", e.getMessage());
-            }
-
-            @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                if (!response.isSuccessful()) {
-                    Log.e("ERROR", response.body().string());
+                    Log.e("ERROR1", response.body().string());
                 } else {
                     mActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+                            Log.e("THIS", mBuildingId + "kl");
+                            mAPI.getDeviceFromCloud(response, mSpace.get_id(), mBuilding.get_id());
                             mActivity.onBackPressed();
                         }
                     });
@@ -275,67 +227,15 @@ public class DeviceCreateFragment extends Fragment {
         });
     }
 
-    private void getSpace(OkHttpClient client) {
-        Log.e("QUERY", ArgumentsKeys.SPACE_QUERY + "/" + mSpaceId);
-        Request request = new Request.Builder()
-                .url(ArgumentsKeys.SPACE_QUERY + "/" + mSpaceId)
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.e("Error", e.getMessage());
-            }
-
-            @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                if (!response.isSuccessful()) {
-                    throw new IOException("Unexpected code " + response);
-                } else {
-                    mSpace = mAPI.getSpace(response);
-                    mActivity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            initView();
-                        }
-                    });
-                }
-            }
-        });
-    }
 
     public void setUpSpacesSpinner(List<Space> items) {
-        mSpaceSpinnerAdapter = new SpaceSpinnerAdapter(getContext(), R.layout.spaces_item_spinner, items);
-        mSpaceSpinner.setAdapter(mSpaceSpinnerAdapter);
-    }
+        if (items.size() != 0) {
+            mSpaceSpinnerAdapter = new SpaceSpinnerAdapter(getContext(), R.layout.spaces_item_spinner, items);
+            mSpaceSpinner.setAdapter(mSpaceSpinnerAdapter);
+        } else {
+            mSpaceSpinner.setEnabled(false);
+        }
 
-    private void getBuilding(OkHttpClient client) {
-        Log.e("QUERY", ArgumentsKeys.BUILDING_QUERY + "/" + mBuildingId);
-        Request request = new Request.Builder()
-                .url(ArgumentsKeys.BUILDING_QUERY + "/" + mBuildingId)
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.e("Error", e.getMessage());
-            }
-
-            @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                if (!response.isSuccessful()) {
-                    throw new IOException("Unexpected code " + response);
-                } else {
-                    mBuilding = mAPI.getBuilding(response);
-                    mActivity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            initView();
-                        }
-                    });
-                }
-            }
-        });
     }
 
     private void initView() {

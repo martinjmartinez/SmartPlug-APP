@@ -47,12 +47,14 @@ public class SpaceListAdapter extends ArrayAdapter<Space> {
             ImageView detailsImage = (ImageView) view.findViewById(R.id.space_details);
             TextView name = (TextView) view.findViewById(R.id.space_name);
             TextView devices = (TextView) view.findViewById(R.id.space_devices);
+            TextView average = (TextView) view.findViewById(R.id.space_average_power);
 
             initListener(detailsImage, space);
 
             name.setText(space.getName());
             if (space.getDevices() != null) {
                 devices.setText(space.getDevices().size() + "");
+                average.setText(Utils.decimalFormat.format(space.getAverageConsumption()) + "W");
             }
         }
 

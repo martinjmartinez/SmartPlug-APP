@@ -1,11 +1,13 @@
 package com.example.martinjmartinez.proyectofinal.Entities;
 
-/**
- * Created by MartinJMartinez on 6/20/2017.
- */
+import io.realm.RealmObject;
+import io.realm.RealmResults;
+import io.realm.annotations.LinkingObjects;
+import io.realm.annotations.PrimaryKey;
 
-public class Device {
+public class Device extends RealmObject {
 
+    @PrimaryKey
     private String _id;
 
     private String name;
@@ -20,6 +22,21 @@ public class Device {
 
     private double power;
 
+    private String lastHistoryId;
+
+    private double averageConsumption;
+
+    @LinkingObjects("device")
+    private final RealmResults<Historial> historials = null;
+
+    public String getLastHistoryId() {
+        return lastHistoryId;
+    }
+
+    public void setLastHistoryId(String lastHistoryId) {
+        this.lastHistoryId = lastHistoryId;
+    }
+
     public double getPower() {
         return power;
     }
@@ -30,6 +47,14 @@ public class Device {
 
     public String get_id() {
         return _id;
+    }
+
+    public double getAverageConsumption() {
+        return averageConsumption;
+    }
+
+    public void setAverageConsumption(double averageConsumption) {
+        this.averageConsumption = averageConsumption;
     }
 
     public void set_id(String _id) {
@@ -76,17 +101,31 @@ public class Device {
         this.building = building;
     }
 
+    public RealmResults<Historial> getHistorials() {
+        return historials;
+    }
+
     public String statusToString() {
         return "{" +
                 "\"status\":" + status +
                 '}';
     }
 
+    public String averageToString() {
+        return "{" +
+                "\"powerAverage\":" + averageConsumption +
+                '}';
+    }
+
     public String deviceToString() {
+        String id = space == null ? "" : ",\"space\":\"" + space.get_id() + "\"";
+
         return "{" +
                 "\"name\":\"" + name + "\"," +
                 "\"ip_address\":\"" + ip_address + "\"," +
-                "\"status\":" + status +
+                "\"status\":" + status + "," +
+                "\"building\":\"" + building.get_id() + "\"" +
+                  id +
                 '}';
     }
 }

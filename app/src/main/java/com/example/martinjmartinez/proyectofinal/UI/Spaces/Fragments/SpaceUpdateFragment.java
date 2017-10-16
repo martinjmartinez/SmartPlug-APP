@@ -19,16 +19,15 @@ import android.widget.Toast;
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
 import com.example.martinjmartinez.proyectofinal.Entities.Space;
 import com.example.martinjmartinez.proyectofinal.R;
+import com.example.martinjmartinez.proyectofinal.Services.SpaceService;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
 import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.IOException;
 
+import io.realm.Realm;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.MediaType;
@@ -36,10 +35,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-
-/**
- * Created by MartinJMartinez on 7/17/2017.
- */
 
 public class SpaceUpdateFragment extends Fragment {
 
@@ -53,8 +48,10 @@ public class SpaceUpdateFragment extends Fragment {
     private String mSpaceId;
     private Building mBuilding;
     private MainActivity mMainActivity;
+    private SpaceService spaceService;
 
-    public SpaceUpdateFragment() {}
+    public SpaceUpdateFragment() {
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -69,7 +66,7 @@ public class SpaceUpdateFragment extends Fragment {
         View view = inflater.inflate(R.layout.space_creation_fragment, container, false);
 
         iniVariables(view);
-        getSpace(mAPI.getClient());
+        getSpace();
         initListeners();
 
         return view;
@@ -94,14 +91,14 @@ public class SpaceUpdateFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
 
-        if(mMainActivity.getSupportFragmentManager().getBackStackEntryCount() <= 1){
+        if (mMainActivity.getSupportFragmentManager().getBackStackEntryCount() <= 1) {
             mMainActivity.toggleDrawerIcon(true, 0, null);
         }
-
     }
 
     private void iniVariables(View view) {
-        mAPI =  new API();
+        spaceService = new SpaceService(Realm.getDefaultInstance());
+        mAPI = new API();
         name = (EditText) view.findViewById(R.id.space_create_name);
         displayName = (TextView) view.findViewById(R.id.space_create_display_name);
         spaceBuilding = (TextView) view.findViewById(R.id.space_create_building);
@@ -129,11 +126,13 @@ public class SpaceUpdateFragment extends Fragment {
         saveSpace.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(!Utils.isEditTextEmpty(name)) {
+                if (!Utils.isEditTextEmpty(name)) {
                     if (!name.getText().toString().equals(mSpace.getName())) {
-                        Space space = new Space();
-                        space.setName(name.getText().toString());
-                        updateSpace(mAPI.getClient(),space.toString());
+                        spaceService.updateSpaceName(mSpaceId, name.getText().toString());
+
+                        Space space = spaceService.getSpaceById(mSpaceId);
+
+                        updateSpace(mAPI.getClient(), space.toString());
                     } else {
                         Toast.makeText(getActivity(), "Please, update something.", Toast.LENGTH_SHORT).show();
                     }
@@ -189,31 +188,8 @@ public class SpaceUpdateFragment extends Fragment {
         displayName.setText(name.getText());
     }
 
-    private void getSpace(OkHttpClient client) {
-        Request request = new Request.Builder()
-                .url(ArgumentsKeys.SPACE_QUERY + "/" + mSpaceId)
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.e("Error", e.getMessage());
-            }
-
-            @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                if (!response.isSuccessful()) {
-                    throw new IOException("Unexpected code " + response);
-                } else {
-                    mSpace = mAPI.getSpace(response);
-                    mActivity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            initView(mSpace);
-                        }
-                    });
-                }
-            }
-        });
+    private void getSpace() {
+        mSpace = spaceService.getSpaceById(mSpaceId);
+        initView(mSpace);
     }
 }

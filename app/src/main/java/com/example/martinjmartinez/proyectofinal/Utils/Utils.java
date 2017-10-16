@@ -14,6 +14,7 @@ import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 
 import org.json.JSONObject;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 /**
@@ -22,6 +23,8 @@ import java.util.ArrayList;
 public class Utils {
 
     public static Handler mHandler;
+
+    public static DecimalFormat decimalFormat = new DecimalFormat("#.#");
 
     public static ArrayList<String> updateDeviceData(final String url){
 

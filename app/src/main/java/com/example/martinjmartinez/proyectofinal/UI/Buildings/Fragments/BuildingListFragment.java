@@ -15,7 +15,9 @@ import android.widget.GridView;
 import android.widget.LinearLayout;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
+import com.example.martinjmartinez.proyectofinal.Entities.Space;
 import com.example.martinjmartinez.proyectofinal.R;
+import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.UI.Buildings.Adapters.BuildingListAdapter;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.UI.Spaces.Fragments.SpaceListFragment;
@@ -28,6 +30,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.realm.Realm;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
@@ -47,8 +50,10 @@ public class BuildingListFragment extends Fragment {
     private FloatingActionButton mAddBuildingButton;
     private LinearLayout mEmptyBuildingListLayout;
     private MainActivity mMainActivity;
+    private BuildingService buildingService;
 
-    public BuildingListFragment() {}
+    public BuildingListFragment() {
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -81,7 +86,7 @@ public class BuildingListFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
 
-        if(mMainActivity.getSupportFragmentManager().getBackStackEntryCount() <= 1){
+        if (mMainActivity.getSupportFragmentManager().getBackStackEntryCount() <= 1) {
             mMainActivity.toggleDrawerIcon(true, 0, null);
         }
 
@@ -90,10 +95,11 @@ public class BuildingListFragment extends Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        getBuildings(mAPI.getClient());
+        getBuildings();
     }
 
     private void initVariables(View view) {
+        buildingService = new BuildingService(Realm.getDefaultInstance());
         mBuildingList = new ArrayList<>();
         mGridView = (GridView) view.findViewById(R.id.building_grid);
         mAPI = new API();
@@ -130,48 +136,27 @@ public class BuildingListFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 BuildingCreateFragment buildingCreateFragment = new BuildingCreateFragment();
-                Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.BUILDING_LIST_FRAGMENT), buildingCreateFragment, FragmentKeys.BUILDING_CREATION_FRAGMENT, true);
-
+                boolean addToBackStack = buildingService.allBuildings().size() == 0 ? false : true;
+                Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.BUILDING_LIST_FRAGMENT), buildingCreateFragment, FragmentKeys.BUILDING_CREATION_FRAGMENT, addToBackStack);
             }
         });
     }
 
-    public void getBuildings(OkHttpClient client) {
-        Request request = new Request.Builder()
-                .url(ArgumentsKeys.BUILDING_QUERY)
-                .build();
+    public void getBuildings() {
+        mBuildingList = buildingService.allBuildings();
 
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.e("Error", e.getMessage());
-            }
-
-            @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                if (!response.isSuccessful()) {
-                    throw new IOException("Unexpected code " + response);
-                } else {
-                    mBuildingList = mAPI.getBuildingList(response);
-                    mActivity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (!mBuildingList.isEmpty()) {
-                                initSpacesList(mBuildingList);
-                                mEmptyBuildingListLayout.setVisibility(View.GONE);
-                            } else {
-                                mGridView.setVisibility(View.GONE);
-                                mEmptyBuildingListLayout.setVisibility(View.VISIBLE);
-                            }
-                        }
-                    });
-
-                }
-
-            }
-        });
+        shouldEmptyMessageShow(mBuildingList);
     }
 
+    private void shouldEmptyMessageShow(List<Building> buildingList) {
+        if (!buildingList.isEmpty()) {
+            mEmptyBuildingListLayout.setVisibility(View.GONE);
+            initSpacesList(buildingList);
+        } else {
+            mGridView.setVisibility(View.GONE);
+            mEmptyBuildingListLayout.setVisibility(View.VISIBLE);
+        }
+    }
 
     void initSpacesList(List<Building> buildingsList) {
         BuildingListAdapter buildingListAdapter = new BuildingListAdapter(getContext(), R.layout.building_list_item, buildingsList);
