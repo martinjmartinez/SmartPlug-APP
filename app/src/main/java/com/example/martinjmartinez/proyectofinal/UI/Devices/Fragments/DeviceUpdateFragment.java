@@ -164,7 +164,7 @@ public class DeviceUpdateFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if (!Utils.isEditTextEmpty(name)) {
-                    deviceService.updateDevice(mDeviceId, name.getText().toString(), mDevice.isStatus(), ipAddress.getText().toString(), mSpace.get_id(), mSpace.getBuilding().get_id());
+                    deviceService.updateDevice(mDeviceId, name.getText().toString(), mDevice.isStatus(), ipAddress.getText().toString(), mSpace.get_id(), mSpace.getBuilding().get_id(), mDevice.getAverageConsumption());
                     Device newDevice = deviceService.getDeviceById(mDeviceId);
                     updateDevice(mAPI.getClient(), newDevice.deviceToString());
                 } else {

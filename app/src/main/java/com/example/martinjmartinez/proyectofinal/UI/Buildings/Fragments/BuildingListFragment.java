@@ -15,6 +15,7 @@ import android.widget.GridView;
 import android.widget.LinearLayout;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
+import com.example.martinjmartinez.proyectofinal.Entities.Space;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.UI.Buildings.Adapters.BuildingListAdapter;
@@ -137,7 +138,6 @@ public class BuildingListFragment extends Fragment {
                 BuildingCreateFragment buildingCreateFragment = new BuildingCreateFragment();
                 boolean addToBackStack = buildingService.allBuildings().size() == 0 ? false : true;
                 Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.BUILDING_LIST_FRAGMENT), buildingCreateFragment, FragmentKeys.BUILDING_CREATION_FRAGMENT, addToBackStack);
-
             }
         });
     }
@@ -145,15 +145,18 @@ public class BuildingListFragment extends Fragment {
     public void getBuildings() {
         mBuildingList = buildingService.allBuildings();
 
-        if (!mBuildingList.isEmpty()) {
-            initSpacesList(mBuildingList);
+        shouldEmptyMessageShow(mBuildingList);
+    }
+
+    private void shouldEmptyMessageShow(List<Building> buildingList) {
+        if (!buildingList.isEmpty()) {
             mEmptyBuildingListLayout.setVisibility(View.GONE);
+            initSpacesList(buildingList);
         } else {
             mGridView.setVisibility(View.GONE);
             mEmptyBuildingListLayout.setVisibility(View.VISIBLE);
         }
     }
-
 
     void initSpacesList(List<Building> buildingsList) {
         BuildingListAdapter buildingListAdapter = new BuildingListAdapter(getContext(), R.layout.building_list_item, buildingsList);

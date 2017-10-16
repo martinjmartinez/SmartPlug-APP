@@ -3,7 +3,6 @@ package com.example.martinjmartinez.proyectofinal.UI.Devices.Fragments;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
@@ -13,8 +12,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.GridView;
+import android.widget.LinearLayout;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
 import com.example.martinjmartinez.proyectofinal.Entities.Device;
@@ -34,7 +32,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.realm.Realm;
-import okhttp3.OkHttpClient;
 
 /**
  * Created by MartinJMartinez on 7/14/2017.
@@ -55,6 +52,7 @@ public class DeviceListFragment extends Fragment {
     private DeviceService deviceService;
     private BuildingService buildingService;
     private SpaceService spaceService;
+    private LinearLayout mEmptyDeviceListLayout;
 
     public DeviceListFragment() {
     }
@@ -99,8 +97,10 @@ public class DeviceListFragment extends Fragment {
 
         iniVariables(view);
         if (!mBuildingId.isEmpty() && mSpaceId.isEmpty()) {
+            Log.e("DEVICES", "POR BUILDING");
             getDevicesByBuilding();
         } else if (mBuildingId.isEmpty() && !mSpaceId.isEmpty()) {
+            Log.e("DEVICES", "POR SPACES");
             getDevicesBySpace();
         }
         initListeners();
@@ -123,6 +123,7 @@ public class DeviceListFragment extends Fragment {
         mGridView = (RecyclerView) view.findViewById(R.id.devices_grid);
         mAPI = new API();
         mAddDeviceButton = (FloatingActionButton) view.findViewById(R.id.add_device_button);
+        mEmptyDeviceListLayout = (LinearLayout) view.findViewById(R.id.empty_device_list_layout);
     }
 
     private void initListeners() {
@@ -148,18 +149,27 @@ public class DeviceListFragment extends Fragment {
 
     private void getDevicesByBuilding() {
         mDevicesList = buildingService.getBuildingById(mBuildingId).getDevices();
-        initDevicesList(mDevicesList);
+        shouldEmptyMessageShow(mDevicesList);
     }
 
     private void getDevicesBySpace() {
         mDevicesList = spaceService.getSpaceById(mSpaceId).getDevices();
-        initDevicesList(mDevicesList);
+       shouldEmptyMessageShow(mDevicesList);
+    }
 
+    private void shouldEmptyMessageShow(List<Device> deviceList) {
+        if (!mDevicesList.isEmpty()) {
+            mEmptyDeviceListLayout.setVisibility(View.GONE);
+            initDevicesList(mDevicesList);
+        } else {
+            mGridView.setVisibility(View.GONE);
+            mEmptyDeviceListLayout.setVisibility(View.VISIBLE);
+        }
     }
 
     private void initDevicesList(List<Device> devicesList) {
-        mGridView.setLayoutManager(new GridLayoutManager(mActivity, 3));
-        mDevicesListAdapter = new DeviceListAdapter(devicesList);
+        mGridView.setLayoutManager(new GridLayoutManager(mActivity, 2));
+        mDevicesListAdapter = new DeviceListAdapter(devicesList, getActivity(), this);
         mGridView.setAdapter(mDevicesListAdapter);
     }
 }

@@ -25,15 +25,12 @@ import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
 import com.example.martinjmartinez.proyectofinal.Services.SpaceService;
-import com.example.martinjmartinez.proyectofinal.UI.Buildings.Adapters.BuildingSpinnerAdapter;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.UI.Spaces.Adapters.SpaceSpinnerAdapter;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
 import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.List;
@@ -46,10 +43,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-
-/**
- * Created by MartinJMartinez on 7/19/2017.
- */
 
 public class DeviceCreateFragment extends Fragment {
 
@@ -96,7 +89,6 @@ public class DeviceCreateFragment extends Fragment {
             mBuilding = mSpace.getBuilding();
         } else {
             mBuilding = buildingService.getBuildingById(mBuildingId);
-
         }
 
         initView();
@@ -182,7 +174,9 @@ public class DeviceCreateFragment extends Fragment {
                     mDevice.setIp_address(ipAddress.getText().toString());
                     mDevice.setStatus(false);
                     mDevice.setBuilding(mBuilding);
+                    Log.e("BUILDING", mBuilding.get_id());
                     mDevice.setSpace(mSpace);
+                    Log.e("SPACE", mSpace.get_id());
                     createDevice(mAPI.getClient(), mDevice.deviceToString());
                     mMainActivity.onBackPressed();
                 } else {
@@ -223,7 +217,8 @@ public class DeviceCreateFragment extends Fragment {
                     mActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            mAPI.getDeviceFromCloud(response, mSpaceId, mBuildingId);
+                            Log.e("THIS", mBuildingId + "kl");
+                            mAPI.getDeviceFromCloud(response, mSpace.get_id(), mBuilding.get_id());
                             mActivity.onBackPressed();
                         }
                     });

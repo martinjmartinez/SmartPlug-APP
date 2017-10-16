@@ -5,6 +5,8 @@ import android.util.Log;
 
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
+import com.example.martinjmartinez.proyectofinal.Services.HistorialService;
+import com.example.martinjmartinez.proyectofinal.Services.LogService;
 import com.example.martinjmartinez.proyectofinal.Services.SpaceService;
 
 import org.json.JSONArray;
@@ -12,7 +14,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.Date;
+
 import io.realm.Realm;
+import io.realm.RealmList;
 import okhttp3.OkHttpClient;
 import okhttp3.Response;
 
@@ -23,6 +28,8 @@ public class API {
     private BuildingService buildingService = new BuildingService(realm);
     private SpaceService spaceService = new SpaceService(realm);
     private DeviceService deviceService = new DeviceService(realm);
+    private HistorialService historialService = new HistorialService(realm);
+    private LogService logService = new LogService(realm);
 
     public API() {
         this.client = new OkHttpClient();
@@ -56,11 +63,27 @@ public class API {
             String name = deviceData.getString("name");
             String ip_address = deviceData.getString("ip_address");
             Boolean isOn = deviceData.getBoolean("status");
+            Double powerAverage = deviceData.getDouble("powerAverage");
 
-            deviceService.createDevice(_id, name, isOn, ip_address, mSpaceId, mBuildingId);
+            Log.e("BUILDINGD", mBuildingId + "65");
+            deviceService.createDevice(_id, name, isOn, ip_address, mSpaceId, mBuildingId, powerAverage);
 
         } catch (JSONException | IOException e) {
             Log.e("getBuildingFromCloud", e.getMessage());
+        }
+    }
+
+    public void getHistorialFromCloud(JSONObject historialData) {
+        try {
+            String _id  = historialData.getString("_id");
+            JSONObject device = historialData.getJSONObject("device");
+            String deviceId = device.getString("_id");
+            long startDate = historialData.getLong("startDate");
+
+            historialService.startHistorial(_id, new Date(startDate), deviceId);
+
+        } catch (JSONException e) {
+            Log.e("getBuildingFromCloud", e.getStackTrace().toString());
         }
     }
 
@@ -85,10 +108,17 @@ public class API {
                 String name = devices.getJSONObject(i).getString("name");
                 String ip_address = devices.getJSONObject(i).getString("ip_address");
                 Boolean isOn = devices.getJSONObject(i).getBoolean("status");
-                String spaceId = devices.getJSONObject(i).getString("space");
+                String spaceId;
                 String buildingId = devices.getJSONObject(i).getString("building");
+                Double powerAverage = devices.getJSONObject(i).getDouble("powerAverage");
 
-                deviceService.updateOrCreateDevice(_id, name, isOn, ip_address, spaceId, buildingId);
+                if(devices.getJSONObject(i).has("space")) {
+                    spaceId = devices.getJSONObject(i).getString("space");
+                } else {
+                    spaceId = "";
+                }
+
+                deviceService.updateOrCreateDevice(_id, name, isOn, ip_address, spaceId, buildingId, powerAverage);
 
                 if (devices.getJSONObject(i).has("lastHistoryId")) {
                     String lastHistoryId = devices.getJSONObject(i).getString("lastHistoryId");
@@ -100,6 +130,87 @@ public class API {
             Log.e("getDevicesFromCloud", e.getMessage());
         }
     }
+
+    public void getHistorialFromCloudEnd(JSONObject historialData, String deviceId) {
+        try {
+            double powerAverage = 0;
+            String _id  = historialData.getString("_id");
+            long endDate = historialData.getLong("endDate");
+            RealmList<com.example.martinjmartinez.proyectofinal.Entities.Log> powerLog = new RealmList<>();
+
+            if (historialData.get("powerLog") instanceof JSONArray) {
+                JSONArray logs = historialData.getJSONArray("powerLog");
+                double total = 0;
+                if (logs.length() > 0) {
+                    for (int j = 0; j < logs.length(); j++) {
+                        String logId = logs.getJSONObject(j).getString("_id");
+                        double power = logs.getJSONObject(j).getDouble("log");
+                        total = total + power;
+                        logService.updateOrCreateLog(logId, power);
+                        powerLog.add(logService.getLogById(logId));
+                    }
+                    powerAverage = total/logs.length();
+                } else {
+                    powerAverage = 0;
+                }
+
+                Log.e("powerAverage", powerAverage + "");
+            }
+            historialService.updateHistorialEndDate(_id, new Date(endDate), powerLog, powerAverage);
+            deviceService.updateDevicePowerAverageConsumption(deviceId);
+
+
+        } catch (JSONException e) {
+            Log.e("getHistorialCloudEnd", e.getStackTrace().toString());
+        }
+    }
+
+    public void getHistorialsFromCloud(String response) {
+        try {
+            JSONArray historials = new JSONArray(response);
+
+            for (int i = 0; i < historials.length(); i++) {
+                RealmList<com.example.martinjmartinez.proyectofinal.Entities.Log> powerLog = new RealmList<>();
+                double powerAverage = 0;
+                String _id = historials.getJSONObject(i).getString("_id");
+                long startDate = historials.getJSONObject(i).getLong("startDate");
+                long endDate = historials.getJSONObject(i).getLong("endDate");
+                String deviceId = historials.getJSONObject(i).getString("device");
+
+                if (historials.getJSONObject(i).has("powerLog")) {
+                    if (historials.getJSONObject(i).get("powerLog") instanceof JSONArray) {
+                        JSONArray logs = historials.getJSONObject(i).getJSONArray("powerLog");
+
+                        if (logs.length() > 0) {
+                            double total = 0;
+
+                            for (int j = 0; j < logs.length(); j++) {
+                                String logId = logs.getJSONObject(j).getString("_id");
+                                double power = logs.getJSONObject(j).getDouble("log");
+                                Log.e("log", power + "");
+                                total = power + total;
+                                logService.updateOrCreateLog(logId, power);
+                                powerLog.add(logService.getLogById(logId));
+                            }
+
+                            powerAverage = total/logs.length();
+                            Log.e("total/average/size", total + "/"+ powerAverage + "/" + logs.length());
+                        } else {
+                            powerAverage = 0;
+                        }
+                    }
+                }
+
+                historialService.updateOrCreateHistorial(_id, new Date(startDate), new Date(endDate), deviceId, powerLog, powerAverage);
+                deviceService.updateDevicePowerAverageConsumption(deviceId);
+
+            }
+        } catch (JSONException e) {
+            Log.e("getHistorialsFromCloud", e.getMessage());
+        }
+    }
+
+
 
     public String[] getArduinoInfo(Response response) {
         String[] data = new String[2];

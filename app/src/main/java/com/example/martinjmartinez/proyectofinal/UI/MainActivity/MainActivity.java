@@ -172,6 +172,20 @@ public class MainActivity extends AppCompatActivity {
 
                         mDrawerLayout.closeDrawer(Gravity.START);
                         break;
+
+                    case (R.id.nav_statistics):
+                        //TODO create statistics fragment
+//                        BuildingListFragment buildingListFragment = (BuildingListFragment) getSupportFragmentManager().findFragmentByTag(FragmentKeys.BUILDING_LIST_FRAGMENT);
+//                        if (buildingListFragment != null) {
+//                            if (!buildingListFragment.isVisible()) {
+//                                loadContentFragment(buildingListFragment, FragmentKeys.BUILDING_LIST_FRAGMENT, false);
+//                            }
+//                        } else {
+//                            loadContentFragment(mBuildingListFragment, FragmentKeys.BUILDING_LIST_FRAGMENT, true);
+//                        }
+//
+//                        mDrawerLayout.closeDrawer(Gravity.START);
+                        break;
                 }
                 return false;
             }

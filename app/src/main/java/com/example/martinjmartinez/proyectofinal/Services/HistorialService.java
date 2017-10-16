@@ -1,0 +1,95 @@
+package com.example.martinjmartinez.proyectofinal.Services;
+
+import com.example.martinjmartinez.proyectofinal.App.SmartPLugApplication;
+import com.example.martinjmartinez.proyectofinal.Entities.Device;
+import com.example.martinjmartinez.proyectofinal.Entities.Historial;
+import com.example.martinjmartinez.proyectofinal.Entities.Log;
+
+import java.util.Date;
+import java.util.List;
+
+import io.realm.Realm;
+import io.realm.RealmList;
+import io.realm.RealmResults;
+
+public class HistorialService extends SmartPLugApplication {
+    private Realm realm;
+
+    public HistorialService (Realm realm) {
+        this.realm = realm;
+    }
+
+    public List<Historial> allHistorial() {
+        RealmResults<Historial> results = realm.where(Historial.class).findAll();
+
+        return results;
+    }
+
+    public void createHistorial(String _id, Date startDate, Date endDate, String deviceId, RealmList<Log> powerLog, double powerAverage) {
+        Device device = realm.where(Device.class).equalTo("_id", deviceId).findFirst();
+
+        realm.beginTransaction();
+
+        Historial historial = realm.createObject(Historial.class, _id);
+        historial.setStartDate(startDate);
+        historial.setEndDate(endDate);
+        historial.setDevice(device);
+        historial.setPowerLog(powerLog);
+        historial.setPowerAverage(powerAverage);
+
+        realm.commitTransaction();
+    }
+
+    public void startHistorial(String _id, Date startDate, String deviceId) {
+        Device device = realm.where(Device.class).equalTo("_id", deviceId).findFirst();
+
+        realm.beginTransaction();
+
+        Historial historial = realm.createObject(Historial.class, _id);
+        historial.setStartDate(startDate);
+        historial.setDevice(device);
+
+        realm.commitTransaction();
+    }
+
+    public void updateOrCreateHistorial(String _id, Date startDate, Date endDate, String deviceId, RealmList<Log> powerLog, double powerAverage) {
+        if(getHistorialById(_id) != null) {
+            updateHistorial(_id, startDate, endDate, deviceId, powerLog, powerAverage);
+        } else {
+            createHistorial(_id, startDate, endDate, deviceId, powerLog, powerAverage);
+        }
+    }
+
+    public Historial getHistorialById(String _id) {
+        Historial historial = realm.where(Historial.class).equalTo("_id", _id).findFirst();
+
+        return historial;
+    }
+
+    public void updateHistorialEndDate(String _id, Date endDate, RealmList<Log> powerLog, double powerAverage) {
+        Historial historial = getHistorialById(_id);
+
+        realm.beginTransaction();
+
+        historial.setEndDate(endDate);
+        historial.setPowerLog(powerLog);
+        historial.setPowerAverage(powerAverage);
+
+        realm.commitTransaction();
+    }
+
+    public void updateHistorial(String _id, Date startDate, Date endDate, String deviceId, RealmList<Log> powerLog, double powerAverage) {
+        Historial historial = getHistorialById(_id);
+        Device device = realm.where(Device.class).equalTo("_id", deviceId).findFirst();
+
+        realm.beginTransaction();
+
+        historial.setStartDate(startDate);
+        historial.setEndDate(endDate);
+        historial.setDevice(device);
+        historial.setPowerLog(powerLog);
+        historial.setPowerAverage(powerAverage);
+
+        realm.commitTransaction();
+    }
+}

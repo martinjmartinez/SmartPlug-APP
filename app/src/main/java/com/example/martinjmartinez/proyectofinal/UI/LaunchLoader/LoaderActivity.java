@@ -10,8 +10,11 @@ import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
 import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
 
+import org.json.JSONArray;
+
 import java.io.IOException;
 
+import io.realm.Realm;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
@@ -21,6 +24,7 @@ import okhttp3.Response;
 public class LoaderActivity extends AppCompatActivity {
 
     private API mAPI;
+    private Realm realm;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +32,8 @@ public class LoaderActivity extends AppCompatActivity {
         setContentView(R.layout.activity_loader);
 
         mAPI = new API();
+        realm = Realm.getDefaultInstance();
+
         getData(mAPI.getClient());
     }
 
@@ -41,9 +47,10 @@ public class LoaderActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
-    public void getData (OkHttpClient client) {
+    public void getData(OkHttpClient client) {
         getBuildings(client);
     }
+
     public void getBuildings(final OkHttpClient client) {
         Request request = new Request.Builder()
                 .url(ArgumentsKeys.BUILDING_QUERY)
@@ -52,13 +59,13 @@ public class LoaderActivity extends AppCompatActivity {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                Log.e("Error", e.getMessage());
+                Log.e("getBuildings", e.getMessage());
             }
 
             @Override
             public void onResponse(Call call, final Response response) throws IOException {
                 if (!response.isSuccessful()) {
-                    throw new IOException("Unexpected code " + response);
+                    throw new IOException("Unexpected code at getBuildings" + response);
                 } else {
                     runOnUiThread(new Runnable() {
                         @Override
@@ -82,13 +89,13 @@ public class LoaderActivity extends AppCompatActivity {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                Log.e("Error", e.getMessage());
+                Log.e("getSpaces", e.getMessage());
             }
 
             @Override
             public void onResponse(Call call, final Response response) throws IOException {
                 if (!response.isSuccessful()) {
-                    throw new IOException("Unexpected code " + response);
+                    throw new IOException("Unexpected code at getSpaces" + response);
                 } else {
                     runOnUiThread(new Runnable() {
                         @Override
@@ -99,12 +106,11 @@ public class LoaderActivity extends AppCompatActivity {
 
                     getDevices(client);
                 }
-
             }
         });
     }
 
-    public void getDevices(OkHttpClient client) {
+    public void getDevices(final OkHttpClient client) {
         Request request = new Request.Builder()
                 .url(ArgumentsKeys.DEVICE_QUERY)
                 .build();
@@ -112,13 +118,13 @@ public class LoaderActivity extends AppCompatActivity {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                Log.e("Error", e.getMessage());
+                Log.e("getDevices", e.getMessage());
             }
 
             @Override
             public void onResponse(Call call, final Response response) throws IOException {
                 if (!response.isSuccessful()) {
-                    throw new IOException("Unexpected code " + response);
+                    throw new IOException("Unexpected code at getDevices" + response);
                 } else {
                     runOnUiThread(new Runnable() {
                         @Override
@@ -127,13 +133,42 @@ public class LoaderActivity extends AppCompatActivity {
                         }
                     });
 
-                    loadFinished();
+                    getHistorials(client);
                 }
-
             }
         });
     }
 
+    public void getHistorials(OkHttpClient client) {
+        Request request = new Request.Builder()
+                .url(ArgumentsKeys.HISTORY_QUERY)
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Log.e("getHistorials", e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, final Response response) throws IOException {
+                if (!response.isSuccessful()) {
+                    throw new IOException("Unexpected code at getHistorials" + response);
+                } else {
+                    final String string = response.body().string();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            mAPI.getHistorialsFromCloud(string);
+
+                        }
+                    });
+
+                    loadFinished();
+                }
+            }
+        });
+    }
 
     public void loadFinished() {
         Intent intent = new Intent(this, MainActivity.class);

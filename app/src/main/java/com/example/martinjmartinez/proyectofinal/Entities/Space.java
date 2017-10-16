@@ -14,6 +14,8 @@ public class Space extends RealmObject {
 
     private Building building;
 
+    private double averageConsumption;
+
     @LinkingObjects("space")
     private final RealmResults<Device> devices = null;
 
@@ -28,6 +30,14 @@ public class Space extends RealmObject {
     }
 
     public Space() {}
+
+    public double getAverageConsumption() {
+        return averageConsumption;
+    }
+
+    public void setAverageConsumption(double averageConsumption) {
+        this.averageConsumption = averageConsumption;
+    }
 
     public Space(String _id) {
         this._id = _id;

@@ -14,6 +14,7 @@ import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.LinearLayout;
 
+import com.example.martinjmartinez.proyectofinal.Entities.Device;
 import com.example.martinjmartinez.proyectofinal.Entities.Space;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
@@ -159,13 +160,16 @@ public class SpaceListFragment extends Fragment {
     public void getSpaces() {
         mSpacesList = buildingService.getBuildingById(mBuildingId).getSpaces();
 
-        if (!mSpacesList.isEmpty()) {
+       shouldEmptyMessageShow(mSpacesList);
+    }
+
+    private void shouldEmptyMessageShow(List<Space> spaceList) {
+        if (!spaceList.isEmpty()) {
             mEmptySpaceListLayout.setVisibility(View.GONE);
-            initSpacesList(mSpacesList);
+            initSpacesList(spaceList);
         } else {
             mGridView.setVisibility(View.GONE);
             mEmptySpaceListLayout.setVisibility(View.VISIBLE);
-
         }
     }
 

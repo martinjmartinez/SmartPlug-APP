@@ -18,8 +18,10 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Device;
+import com.example.martinjmartinez.proyectofinal.Entities.Historial;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
+import com.example.martinjmartinez.proyectofinal.Services.HistorialService;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.UI.Spaces.Fragments.SpaceUpdateFragment;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
@@ -55,6 +57,7 @@ public class DeviceDetailFragment extends Fragment {
     private TextView name;
     private TextView ip_address;
     private TextView space;
+    private TextView averagePower;
     private TextView building;
     private Switch status;
     private TextView power;
@@ -62,9 +65,9 @@ public class DeviceDetailFragment extends Fragment {
     private Handler updatePowerHandler;
     private Runnable updatePowerRunnableDetails;
     private DeviceService deviceService;
+    private HistorialService historialService;
     private Button mEditButton;
     private Button mDeleteButton;
-
 
     public DeviceDetailFragment() {
     }
@@ -77,7 +80,7 @@ public class DeviceDetailFragment extends Fragment {
         if (bundle != null) {
             mDeviceId = bundle.getString(ArgumentsKeys.DEVICE_ID, "");
         }
-        mDevice = new Device();
+
         mAPI = new API();
     }
 
@@ -87,8 +90,8 @@ public class DeviceDetailFragment extends Fragment {
 
         iniVariables(view);
         getDevice();
-        status.setEnabled(false);
         initListeners();
+
         return view;
     }
 
@@ -120,6 +123,7 @@ public class DeviceDetailFragment extends Fragment {
 
     private void iniVariables(View view) {
         deviceService = new DeviceService(Realm.getDefaultInstance());
+        historialService = new HistorialService(Realm.getDefaultInstance());
         name = (TextView) view.findViewById(R.id.device_detail_name);
         ip_address = (TextView) view.findViewById(R.id.device_detail_ip);
         space = (TextView) view.findViewById(R.id.device_detail_space);
@@ -128,6 +132,7 @@ public class DeviceDetailFragment extends Fragment {
         status = (Switch) view.findViewById(R.id.device_detail_status);
         mEditButton = (Button) view.findViewById(R.id.device_detail_update);
         mDeleteButton = (Button) view.findViewById(R.id.device_detail_delete);
+        averagePower = (TextView) view.findViewById(R.id.device_detail_average);
     }
 
     private void initListeners() {
@@ -214,7 +219,7 @@ public class DeviceDetailFragment extends Fragment {
                 if (!response.isSuccessful()) {
                     Log.e("ERROR", response.body().string());
                 } else {
-                    mActivity.runOnUiThread(new Runnable( ) {
+                    mActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             deviceService.deleteDevice(mDeviceId);
@@ -243,7 +248,12 @@ public class DeviceDetailFragment extends Fragment {
                 if (!response.isSuccessful()) {
                     throw new IOException("Unexpected code at changeStatus" + response);
                 } else {
-                    updateStatus(new API().getClient(), action);
+                    mActivity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            updateStatus(new API().getClient(), action);
+                        }
+                    });
                 }
             }
         });
@@ -273,12 +283,17 @@ public class DeviceDetailFragment extends Fragment {
                 if (!response.isSuccessful()) {
                     throw new IOException("Unexpected code at updateStatus" + response);
                 } else {
-                    mDevice.setStatus(action.equals(ArgumentsKeys.ON_QUERY) ? true : false);
-                    if (action.equals(ArgumentsKeys.ON_QUERY)) {
-                        createHistory(mAPI.getClient(), mDevice);
-                    } else {
-                        closeHistory(mAPI.getClient(), mDevice.getLastHistoryId());
-                    }
+                    mActivity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            deviceService.updateDeviceStatus(mDeviceId, action.equals(ArgumentsKeys.ON_QUERY) ? true : false);
+                            if (action.equals(ArgumentsKeys.ON_QUERY)) {
+                                createHistory(mAPI.getClient(), mDevice);
+                            } else {
+                                closeHistory(mAPI.getClient(), mDevice);
+                            }
+                        }
+                    });
                 }
             }
         });
@@ -310,6 +325,7 @@ public class DeviceDetailFragment extends Fragment {
 
     private void createHistory(OkHttpClient client, final Device device) {
         Log.e("createHistory", ArgumentsKeys.HISTORY_QUERY + "/device/" + device.get_id());
+
         String data = "{ \"startDate\": \"" + new Date().getTime() + "\"}";
         MediaType JSON = MediaType.parse("application/json; charset=utf-8");
         RequestBody body = RequestBody.create(JSON, data);
@@ -331,10 +347,19 @@ public class DeviceDetailFragment extends Fragment {
                     Log.e("createHistory", response.body().string());
                 } else {
                     try {
-                        JSONObject historyData = new JSONObject(response.body().string());
-                        String historyid = historyData.getString("_id");
-                        device.setLastHistoryId(historyid);
-                        sendHistoryIdToArduino(mAPI.getClient(), historyid, device);
+                        final JSONObject historyData = new JSONObject(response.body().string());
+                        final String historyid = historyData.getString("_id");
+
+                        mActivity.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                mAPI.getHistorialFromCloud(historyData);
+                                deviceService.updateDeviceLastHistoryId(mDeviceId, historyid);
+                                sendHistoryIdToArduino(mAPI.getClient(), historyid, device);
+                            }
+                        });
+
+
                     } catch (JSONException e) {
                         Log.e("createHistory", e.getMessage());
                     }
@@ -343,14 +368,14 @@ public class DeviceDetailFragment extends Fragment {
         });
     }
 
-    private void closeHistory(OkHttpClient client, String historyId) {
-        Log.e("closeHistory", ArgumentsKeys.HISTORY_QUERY + "/" + historyId);
+    private void closeHistory(OkHttpClient client, final Device device) {
+        Log.e("closeHistory", ArgumentsKeys.HISTORY_QUERY + "/" + device.getLastHistoryId());
         String data = "{ \"endDate\": \"" + new Date().getTime() + "\"}";
         MediaType JSON = MediaType.parse("application/json; charset=utf-8");
         RequestBody body = RequestBody.create(JSON, data);
         Log.e("JSON", data);
         Request request = new Request.Builder()
-                .url(ArgumentsKeys.HISTORY_QUERY + "/" + historyId)
+                .url(ArgumentsKeys.HISTORY_QUERY + "/" + device.getLastHistoryId())
                 .patch(body)
                 .build();
 
@@ -365,7 +390,47 @@ public class DeviceDetailFragment extends Fragment {
                 if (!response.isSuccessful()) {
                     Log.e("closeHistory", response.body().string());
                 } else {
+                    try {
+                    final JSONObject jsonObject = new JSONObject(response.body().string());
+                    mActivity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                                mAPI.getHistorialFromCloudEnd(jsonObject, mDeviceId);
+                                updateDevice(mAPI.getClient(), device);
+                        }
+                    });
 
+                    } catch (JSONException |IOException e) {
+                        Log.e("closeHistory", e.getMessage());
+                    }
+                }
+            }
+        });
+    }
+
+    private void updateDevice(OkHttpClient client, Device device) {
+
+        Log.e("updateDevice", ArgumentsKeys.DEVICE_QUERY);
+        MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+        RequestBody body = RequestBody.create(JSON, device.averageToString());
+        Log.e("JSON", device.averageToString());
+        Request request = new Request.Builder()
+                .url(ArgumentsKeys.DEVICE_QUERY + "/" + device.get_id())
+                .patch(body)
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Log.e("Error", e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, final Response response) throws IOException {
+                if (!response.isSuccessful()) {
+                    Log.e("updateDevice", response.body().string());
+                } else {
+                    Log.e("updateDevice", response.body().string());
                 }
             }
         });
@@ -373,6 +438,7 @@ public class DeviceDetailFragment extends Fragment {
 
     private void getDevice() {
         mDevice = deviceService.getDeviceById(mDeviceId);
+        Log.e("DEVICE", mDevice.get_id() + "");
         initDeviceView(mDevice);
     }
 
@@ -394,14 +460,19 @@ public class DeviceDetailFragment extends Fragment {
                 if (!response.isSuccessful()) {
                     throw new IOException("Unexpected code at getArduinoInfo" + response);
                 } else {
-                    String[] data = mAPI.getArduinoInfo(response);
-                    if (data[0] != null) {
-                        final double power = Double.parseDouble(data[0]);
-                        mDevice.setPower(power);
-                        final boolean status = data[1].equals("1");
-                        mDevice.setStatus(status);
-                    }
+                    final String[] data = mAPI.getArduinoInfo(response);
 
+                    mActivity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (data[0] != null) {
+                                final double power = Double.parseDouble(data[0]);
+                                deviceService.updateDevicePower(mDevice.get_id(), power);
+                                final boolean status = data[1].equals("1");
+                                deviceService.updateDeviceStatus(mDevice.get_id(), status);
+                            }
+                        }
+                    });
                 }
             }
         });
@@ -413,25 +484,33 @@ public class DeviceDetailFragment extends Fragment {
             @Override
             public void run() {
                 getDeviceInfo(mAPI.getClient());
-                String powerS = String.format("%.1f", mDevice.getPower());
-                power.setText(powerS + " W");
-                //status.setChecked(mDevice.isStatus());
+                power.setText(Utils.decimalFormat.format(mDevice.getPower()) + " W");
+                status.setChecked(mDevice.isStatus());
                 updatePowerHandler.postDelayed(this, 7000);
             }
         };
-
         updatePowerHandler.postDelayed(updatePowerRunnableDetails, 7000);
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (updatePowerHandler != null) {
+            updatePowerHandler.removeCallbacksAndMessages(null);
+        }
     }
 
     private void initDeviceView(Device device) {
         name.setText(device.getName());
         ip_address.setText(device.getIp_address());
+        averagePower.setText(Utils.decimalFormat.format(device.getAverageConsumption()) + " W");
         status.setChecked(device.isStatus());
         space.setText(device.getSpace() == null ? "" : device.getSpace().getName());
-        status.setEnabled(true);
+        Log.e("DEVICE/BUILDING", mDevice.getBuilding().get_id());
         building.setText(device.getBuilding().getName());
 
         if (device.isStatus()) {
+            power.setText(Utils.decimalFormat.format(mDevice.getPower()) + " W");
             refreshPower();
         }
     }

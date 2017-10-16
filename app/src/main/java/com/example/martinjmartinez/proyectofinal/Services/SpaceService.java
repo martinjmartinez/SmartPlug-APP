@@ -1,6 +1,10 @@
 package com.example.martinjmartinez.proyectofinal.Services;
 
+import android.util.Log;
+
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
+import com.example.martinjmartinez.proyectofinal.Entities.Device;
+import com.example.martinjmartinez.proyectofinal.Entities.Historial;
 import com.example.martinjmartinez.proyectofinal.Entities.Space;
 
 import java.util.List;
@@ -55,6 +59,25 @@ public class SpaceService {
         realm.beginTransaction();
 
         space.setName(name);
+
+        realm.commitTransaction();
+    }
+
+    public void updateSapacePowerAverageConsumption(String _id) {
+        Space space = getSpaceById(_id);
+        double sum = 0;
+
+        if (space.getDevices() != null) {
+            for (Device device : space.getDevices()) {
+                sum = device.getAverageConsumption() + sum;
+            }
+        }
+
+        double average = sum/space.getDevices().size();
+
+        realm.beginTransaction();
+
+        space.setAverageConsumption(average);
 
         realm.commitTransaction();
     }

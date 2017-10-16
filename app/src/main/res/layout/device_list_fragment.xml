@@ -2,6 +2,7 @@
 <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_margin="16dp"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <android.support.design.widget.FloatingActionButton
@@ -15,9 +16,25 @@
         app:srcCompat="@drawable/ic_add_white_48px" />
 
     <android.support.v7.widget.RecyclerView
-        android:layout_margin="16dp"
         android:id="@+id/devices_grid"
         android:layout_width="match_parent"
+        android:layout_gravity="center"
         android:layout_height="match_parent" />
+
+    <LinearLayout
+        android:id="@+id/empty_device_list_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="16dp"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="Create a new Device by pressing the add button below."
+            android:gravity="center"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textColor="@android:color/darker_gray"/>
+    </LinearLayout>
 
 </android.support.design.widget.CoordinatorLayout>

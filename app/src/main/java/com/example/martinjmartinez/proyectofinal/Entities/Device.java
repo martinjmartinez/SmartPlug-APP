@@ -1,6 +1,8 @@
 package com.example.martinjmartinez.proyectofinal.Entities;
 
 import io.realm.RealmObject;
+import io.realm.RealmResults;
+import io.realm.annotations.LinkingObjects;
 import io.realm.annotations.PrimaryKey;
 
 public class Device extends RealmObject {
@@ -22,6 +24,11 @@ public class Device extends RealmObject {
 
     private String lastHistoryId;
 
+    private double averageConsumption;
+
+    @LinkingObjects("device")
+    private final RealmResults<Historial> historials = null;
+
     public String getLastHistoryId() {
         return lastHistoryId;
     }
@@ -40,6 +47,14 @@ public class Device extends RealmObject {
 
     public String get_id() {
         return _id;
+    }
+
+    public double getAverageConsumption() {
+        return averageConsumption;
+    }
+
+    public void setAverageConsumption(double averageConsumption) {
+        this.averageConsumption = averageConsumption;
     }
 
     public void set_id(String _id) {
@@ -86,9 +101,19 @@ public class Device extends RealmObject {
         this.building = building;
     }
 
+    public RealmResults<Historial> getHistorials() {
+        return historials;
+    }
+
     public String statusToString() {
         return "{" +
                 "\"status\":" + status +
+                '}';
+    }
+
+    public String averageToString() {
+        return "{" +
+                "\"powerAverage\":" + averageConsumption +
                 '}';
     }
 
