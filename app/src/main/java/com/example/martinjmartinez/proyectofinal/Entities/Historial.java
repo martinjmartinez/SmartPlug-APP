@@ -14,9 +14,9 @@ public class Historial extends RealmObject {
 
     private Device device;
 
-    private long startDate;
+    private Date startDate;
 
-    private long endDate;
+    private Date endDate;
 
     private double totalHours;
 
@@ -25,15 +25,6 @@ public class Historial extends RealmObject {
     private double powerAverage;
 
     public Historial() {}
-
-    public Historial(String _id, Device device, Date startDate, Date endDate, double totalHours, RealmList<Log> powerLog) {
-        this._id = _id;
-        this.device = device;
-        this.startDate = startDate.getTime();
-        this.endDate = endDate.getTime();
-        this.totalHours = totalHours;
-        this.powerLog = powerLog;
-    }
 
     public String get_id() {
         return _id;
@@ -51,36 +42,12 @@ public class Historial extends RealmObject {
         this.device = device;
     }
 
-    public long getStartDate() {
-        return startDate;
-    }
-
-    public void setStartDate(Date startDate) {
-        this.startDate = startDate.getTime();
-    }
-
-    public long getEndDate() {
-        return endDate;
-    }
-
-    public void setEndDate(Date endDate) {
-        this.endDate = endDate.getTime();
-    }
-
     public double getTotalHours() {
         return totalHours;
     }
 
     public void setTotalHours(double totalHours) {
         this.totalHours = totalHours;
-    }
-
-    public void setStartDate(long startDate) {
-        this.startDate = startDate;
-    }
-
-    public void setEndDate(long endDate) {
-        this.endDate = endDate;
     }
 
     public RealmList<Log> getPowerLog() {
@@ -97,5 +64,21 @@ public class Historial extends RealmObject {
 
     public void setPowerAverage(double powerAverage) {
         this.powerAverage = powerAverage;
+    }
+
+    public Date getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(Date startDate) {
+        this.startDate = startDate;
+    }
+
+    public Date getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(Date endDate) {
+        this.endDate = endDate;
     }
 }

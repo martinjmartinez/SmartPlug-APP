@@ -83,7 +83,7 @@ public class API {
             historialService.startHistorial(_id, new Date(startDate), deviceId);
 
         } catch (JSONException e) {
-            Log.e("getBuildingFromCloud", e.getStackTrace().toString());
+            Log.e("getHistorialFromCloud", e.getStackTrace().toString());
         }
     }
 
@@ -172,9 +172,13 @@ public class API {
             for (int i = 0; i < historials.length(); i++) {
                 RealmList<com.example.martinjmartinez.proyectofinal.Entities.Log> powerLog = new RealmList<>();
                 double powerAverage = 0;
+                long endDate = 0;
                 String _id = historials.getJSONObject(i).getString("_id");
                 long startDate = historials.getJSONObject(i).getLong("startDate");
-                long endDate = historials.getJSONObject(i).getLong("endDate");
+                if (historials.getJSONObject(i).has("endDate")){
+                  endDate  = historials.getJSONObject(i).getLong("endDate");
+                }
+
                 String deviceId = historials.getJSONObject(i).getString("device");
 
                 if (historials.getJSONObject(i).has("powerLog")) {

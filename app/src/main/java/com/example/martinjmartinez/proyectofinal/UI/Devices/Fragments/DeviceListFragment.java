@@ -61,7 +61,7 @@ public class DeviceListFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        getArgumentsBundle();
+       // getArgumentsBundle();
 
     }
 
@@ -71,6 +71,7 @@ public class DeviceListFragment extends Fragment {
 
         mActivity = getActivity();
         mMainActivity = (MainActivity) mActivity;
+        getArgumentsBundle();
 
     }
 
@@ -94,13 +95,13 @@ public class DeviceListFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.device_list_fragment, container, false);
 
-
         iniVariables(view);
+
         if (!mBuildingId.isEmpty() && mSpaceId.isEmpty()) {
-            Log.e("DEVICES", "POR BUILDING");
+            Log.e("ALGO", "KLK");
             getDevicesByBuilding();
         } else if (mBuildingId.isEmpty() && !mSpaceId.isEmpty()) {
-            Log.e("DEVICES", "POR SPACES");
+            Log.e("ALGO2", "KLK");
             getDevicesBySpace();
         }
         initListeners();
@@ -149,15 +150,15 @@ public class DeviceListFragment extends Fragment {
 
     private void getDevicesByBuilding() {
         mDevicesList = buildingService.getBuildingById(mBuildingId).getDevices();
-        shouldEmptyMessageShow(mDevicesList);
+        shouldEmptyMessageShow();
     }
 
     private void getDevicesBySpace() {
         mDevicesList = spaceService.getSpaceById(mSpaceId).getDevices();
-       shouldEmptyMessageShow(mDevicesList);
+       shouldEmptyMessageShow();
     }
 
-    private void shouldEmptyMessageShow(List<Device> deviceList) {
+    private void shouldEmptyMessageShow() {
         if (!mDevicesList.isEmpty()) {
             mEmptyDeviceListLayout.setVisibility(View.GONE);
             initDevicesList(mDevicesList);

@@ -169,7 +169,7 @@ public class DeviceCreateFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 mDevice = new Device();
-                if (!Utils.isEditTextEmpty(name) && mDevice != null) {
+                if (!Utils.isEditTextEmpty(name) && mDevice != null && !Utils.isEditTextEmpty(ipAddress)) {
                     mDevice.setName(name.getText().toString());
                     mDevice.setIp_address(ipAddress.getText().toString());
                     mDevice.setStatus(false);
@@ -178,9 +178,8 @@ public class DeviceCreateFragment extends Fragment {
                     mDevice.setSpace(mSpace);
                     Log.e("SPACE", mSpace.get_id());
                     createDevice(mAPI.getClient(), mDevice.deviceToString());
-                    mMainActivity.onBackPressed();
                 } else {
-                    Toast.makeText(getActivity(), "Please, name your Space.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), "Please, fill all the fields.", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -217,9 +216,8 @@ public class DeviceCreateFragment extends Fragment {
                     mActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Log.e("THIS", mBuildingId + "kl");
                             mAPI.getDeviceFromCloud(response, mSpace.get_id(), mBuilding.get_id());
-                            mActivity.onBackPressed();
+                            mMainActivity.onBackPressed();
                         }
                     });
                 }

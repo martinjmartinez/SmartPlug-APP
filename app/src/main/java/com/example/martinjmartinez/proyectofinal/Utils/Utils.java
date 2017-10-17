@@ -15,7 +15,9 @@ import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import org.json.JSONObject;
 
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * Created by MartinJMartinez on 6/27/2017.
@@ -72,6 +74,12 @@ public class Utils {
 
     static public boolean isEditTextEmpty(EditText editText) {
         return editText.getText().toString().trim().length() == 0;
+    }
+
+    static public String formatDate(Date date) {
+        String stringDate = SimpleDateFormat.getDateInstance(SimpleDateFormat.DEFAULT).format(date);
+        String stringTime = SimpleDateFormat.getTimeInstance(SimpleDateFormat.DEFAULT).format(date);
+        return stringDate + " " + stringTime;
     }
 
     static public AlertDialog.Builder createDialog(Activity activity, String dialog_title, String dialog_message) {

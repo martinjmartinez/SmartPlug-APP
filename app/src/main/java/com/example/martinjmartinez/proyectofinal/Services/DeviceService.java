@@ -34,7 +34,7 @@ public class DeviceService {
     public void createDevice(String _id, String name, Boolean isOn, String ip_address, String spaceId, String buildingId, double powerAverage) {
         Space space = spaceService.getSpaceById(spaceId);
         Building building = buildingService.getBuildingById(buildingId);
-        Log.e("BUILDING6", building.getName());
+
         realm.beginTransaction();
 
         Device device = realm.createObject(Device.class, _id);
@@ -137,15 +137,10 @@ public class DeviceService {
             double average = 0;
 
             if (device.getHistorials() != null) {
-                Log.e("Num of Histories", device.getHistorials().size() + "");
                 for (Historial historial : device.getHistorials()) {
-                    Log.e("History ave", historial.getPowerAverage() + "");
                     sum = sum + historial.getPowerAverage();
                 }
-
-                Log.e("History sum", sum + "");
                 average = sum/device.getHistorials().size();
-                Log.e("average device", average + "");
             }
 
             realm.beginTransaction();

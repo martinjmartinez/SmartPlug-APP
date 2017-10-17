@@ -33,6 +33,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import io.realm.Realm;
@@ -59,6 +61,7 @@ public class DeviceDetailFragment extends Fragment {
     private TextView space;
     private TextView averagePower;
     private TextView building;
+    private TextView lastTimeUsed;
     private Switch status;
     private TextView power;
     private MainActivity mMainActivity;
@@ -129,6 +132,7 @@ public class DeviceDetailFragment extends Fragment {
         space = (TextView) view.findViewById(R.id.device_detail_space);
         building = (TextView) view.findViewById(R.id.device_detail_building);
         power = (TextView) view.findViewById(R.id.device_detail_power);
+        lastTimeUsed = (TextView) view.findViewById(R.id.device_detail_last_turn_on);
         status = (Switch) view.findViewById(R.id.device_detail_status);
         mEditButton = (Button) view.findViewById(R.id.device_detail_update);
         mDeleteButton = (Button) view.findViewById(R.id.device_detail_delete);
@@ -396,6 +400,7 @@ public class DeviceDetailFragment extends Fragment {
                         @Override
                         public void run() {
                                 mAPI.getHistorialFromCloudEnd(jsonObject, mDeviceId);
+                                lastTimeUsed.setText(Utils.formatDate(mDevice.getHistorials().last().getEndDate()));
                                 updateDevice(mAPI.getClient(), device);
                         }
                     });
@@ -505,8 +510,14 @@ public class DeviceDetailFragment extends Fragment {
         ip_address.setText(device.getIp_address());
         averagePower.setText(Utils.decimalFormat.format(device.getAverageConsumption()) + " W");
         status.setChecked(device.isStatus());
+        if(mDevice.isStatus()){
+            lastTimeUsed.setText(Utils.formatDate(mDevice.getHistorials().get(mDevice.getHistorials().size()-2).getEndDate()));
+        }else {
+            lastTimeUsed.setText(Utils.formatDate(mDevice.getHistorials().last().getEndDate()));
+        }
+
         space.setText(device.getSpace() == null ? "" : device.getSpace().getName());
-        Log.e("DEVICE/BUILDING", mDevice.getBuilding().get_id());
+
         building.setText(device.getBuilding().getName());
 
         if (device.isStatus()) {
