@@ -28,7 +28,7 @@ import com.example.martinjmartinez.proyectofinal.Services.SpaceService;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.UI.Spaces.Adapters.SpaceSpinnerAdapter;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
-import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
+import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 
 
@@ -74,8 +74,8 @@ public class DeviceCreateFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         Bundle bundle = this.getArguments();
-        mSpaceId = bundle != null ? bundle.getString(ArgumentsKeys.SPACE_ID, "") : "";
-        mBuildingId = bundle != null ? bundle.getString(ArgumentsKeys.BUILDING_ID, "") : "";
+        mSpaceId = bundle != null ? bundle.getString(Constants.SPACE_ID, "") : "";
+        mBuildingId = bundle != null ? bundle.getString(Constants.BUILDING_ID, "") : "";
     }
 
     @Override
@@ -176,7 +176,7 @@ public class DeviceCreateFragment extends Fragment {
                     mDevice.setBuilding(mBuilding);
                     Log.e("BUILDING", mBuilding.get_id());
                     mDevice.setSpace(mSpace);
-                    Log.e("SPACE", mSpace.get_id());
+
                     createDevice(mAPI.getClient(), mDevice.deviceToString());
                 } else {
                     Toast.makeText(getActivity(), "Please, fill all the fields.", Toast.LENGTH_SHORT).show();
@@ -193,12 +193,12 @@ public class DeviceCreateFragment extends Fragment {
     }
 
     private void createDevice(OkHttpClient client, String data) {
-        Log.e("QUERY", ArgumentsKeys.DEVICE_QUERY);
+        Log.e("QUERY", Constants.DEVICE_QUERY);
         MediaType JSON = MediaType.parse("application/json; charset=utf-8");
         RequestBody body = RequestBody.create(JSON, data);
         Log.e("JSON", data);
         Request request = new Request.Builder()
-                .url(ArgumentsKeys.DEVICE_QUERY)
+                .url(Constants.DEVICE_QUERY)
                 .post(body)
                 .build();
 
@@ -216,7 +216,12 @@ public class DeviceCreateFragment extends Fragment {
                     mActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            mAPI.getDeviceFromCloud(response, mSpace.get_id(), mBuilding.get_id());
+                            if (mSpace != null) {
+                                mAPI.getDeviceFromCloud(response, mSpace.get_id(), mBuilding.get_id());
+                            } else {
+                                mAPI.getDeviceFromCloud(response, "", mBuilding.get_id());
+                            }
+
                             mMainActivity.onBackPressed();
                         }
                     });

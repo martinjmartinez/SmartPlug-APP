@@ -191,14 +191,12 @@ public class API {
                             for (int j = 0; j < logs.length(); j++) {
                                 String logId = logs.getJSONObject(j).getString("_id");
                                 double power = logs.getJSONObject(j).getDouble("log");
-                                Log.e("log", power + "");
                                 total = power + total;
                                 logService.updateOrCreateLog(logId, power);
                                 powerLog.add(logService.getLogById(logId));
                             }
 
                             powerAverage = total/logs.length();
-                            Log.e("total/average/size", total + "/"+ powerAverage + "/" + logs.length());
                         } else {
                             powerAverage = 0;
                         }

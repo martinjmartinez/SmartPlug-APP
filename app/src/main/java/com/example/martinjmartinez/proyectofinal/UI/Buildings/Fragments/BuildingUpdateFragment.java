@@ -21,7 +21,7 @@ import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
-import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
+import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 
 import java.io.IOException;
@@ -60,7 +60,7 @@ public class BuildingUpdateFragment extends Fragment {
 
         Bundle bundle = this.getArguments();
         if (bundle != null) {
-            mBuildingId = bundle.getString(ArgumentsKeys.BUILDING_ID, "");
+            mBuildingId = bundle.getString(Constants.BUILDING_ID, "");
         } else {
             mBuildingId = "";
         }
@@ -167,7 +167,7 @@ public class BuildingUpdateFragment extends Fragment {
         RequestBody body = RequestBody.create(JSON, data);
         Log.e("JSON", data);
         Request request = new Request.Builder()
-                .url(ArgumentsKeys.BUILDING_QUERY + "/" + mBuildingId)
+                .url(Constants.BUILDING_QUERY + "/" + mBuildingId)
                 .patch(body)
                 .build();
 

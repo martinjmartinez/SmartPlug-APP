@@ -28,7 +28,7 @@ import com.example.martinjmartinez.proyectofinal.Services.SpaceService;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.UI.Spaces.Adapters.SpaceSpinnerAdapter;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
-import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
+import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 
 import java.io.IOException;
@@ -52,7 +52,6 @@ public class DeviceUpdateFragment extends Fragment {
     private Device mDevice;
     private API mAPI;
     private Activity mActivity;
-    private String mBuildingId;
     private EditText name;
     private EditText ipAddress;
     private TextView displayName;
@@ -60,7 +59,7 @@ public class DeviceUpdateFragment extends Fragment {
     private TextView deviceSpace;
     private Button saveDevice;
     private String mSpaceId, mDeviceId;
-    private Space mSpace;
+    private Space mSpace, lastSpace;
     private Building mBuilding;
     private Spinner mSpaceSpinner;
     private SpaceSpinnerAdapter mSpaceSpinnerAdapter;
@@ -78,7 +77,7 @@ public class DeviceUpdateFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         Bundle bundle = this.getArguments();
-        mDeviceId = bundle != null ? bundle.getString(ArgumentsKeys.DEVICE_ID, "") : "";
+        mDeviceId = bundle != null ? bundle.getString(Constants.DEVICE_ID, "") : "";
     }
 
     @Override
@@ -139,7 +138,7 @@ public class DeviceUpdateFragment extends Fragment {
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-                mSpace = mDevice.getBuilding().getSpaces().get(0);
+                mSpace = mDevice.getSpace();
             }
         });
 
@@ -164,7 +163,14 @@ public class DeviceUpdateFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if (!Utils.isEditTextEmpty(name)) {
-                    deviceService.updateDevice(mDeviceId, name.getText().toString(), mDevice.isStatus(), ipAddress.getText().toString(), mSpace.get_id(), mSpace.getBuilding().get_id(), mDevice.getAverageConsumption());
+                    if (mSpace != null) {
+                        deviceService.updateDevice(mDeviceId, name.getText().toString(), mDevice.isStatus(), ipAddress.getText().toString(), mSpace.get_id(), mSpace.getBuilding().get_id(), mDevice.getAverageConsumption());
+                        spaceService.updateSapacePowerAverageConsumption(mSpace.get_id());
+                        spaceService.updateSapacePowerAverageConsumption(lastSpace.get_id());
+
+                    } else {
+                        deviceService.updateDevice(mDeviceId, name.getText().toString(), mDevice.isStatus(), ipAddress.getText().toString(), "", mDevice.getBuilding().get_id(), mDevice.getAverageConsumption());
+                    }
                     Device newDevice = deviceService.getDeviceById(mDeviceId);
                     updateDevice(mAPI.getClient(), newDevice.deviceToString());
                 } else {
@@ -182,12 +188,12 @@ public class DeviceUpdateFragment extends Fragment {
     }
 
     private void updateDevice(OkHttpClient client, String data) {
-        Log.e("QUERY", ArgumentsKeys.DEVICE_QUERY);
+        Log.e("QUERY", Constants.DEVICE_QUERY);
         MediaType JSON = MediaType.parse("application/json; charset=utf-8");
         RequestBody body = RequestBody.create(JSON, data);
         Log.e("JSON", data);
         Request request = new Request.Builder()
-                .url(ArgumentsKeys.DEVICE_QUERY + "/" + mDeviceId)
+                .url(Constants.DEVICE_QUERY + "/" + mDeviceId)
                 .patch(body)
                 .build();
 
@@ -223,6 +229,7 @@ public class DeviceUpdateFragment extends Fragment {
         deviceBuilding.setText(mDevice.getBuilding().getName());
         mSpaceSpinner.setVisibility(View.VISIBLE);
         deviceSpace.setVisibility(View.GONE);
+
         setUpSpacesSpinner(mDevice.getBuilding().getSpaces());
     }
 
@@ -230,6 +237,7 @@ public class DeviceUpdateFragment extends Fragment {
         if (items.size() != 0) {
             mSpaceSpinnerAdapter = new SpaceSpinnerAdapter(getContext(), R.layout.spaces_item_spinner, items);
             mSpaceSpinner.setAdapter(mSpaceSpinnerAdapter);
+            lastSpace = mDevice.getSpace();
         } else {
             mSpaceSpinner.setEnabled(false);
         }

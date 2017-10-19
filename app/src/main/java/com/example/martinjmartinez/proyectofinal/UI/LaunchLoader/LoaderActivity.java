@@ -8,9 +8,7 @@ import android.util.Log;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
-import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
-
-import org.json.JSONArray;
+import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 
 import java.io.IOException;
 
@@ -53,7 +51,7 @@ public class LoaderActivity extends AppCompatActivity {
 
     public void getBuildings(final OkHttpClient client) {
         Request request = new Request.Builder()
-                .url(ArgumentsKeys.BUILDING_QUERY)
+                .url(Constants.BUILDING_QUERY)
                 .build();
 
         client.newCall(request).enqueue(new Callback() {
@@ -83,7 +81,7 @@ public class LoaderActivity extends AppCompatActivity {
 
     public void getSpaces(final OkHttpClient client) {
         Request request = new Request.Builder()
-                .url(ArgumentsKeys.SPACE_QUERY)
+                .url(Constants.SPACE_QUERY)
                 .build();
 
         client.newCall(request).enqueue(new Callback() {
@@ -112,7 +110,7 @@ public class LoaderActivity extends AppCompatActivity {
 
     public void getDevices(final OkHttpClient client) {
         Request request = new Request.Builder()
-                .url(ArgumentsKeys.DEVICE_QUERY)
+                .url(Constants.DEVICE_QUERY)
                 .build();
 
         client.newCall(request).enqueue(new Callback() {
@@ -141,7 +139,7 @@ public class LoaderActivity extends AppCompatActivity {
 
     public void getHistorials(OkHttpClient client) {
         Request request = new Request.Builder()
-                .url(ArgumentsKeys.HISTORY_QUERY)
+                .url(Constants.HISTORY_QUERY)
                 .build();
 
         client.newCall(request).enqueue(new Callback() {
@@ -172,6 +170,7 @@ public class LoaderActivity extends AppCompatActivity {
 
     public void loadFinished() {
         Intent intent = new Intent(this, MainActivity.class);
+        intent.setFlags(intent.getFlags() | Intent.FLAG_ACTIVITY_NO_HISTORY);
         startActivity(intent);
     }
 }

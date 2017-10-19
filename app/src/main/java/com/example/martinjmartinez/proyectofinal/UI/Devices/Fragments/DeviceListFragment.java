@@ -24,7 +24,7 @@ import com.example.martinjmartinez.proyectofinal.Services.SpaceService;
 import com.example.martinjmartinez.proyectofinal.UI.Devices.Adapters.DeviceListAdapter;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
-import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
+import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 
@@ -87,8 +87,8 @@ public class DeviceListFragment extends Fragment {
 
     public void getArgumentsBundle() {
         Bundle bundle = this.getArguments();
-        mBuildingId = bundle != null ? bundle.getString(ArgumentsKeys.BUILDING_ID, "") : "";
-        mSpaceId = bundle != null ? bundle.getString(ArgumentsKeys.SPACE_ID, "") : "";
+        mBuildingId = bundle != null ? bundle.getString(Constants.BUILDING_ID, "") : "";
+        mSpaceId = bundle != null ? bundle.getString(Constants.SPACE_ID, "") : "";
     }
 
     @Override
@@ -133,8 +133,8 @@ public class DeviceListFragment extends Fragment {
             public void onClick(View v) {
                 DeviceCreateFragment deviceCreateFragment = new DeviceCreateFragment();
                 Bundle bundle = new Bundle();
-                bundle.putString(ArgumentsKeys.BUILDING_ID, mBuildingId);
-                bundle.putString(ArgumentsKeys.SPACE_ID, mSpaceId);
+                bundle.putString(Constants.BUILDING_ID, mBuildingId);
+                bundle.putString(Constants.SPACE_ID, mSpaceId);
                 deviceCreateFragment.setArguments(bundle);
                 Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.DEVICE_LIST_FRAGMENT), deviceCreateFragment, FragmentKeys.DEVICE_CREATION_FRAGMENT, true);
             }

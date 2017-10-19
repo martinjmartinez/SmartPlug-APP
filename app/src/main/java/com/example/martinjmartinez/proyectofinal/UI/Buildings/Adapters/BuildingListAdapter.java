@@ -13,7 +13,7 @@ import android.widget.TextView;
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.UI.Buildings.Fragments.BuildingDetailFragment;
-import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
+import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 
@@ -62,7 +62,7 @@ public class BuildingListAdapter extends ArrayAdapter<Building> {
             public void onClick(View v) {
                 BuildingDetailFragment buildingDetailFragment =  new BuildingDetailFragment();
                 Bundle bundle = new Bundle();
-                bundle.putString(ArgumentsKeys.BUILDING_ID, building.get_id());
+                bundle.putString(Constants.BUILDING_ID, building.get_id());
                 buildingDetailFragment.setArguments(bundle);
                 Utils.loadContentFragment(((AppCompatActivity) getContext()).getSupportFragmentManager().findFragmentByTag(FragmentKeys.BUILDING_LIST_FRAGMENT), buildingDetailFragment, FragmentKeys.BUILDING_DETAIL_FRAGMENT, true);
             }

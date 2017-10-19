@@ -19,15 +19,10 @@ import android.widget.Toast;
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
-import com.example.martinjmartinez.proyectofinal.UI.Home.HomeFragment;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
-import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
-import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
+import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.IOException;
 
@@ -143,12 +138,12 @@ public class BuildingCreateFragment extends Fragment {
     }
 
     private void createBuilding(OkHttpClient client, String data) {
-        Log.e("QUERY", ArgumentsKeys.BUILDING_QUERY);
+        Log.e("QUERY", Constants.BUILDING_QUERY);
         MediaType JSON = MediaType.parse("application/json; charset=utf-8");
         RequestBody body = RequestBody.create(JSON, data);
         Log.e("JSON", data);
         Request request = new Request.Builder()
-                .url(ArgumentsKeys.BUILDING_QUERY)
+                .url(Constants.BUILDING_QUERY)
                 .post(body)
                 .build();
 

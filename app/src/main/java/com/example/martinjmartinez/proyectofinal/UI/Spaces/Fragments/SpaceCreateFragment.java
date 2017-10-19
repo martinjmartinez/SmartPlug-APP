@@ -23,11 +23,8 @@ import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.Services.SpaceService;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
-import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
+import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.IOException;
 
@@ -151,12 +148,12 @@ public class SpaceCreateFragment extends Fragment {
     }
 
     private void createSpace(OkHttpClient client, String data) {
-        Log.e("QUERY", ArgumentsKeys.SPACE_QUERY);
+        Log.e("QUERY", Constants.SPACE_QUERY);
         MediaType JSON = MediaType.parse("application/json; charset=utf-8");
         RequestBody body = RequestBody.create(JSON, data);
         Log.e("JSON", data);
         Request request = new Request.Builder()
-                .url(ArgumentsKeys.SPACE_QUERY)
+                .url(Constants.SPACE_QUERY)
                 .post(body)
                 .build();
 

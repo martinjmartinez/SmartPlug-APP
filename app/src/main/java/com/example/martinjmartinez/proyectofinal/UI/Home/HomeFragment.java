@@ -6,12 +6,10 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.CardView;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,14 +25,7 @@ import com.example.martinjmartinez.proyectofinal.Services.SpaceService;
 import com.example.martinjmartinez.proyectofinal.UI.Devices.Adapters.DeviceListAdapter;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
-import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
-import com.github.mikephil.charting.charts.BarChart;
-import com.github.mikephil.charting.components.AxisBase;
-import com.github.mikephil.charting.components.XAxis;
-import com.github.mikephil.charting.data.BarData;
-import com.github.mikephil.charting.data.BarDataSet;
-import com.github.mikephil.charting.data.BarEntry;
-import com.github.mikephil.charting.formatter.IAxisValueFormatter;
+import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -88,7 +79,7 @@ public class HomeFragment extends Fragment {
 
     public void getArgumentsBundle() {
         Bundle bundle = this.getArguments();
-        mBuildingId = bundle != null ? bundle.getString(ArgumentsKeys.BUILDING_ID, "") : "";
+        mBuildingId = bundle != null ? bundle.getString(Constants.BUILDING_ID, "") : "";
     }
 
     @Override
@@ -120,14 +111,14 @@ public class HomeFragment extends Fragment {
 
     private void setAdapters(List<Device> devicesList, List<Building> charts) {
         ChartListAdapter chartListAdapter = new ChartListAdapter(charts, mActivity);
-        RecyclerView.LayoutManager mLayoutManager1 = new LinearLayoutManager(mActivity, GridLayoutManager.HORIZONTAL, true);
+        RecyclerView.LayoutManager mLayoutManager1 = new LinearLayoutManager(mActivity, GridLayoutManager.HORIZONTAL, false);
 
         mGraphsRecycleView.setLayoutManager(mLayoutManager1);
         mGraphsRecycleView.setItemAnimator(new DefaultItemAnimator());
         mGraphsRecycleView.setAdapter(chartListAdapter);
 
         DeviceListAdapter deviceListAdapter = new DeviceListAdapter(devicesList, getActivity(), this);
-        RecyclerView.LayoutManager mLayoutManager2 = new LinearLayoutManager(mActivity, GridLayoutManager.HORIZONTAL, true);
+        RecyclerView.LayoutManager mLayoutManager2 = new LinearLayoutManager(mActivity, GridLayoutManager.HORIZONTAL, false);
 
         mMostUsedDevicesRecycleView.setLayoutManager(mLayoutManager2);
         mMostUsedDevicesRecycleView.setItemAnimator(new DefaultItemAnimator());

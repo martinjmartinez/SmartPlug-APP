@@ -21,8 +21,8 @@ public class DeviceService {
 
     public DeviceService (Realm realm) {
         this.realm = realm;
-        spaceService = new SpaceService(Realm.getDefaultInstance());
-        buildingService = new BuildingService(Realm.getDefaultInstance());
+        spaceService = new SpaceService(realm);
+        buildingService = new BuildingService(realm);
     }
 
     public List<Device> allDevices() {
@@ -65,9 +65,9 @@ public class DeviceService {
 
     public void updateDevice(String _id, String name, Boolean isOn, String ip_address, String spaceId, String buildingId, double powerAverage) {
         Device device = getDeviceById(_id);
-        Space space = realm.where(Space.class).equalTo("_id", spaceId).findFirst();
-        Building building = realm.where(Building.class).equalTo("_id", buildingId).findFirst();
-
+        Space space = spaceService.getSpaceById(spaceId);
+        Building building = buildingService.getBuildingById(buildingId);
+        Log.e("BUILDINGW", buildingId + "fff");
         realm.beginTransaction();
 
         device.setName(name);
@@ -148,8 +148,10 @@ public class DeviceService {
             device.setAverageConsumption(average);
 
             realm.commitTransaction();
+            if(device.getSpace() !=null){
+                spaceService.updateSapacePowerAverageConsumption(device.getSpace().get_id());
+            }
 
-            spaceService.updateSapacePowerAverageConsumption(device.getSpace().get_id());
         }
     }
 

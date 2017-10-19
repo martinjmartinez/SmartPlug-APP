@@ -22,7 +22,7 @@ import com.example.martinjmartinez.proyectofinal.Services.HistorialService;
 import com.example.martinjmartinez.proyectofinal.UI.Devices.Fragments.DeviceDetailFragment;
 import com.example.martinjmartinez.proyectofinal.UI.Home.HomeFragment;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
-import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
+import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 
@@ -116,13 +116,13 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
                     refreshPower(device, holder);
-                    changeStatus(new API().getClient(), ArgumentsKeys.ON_QUERY, device.get_id());
+                    changeStatus(new API().getClient(), Constants.ON_QUERY, device.get_id());
                 } else {
                     if (updatePowerHandler != null) {
                         holder.mPower.setText("0 W");
                         updatePowerHandler.removeCallbacks(updatePowerRunnable);
                     }
-                    changeStatus(new API().getClient(), ArgumentsKeys.OFF_QUERY, device.get_id());
+                    changeStatus(new API().getClient(), Constants.OFF_QUERY, device.get_id());
                 }
             }
         });
@@ -133,7 +133,7 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
                 DeviceDetailFragment deviceDetailFragment = new DeviceDetailFragment();
                 Bundle bundle = new Bundle();
 
-                bundle.putString(ArgumentsKeys.DEVICE_ID, device.get_id());
+                bundle.putString(Constants.DEVICE_ID, device.get_id());
                 deviceDetailFragment.setArguments(bundle);
                 AppCompatActivity activity = (AppCompatActivity) v.getContext();
 
@@ -183,13 +183,13 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
     }
 
     private void createHistory(OkHttpClient client, final String deviceId) {
-        Log.e("createHistory", ArgumentsKeys.HISTORY_QUERY + "/device/" + deviceId);
+        Log.e("createHistory", Constants.HISTORY_QUERY + "/device/" + deviceId);
         String data = "{ \"startDate\": \"" + new Date().getTime() + "\"}";
         MediaType JSON = MediaType.parse("application/json; charset=utf-8");
         RequestBody body = RequestBody.create(JSON, data);
         Log.e("JSON", data);
         Request request = new Request.Builder()
-                .url(ArgumentsKeys.HISTORY_QUERY + "/device/" + deviceId)
+                .url(Constants.HISTORY_QUERY + "/device/" + deviceId)
                 .post(body)
                 .build();
 
@@ -250,13 +250,13 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
 
     private void closeHistory(OkHttpClient client, final String deviceId) {
         Device device = deviceService.getDeviceById(deviceId);
-        Log.e("closeHistory", ArgumentsKeys.HISTORY_QUERY + "/" + device.getLastHistoryId());
+        Log.e("closeHistory", Constants.HISTORY_QUERY + "/" + device.getLastHistoryId());
         String data = "{ \"endDate\": \"" + new Date().getTime() + "\"}";
         MediaType JSON = MediaType.parse("application/json; charset=utf-8");
         RequestBody body = RequestBody.create(JSON, data);
         Log.e("JSON", data);
         final Request request = new Request.Builder()
-                .url(ArgumentsKeys.HISTORY_QUERY + "/" + device.getLastHistoryId())
+                .url(Constants.HISTORY_QUERY + "/" + device.getLastHistoryId())
                 .patch(body)
                 .build();
 
@@ -293,14 +293,14 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
 
     public void updateStatus(final OkHttpClient client, final String action, final String deviceId) {
         MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-        boolean status = action.equals(ArgumentsKeys.ON_QUERY) ? true : false;
+        boolean status = action.equals(Constants.ON_QUERY) ? true : false;
         RequestBody body = RequestBody.create(JSON, "{" + "\"status\":" + status + '}');
 
-        Log.e("updateStatus", ArgumentsKeys.DEVICE_QUERY + "/" + deviceId);
+        Log.e("updateStatus", Constants.DEVICE_QUERY + "/" + deviceId);
         Log.e("JSON", "{" + "\"status\":" + status + '}');
 
         final Request requestUpdate = new Request.Builder()
-                .url(ArgumentsKeys.DEVICE_QUERY + "/" + deviceId)
+                .url(Constants.DEVICE_QUERY + "/" + deviceId)
                 .patch(body)
                 .build();
 
@@ -318,8 +318,8 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
                     activity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            deviceService.updateDeviceStatus(deviceId, action.equals(ArgumentsKeys.ON_QUERY) ? true : false);
-                            if (action.equals(ArgumentsKeys.ON_QUERY)) {
+                            deviceService.updateDeviceStatus(deviceId, action.equals(Constants.ON_QUERY) ? true : false);
+                            if (action.equals(Constants.ON_QUERY)) {
                                 createHistory(mAPI.getClient(), deviceId);
                             } else {
 

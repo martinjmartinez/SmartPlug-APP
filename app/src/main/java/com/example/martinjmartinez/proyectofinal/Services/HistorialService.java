@@ -14,9 +14,11 @@ import io.realm.RealmResults;
 
 public class HistorialService extends SmartPLugApplication {
     private Realm realm;
+    private DeviceService deviceService;
 
     public HistorialService (Realm realm) {
         this.realm = realm;
+        deviceService = new DeviceService(realm);
     }
 
     public List<Historial> allHistorial() {
@@ -26,7 +28,7 @@ public class HistorialService extends SmartPLugApplication {
     }
 
     public void createHistorial(String _id, Date startDate, Date endDate, String deviceId, RealmList<Log> powerLog, double powerAverage) {
-        Device device = realm.where(Device.class).equalTo("_id", deviceId).findFirst();
+        Device device = deviceService.getDeviceById(deviceId);
 
         realm.beginTransaction();
 
@@ -36,18 +38,22 @@ public class HistorialService extends SmartPLugApplication {
         historial.setDevice(device);
         historial.setPowerLog(powerLog);
         historial.setPowerAverage(powerAverage);
+        historial.setBuilding(device.getBuilding());
+        historial.setSpace(device.getSpace());
 
         realm.commitTransaction();
     }
 
     public void startHistorial(String _id, Date startDate, String deviceId) {
-        Device device = realm.where(Device.class).equalTo("_id", deviceId).findFirst();
+        Device device = deviceService.getDeviceById(deviceId);
 
         realm.beginTransaction();
 
         Historial historial = realm.createObject(Historial.class, _id);
         historial.setStartDate(startDate);
         historial.setDevice(device);
+        historial.setBuilding(device.getBuilding());
+        historial.setSpace(device.getSpace());
 
         realm.commitTransaction();
     }
@@ -80,7 +86,7 @@ public class HistorialService extends SmartPLugApplication {
 
     public void updateHistorial(String _id, Date startDate, Date endDate, String deviceId, RealmList<Log> powerLog, double powerAverage) {
         Historial historial = getHistorialById(_id);
-        Device device = realm.where(Device.class).equalTo("_id", deviceId).findFirst();
+        Device device = deviceService.getDeviceById(deviceId);
 
         realm.beginTransaction();
 
@@ -89,6 +95,8 @@ public class HistorialService extends SmartPLugApplication {
         historial.setDevice(device);
         historial.setPowerLog(powerLog);
         historial.setPowerAverage(powerAverage);
+        historial.setBuilding(device.getBuilding());
+        historial.setSpace(device.getSpace());
 
         realm.commitTransaction();
     }

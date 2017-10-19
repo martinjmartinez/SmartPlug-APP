@@ -22,7 +22,7 @@ import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.SpaceService;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
-import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
+import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 
 import java.io.IOException;
@@ -58,7 +58,7 @@ public class SpaceUpdateFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         Bundle bundle = this.getArguments();
-        mSpaceId = bundle != null ? bundle.getString(ArgumentsKeys.SPACE_ID, "") : "";
+        mSpaceId = bundle != null ? bundle.getString(Constants.SPACE_ID, "") : "";
     }
 
     @Override
@@ -151,12 +151,12 @@ public class SpaceUpdateFragment extends Fragment {
     }
 
     private void updateSpace(OkHttpClient client, String data) {
-        Log.e("QUERY", ArgumentsKeys.SPACE_QUERY);
+        Log.e("QUERY", Constants.SPACE_QUERY);
         MediaType JSON = MediaType.parse("application/json; charset=utf-8");
         RequestBody body = RequestBody.create(JSON, data);
         Log.e("JSON", data);
         Request request = new Request.Builder()
-                .url(ArgumentsKeys.SPACE_QUERY + "/" + mSpaceId)
+                .url(Constants.SPACE_QUERY + "/" + mSpaceId)
                 .patch(body)
                 .build();
 

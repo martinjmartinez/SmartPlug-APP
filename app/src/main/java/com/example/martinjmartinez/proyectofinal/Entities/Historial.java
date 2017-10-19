@@ -14,6 +14,10 @@ public class Historial extends RealmObject {
 
     private Device device;
 
+    private Space space;
+
+    private Building building;
+
     private Date startDate;
 
     private Date endDate;
@@ -64,6 +68,22 @@ public class Historial extends RealmObject {
 
     public void setPowerAverage(double powerAverage) {
         this.powerAverage = powerAverage;
+    }
+
+    public Space getSpace() {
+        return space;
+    }
+
+    public void setSpace(Space space) {
+        this.space = space;
+    }
+
+    public Building getBuilding() {
+        return building;
+    }
+
+    public void setBuilding(Building building) {
+        this.building = building;
     }
 
     public Date getStartDate() {

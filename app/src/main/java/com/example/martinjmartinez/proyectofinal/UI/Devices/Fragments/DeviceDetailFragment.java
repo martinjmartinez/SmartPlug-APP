@@ -18,14 +18,12 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Device;
-import com.example.martinjmartinez.proyectofinal.Entities.Historial;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
 import com.example.martinjmartinez.proyectofinal.Services.HistorialService;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
-import com.example.martinjmartinez.proyectofinal.UI.Spaces.Fragments.SpaceUpdateFragment;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
-import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
+import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 
@@ -33,8 +31,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import io.realm.Realm;
@@ -81,7 +77,7 @@ public class DeviceDetailFragment extends Fragment {
 
         Bundle bundle = this.getArguments();
         if (bundle != null) {
-            mDeviceId = bundle.getString(ArgumentsKeys.DEVICE_ID, "");
+            mDeviceId = bundle.getString(Constants.DEVICE_ID, "");
         }
 
         mAPI = new API();
@@ -146,7 +142,7 @@ public class DeviceDetailFragment extends Fragment {
                 DeviceUpdateFragment deviceUpdateFragment = new DeviceUpdateFragment();
                 Bundle bundle = new Bundle();
 
-                bundle.putString(ArgumentsKeys.DEVICE_ID, mDeviceId);
+                bundle.putString(Constants.DEVICE_ID, mDeviceId);
                 deviceUpdateFragment.setArguments(bundle);
 
                 Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.DEVICE_DETAIL_FRAGMENT),
@@ -185,13 +181,13 @@ public class DeviceDetailFragment extends Fragment {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
                     refreshPower();
-                    changeStatus(new API().getClient(), ArgumentsKeys.ON_QUERY);
+                    changeStatus(new API().getClient(), Constants.ON_QUERY);
                 } else {
                     if (updatePowerHandler != null) {
                         power.setText("0 W");
                         updatePowerHandler.removeCallbacksAndMessages(null);
                     }
-                    changeStatus(new API().getClient(), ArgumentsKeys.OFF_QUERY);
+                    changeStatus(new API().getClient(), Constants.OFF_QUERY);
                 }
 
             }
@@ -206,9 +202,9 @@ public class DeviceDetailFragment extends Fragment {
     }
 
     private void deleteSpace(OkHttpClient client) {
-        Log.e("QUERY", ArgumentsKeys.DEVICE_QUERY);
+        Log.e("QUERY", Constants.DEVICE_QUERY);
         Request request = new Request.Builder()
-                .url(ArgumentsKeys.DEVICE_QUERY + "/" + mDeviceId)
+                .url(Constants.DEVICE_QUERY + "/" + mDeviceId)
                 .delete()
                 .build();
 
@@ -266,13 +262,13 @@ public class DeviceDetailFragment extends Fragment {
     public void updateStatus(final OkHttpClient client, final String action) {
         MediaType JSON = MediaType.parse("application/json; charset=utf-8");
         Device d = new Device();
-        d.setStatus(action.equals(ArgumentsKeys.ON_QUERY) ? true : false);
+        d.setStatus(action.equals(Constants.ON_QUERY) ? true : false);
         RequestBody body = RequestBody.create(JSON, d.statusToString());
-        Log.e("updateStatus", ArgumentsKeys.DEVICE_QUERY + "/" + mDevice.get_id());
+        Log.e("updateStatus", Constants.DEVICE_QUERY + "/" + mDevice.get_id());
         Log.e("JSON", d.statusToString());
 
         final Request requestUpdate = new Request.Builder()
-                .url(ArgumentsKeys.DEVICE_QUERY + "/" + mDevice.get_id())
+                .url(Constants.DEVICE_QUERY + "/" + mDevice.get_id())
                 .patch(body)
                 .build();
 
@@ -290,8 +286,8 @@ public class DeviceDetailFragment extends Fragment {
                     mActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            deviceService.updateDeviceStatus(mDeviceId, action.equals(ArgumentsKeys.ON_QUERY) ? true : false);
-                            if (action.equals(ArgumentsKeys.ON_QUERY)) {
+                            deviceService.updateDeviceStatus(mDeviceId, action.equals(Constants.ON_QUERY) ? true : false);
+                            if (action.equals(Constants.ON_QUERY)) {
                                 createHistory(mAPI.getClient(), mDevice);
                             } else {
                                 closeHistory(mAPI.getClient(), mDevice);
@@ -328,14 +324,14 @@ public class DeviceDetailFragment extends Fragment {
     }
 
     private void createHistory(OkHttpClient client, final Device device) {
-        Log.e("createHistory", ArgumentsKeys.HISTORY_QUERY + "/device/" + device.get_id());
+        Log.e("createHistory", Constants.HISTORY_QUERY + "/device/" + device.get_id());
 
         String data = "{ \"startDate\": \"" + new Date().getTime() + "\"}";
         MediaType JSON = MediaType.parse("application/json; charset=utf-8");
         RequestBody body = RequestBody.create(JSON, data);
         Log.e("JSON", data);
         Request request = new Request.Builder()
-                .url(ArgumentsKeys.HISTORY_QUERY + "/device/" + device.get_id())
+                .url(Constants.HISTORY_QUERY + "/device/" + device.get_id())
                 .post(body)
                 .build();
 
@@ -373,13 +369,13 @@ public class DeviceDetailFragment extends Fragment {
     }
 
     private void closeHistory(OkHttpClient client, final Device device) {
-        Log.e("closeHistory", ArgumentsKeys.HISTORY_QUERY + "/" + device.getLastHistoryId());
+        Log.e("closeHistory", Constants.HISTORY_QUERY + "/" + device.getLastHistoryId());
         String data = "{ \"endDate\": \"" + new Date().getTime() + "\"}";
         MediaType JSON = MediaType.parse("application/json; charset=utf-8");
         RequestBody body = RequestBody.create(JSON, data);
         Log.e("JSON", data);
         Request request = new Request.Builder()
-                .url(ArgumentsKeys.HISTORY_QUERY + "/" + device.getLastHistoryId())
+                .url(Constants.HISTORY_QUERY + "/" + device.getLastHistoryId())
                 .patch(body)
                 .build();
 
@@ -400,7 +396,7 @@ public class DeviceDetailFragment extends Fragment {
                         @Override
                         public void run() {
                                 mAPI.getHistorialFromCloudEnd(jsonObject, mDeviceId);
-                                lastTimeUsed.setText(Utils.formatDate(mDevice.getHistorials().last().getEndDate()));
+                                lastTimeUsed.setText(Utils.formatDefaultDate(mDevice.getHistorials().last().getEndDate()));
                                 updateDevice(mAPI.getClient(), device);
                         }
                     });
@@ -415,12 +411,12 @@ public class DeviceDetailFragment extends Fragment {
 
     private void updateDevice(OkHttpClient client, Device device) {
 
-        Log.e("updateDevice", ArgumentsKeys.DEVICE_QUERY);
+        Log.e("updateDevice", Constants.DEVICE_QUERY);
         MediaType JSON = MediaType.parse("application/json; charset=utf-8");
         RequestBody body = RequestBody.create(JSON, device.averageToString());
         Log.e("JSON", device.averageToString());
         Request request = new Request.Builder()
-                .url(ArgumentsKeys.DEVICE_QUERY + "/" + device.get_id())
+                .url(Constants.DEVICE_QUERY + "/" + device.get_id())
                 .patch(body)
                 .build();
 
@@ -510,10 +506,14 @@ public class DeviceDetailFragment extends Fragment {
         ip_address.setText(device.getIp_address());
         averagePower.setText(Utils.decimalFormat.format(device.getAverageConsumption()) + " W");
         status.setChecked(device.isStatus());
-        if(mDevice.isStatus()){
-            lastTimeUsed.setText(Utils.formatDate(mDevice.getHistorials().get(mDevice.getHistorials().size()-2).getEndDate()));
-        }else {
-            lastTimeUsed.setText(Utils.formatDate(mDevice.getHistorials().last().getEndDate()));
+        if (mDevice.getHistorials().size() > 2) {
+            if(mDevice.isStatus()){
+                lastTimeUsed.setText(Utils.formatDefaultDate(mDevice.getHistorials().get(mDevice.getHistorials().size()-2).getEndDate()));
+            }else {
+                lastTimeUsed.setText(Utils.formatDefaultDate(mDevice.getHistorials().last().getEndDate()));
+            }
+        } else {
+            lastTimeUsed.setText("Never Used");
         }
 
         space.setText(device.getSpace() == null ? "" : device.getSpace().getName());

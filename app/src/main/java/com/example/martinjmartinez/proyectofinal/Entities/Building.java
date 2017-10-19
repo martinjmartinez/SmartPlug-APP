@@ -20,6 +20,8 @@ public class Building  extends RealmObject{
     @LinkingObjects("building")
     private final RealmResults<Device> devices = null;
 
+    @LinkingObjects("building")
+    private final RealmResults<Historial> historials = null;
 
     public RealmResults<Device> getDevices() {
         return devices;
@@ -31,6 +33,10 @@ public class Building  extends RealmObject{
 
     public void setAverageConsumption(double averageConsumption) {
         this.averageConsumption = averageConsumption;
+    }
+
+    public RealmResults<Historial> getHistorials() {
+        return historials;
     }
 
     public String get_id() {

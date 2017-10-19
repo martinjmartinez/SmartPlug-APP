@@ -14,29 +14,23 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Space;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.SpaceService;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
-import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
+import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.IOException;
 
 import io.realm.Realm;
 import okhttp3.Call;
 import okhttp3.Callback;
-import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.RequestBody;
 import okhttp3.Response;
 
 /**
@@ -68,7 +62,7 @@ public class SpaceDetailFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         Bundle bundle = this.getArguments();
-        mSpaceId = bundle != null ? bundle.getString(ArgumentsKeys.SPACE_ID, "") : "";
+        mSpaceId = bundle != null ? bundle.getString(Constants.SPACE_ID, "") : "";
     }
 
     @Override
@@ -128,7 +122,7 @@ public class SpaceDetailFragment extends Fragment {
                 SpaceUpdateFragment spaceUpdateFragment = new SpaceUpdateFragment();
                 Bundle bundle = new Bundle();
 
-                bundle.putString(ArgumentsKeys.SPACE_ID, mSpaceId);
+                bundle.putString(Constants.SPACE_ID, mSpaceId);
                 spaceUpdateFragment.setArguments(bundle);
                 Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.SPACE_DETAIL_FRAGMENT),
                         spaceUpdateFragment, FragmentKeys.SPACE_UPDATE_FRAGMENT, true);
@@ -170,9 +164,9 @@ public class SpaceDetailFragment extends Fragment {
     }
 
     private void deleteSpace(OkHttpClient client) {
-        Log.e("QUERY", ArgumentsKeys.SPACE_QUERY);
+        Log.e("QUERY", Constants.SPACE_QUERY);
         Request request = new Request.Builder()
-                .url(ArgumentsKeys.SPACE_QUERY + "/" + mSpaceId)
+                .url(Constants.SPACE_QUERY + "/" + mSpaceId)
                 .delete()
                 .build();
 

@@ -29,32 +29,8 @@ public class Device extends RealmObject {
     @LinkingObjects("device")
     private final RealmResults<Historial> historials = null;
 
-    public String getLastHistoryId() {
-        return lastHistoryId;
-    }
-
-    public void setLastHistoryId(String lastHistoryId) {
-        this.lastHistoryId = lastHistoryId;
-    }
-
-    public double getPower() {
-        return power;
-    }
-
-    public void setPower(double power) {
-        this.power = power;
-    }
-
     public String get_id() {
         return _id;
-    }
-
-    public double getAverageConsumption() {
-        return averageConsumption;
-    }
-
-    public void setAverageConsumption(double averageConsumption) {
-        this.averageConsumption = averageConsumption;
     }
 
     public void set_id(String _id) {
@@ -99,6 +75,30 @@ public class Device extends RealmObject {
 
     public void setBuilding(Building building) {
         this.building = building;
+    }
+
+    public double getPower() {
+        return power;
+    }
+
+    public void setPower(double power) {
+        this.power = power;
+    }
+
+    public String getLastHistoryId() {
+        return lastHistoryId;
+    }
+
+    public void setLastHistoryId(String lastHistoryId) {
+        this.lastHistoryId = lastHistoryId;
+    }
+
+    public double getAverageConsumption() {
+        return averageConsumption;
+    }
+
+    public void setAverageConsumption(double averageConsumption) {
+        this.averageConsumption = averageConsumption;
     }
 
     public RealmResults<Historial> getHistorials() {

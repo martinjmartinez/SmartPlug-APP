@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,7 +13,6 @@ import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.LinearLayout;
 
-import com.example.martinjmartinez.proyectofinal.Entities.Device;
 import com.example.martinjmartinez.proyectofinal.Entities.Space;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
@@ -23,20 +21,14 @@ import com.example.martinjmartinez.proyectofinal.UI.Devices.Fragments.DeviceList
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.UI.Spaces.Adapters.SpaceListAdapter;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
-import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
+import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import io.realm.Realm;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 
 public class SpaceListFragment extends Fragment {
 
@@ -64,7 +56,7 @@ public class SpaceListFragment extends Fragment {
     public void getArgumentsBundle() {
         Bundle bundle = this.getArguments();
         if (bundle != null) {
-            mBuildingId = bundle.getString(ArgumentsKeys.BUILDING_ID, "");
+            mBuildingId = bundle.getString(Constants.BUILDING_ID, "");
         } else {
             mBuildingId = "";
         }
@@ -131,7 +123,7 @@ public class SpaceListFragment extends Fragment {
 
                     DeviceListFragment deviceListFragment = new DeviceListFragment();
                     Bundle bundle = new Bundle();
-                    bundle.putString(ArgumentsKeys.SPACE_ID, spaceSelected.get_id());
+                    bundle.putString(Constants.SPACE_ID, spaceSelected.get_id());
                     deviceListFragment.setArguments(bundle);
                     Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.SPACE_LIST_FRAGMENT), deviceListFragment, FragmentKeys.DEVICE_LIST_FRAGMENT, true);
                 }
@@ -143,7 +135,7 @@ public class SpaceListFragment extends Fragment {
             public void onClick(View v) {
                 SpaceCreateFragment spaceCreateFragment = new SpaceCreateFragment();
                 Bundle bundle = new Bundle();
-                bundle.putString(ArgumentsKeys.BUILDING_ID, mBuildingId);
+                bundle.putString(Constants.BUILDING_ID, mBuildingId);
                 spaceCreateFragment.setArguments(bundle);
                 Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.SPACE_LIST_FRAGMENT), spaceCreateFragment, FragmentKeys.SPACE_CREATION_FRAGMENT, true);
             }

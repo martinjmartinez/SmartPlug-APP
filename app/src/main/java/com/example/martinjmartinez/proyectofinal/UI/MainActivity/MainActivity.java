@@ -11,7 +11,6 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
@@ -23,25 +22,18 @@ import com.example.martinjmartinez.proyectofinal.Entities.Building;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.UI.Buildings.Adapters.BuildingSpinnerAdapter;
-import com.example.martinjmartinez.proyectofinal.UI.Buildings.Fragments.BuildingCreateFragment;
 import com.example.martinjmartinez.proyectofinal.UI.Buildings.Fragments.BuildingListFragment;
 import com.example.martinjmartinez.proyectofinal.UI.Devices.Fragments.DeviceListFragment;
 import com.example.martinjmartinez.proyectofinal.UI.Home.HomeFragment;
 import com.example.martinjmartinez.proyectofinal.UI.Spaces.Fragments.SpaceListFragment;
+import com.example.martinjmartinez.proyectofinal.UI.Statistics.StatisticsFragment;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
-import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
+import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
 
-import java.io.IOException;
 import java.util.List;
 
 import io.realm.Realm;
-import io.realm.RealmConfiguration;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -174,17 +166,16 @@ public class MainActivity extends AppCompatActivity {
                         break;
 
                     case (R.id.nav_statistics):
-                        //TODO create statistics fragment
-//                        BuildingListFragment buildingListFragment = (BuildingListFragment) getSupportFragmentManager().findFragmentByTag(FragmentKeys.BUILDING_LIST_FRAGMENT);
-//                        if (buildingListFragment != null) {
-//                            if (!buildingListFragment.isVisible()) {
-//                                loadContentFragment(buildingListFragment, FragmentKeys.BUILDING_LIST_FRAGMENT, false);
-//                            }
-//                        } else {
-//                            loadContentFragment(mBuildingListFragment, FragmentKeys.BUILDING_LIST_FRAGMENT, true);
-//                        }
-//
-//                        mDrawerLayout.closeDrawer(Gravity.START);
+                        StatisticsFragment statisticsFragment = (StatisticsFragment) getSupportFragmentManager().findFragmentByTag(FragmentKeys.STATISTICS_FRAGMENT);
+                        if (statisticsFragment != null) {
+                            if (!statisticsFragment.isVisible()) {
+                               prepareStatisticsFragment(false);
+                            }
+                        } else {
+                            prepareStatisticsFragment(true);
+                        }
+
+                        mDrawerLayout.closeDrawer(Gravity.START);
                         break;
                 }
                 return false;
@@ -226,7 +217,7 @@ public class MainActivity extends AppCompatActivity {
         SpaceListFragment spaceListFragment = new SpaceListFragment();
         Bundle bundle = new Bundle();
 
-        bundle.putString(ArgumentsKeys.BUILDING_ID, mSelectedBuilding.get_id());
+        bundle.putString(Constants.BUILDING_ID, mSelectedBuilding.get_id());
         spaceListFragment.setArguments(bundle);
 
         loadContentFragment(spaceListFragment, FragmentKeys.SPACE_LIST_FRAGMENT, true);
@@ -239,17 +230,30 @@ public class MainActivity extends AppCompatActivity {
         if (mSelectedBuilding == null) {
             mSelectedBuilding = mBuildingList.get(0);
         }
-        bundle.putString(ArgumentsKeys.BUILDING_ID, mSelectedBuilding.get_id());
+        bundle.putString(Constants.BUILDING_ID, mSelectedBuilding.get_id());
         homeFragment.setArguments(bundle);
 
         loadContentFragment(homeFragment, FragmentKeys.HOME_FRAGMENT, addToBackStack);
+    }
+
+    public void prepareStatisticsFragment(boolean addToBackStack) {
+        StatisticsFragment statisticsFragment = new StatisticsFragment();
+        Bundle bundle = new Bundle();
+
+        if (mSelectedBuilding == null) {
+            mSelectedBuilding = mBuildingList.get(0);
+        }
+        bundle.putString(Constants.BUILDING_ID, mSelectedBuilding.get_id());
+        statisticsFragment.setArguments(bundle);
+
+        loadContentFragment(statisticsFragment, FragmentKeys.STATISTICS_FRAGMENT, addToBackStack);
     }
 
     public void prepareDeviceFragment(boolean addToBackStack) {
         DeviceListFragment deviceListFragment = new DeviceListFragment();
         Bundle bundle = new Bundle();
 
-        bundle.putString(ArgumentsKeys.BUILDING_ID, mSelectedBuilding.get_id());
+        bundle.putString(Constants.BUILDING_ID, mSelectedBuilding.get_id());
         deviceListFragment.setArguments(bundle);
 
         loadContentFragment(deviceListFragment, FragmentKeys.DEVICE_LIST_FRAGMENT, addToBackStack);

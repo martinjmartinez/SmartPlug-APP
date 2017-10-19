@@ -18,6 +18,7 @@ public class FragmentKeys {
     static public String BUILDING_DETAIL_FRAGMENT = "building_detail_fragment";
     static public String BUILDING_CREATION_FRAGMENT = "building_creation_fragment";
     static public String BUILDING_UPDATE_FRAGMENT = "building_update_fragment";
+    static public String STATISTICS_FRAGMENT = "statistics_fragment";
 
     static public String HOME_FRAGMENT = "home_fragment";
 

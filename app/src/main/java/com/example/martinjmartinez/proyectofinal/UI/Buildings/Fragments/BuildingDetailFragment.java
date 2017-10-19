@@ -21,7 +21,7 @@ import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
-import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
+import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 
@@ -63,7 +63,7 @@ public class BuildingDetailFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         Bundle bundle = this.getArguments();
-        mBuildingId = bundle != null ? bundle.getString(ArgumentsKeys.BUILDING_ID, "") : "";
+        mBuildingId = bundle != null ? bundle.getString(Constants.BUILDING_ID, "") : "";
     }
 
     @Override
@@ -121,7 +121,7 @@ public class BuildingDetailFragment extends Fragment {
             public void onClick(View v) {
                 BuildingUpdateFragment buildingUpdateFragment = new BuildingUpdateFragment();
                 Bundle bundle = new Bundle();
-                bundle.putString(ArgumentsKeys.BUILDING_ID, mBuilding.get_id());
+                bundle.putString(Constants.BUILDING_ID, mBuilding.get_id());
                 buildingUpdateFragment.setArguments(bundle);
                 Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.BUILDING_DETAIL_FRAGMENT),
                         buildingUpdateFragment, FragmentKeys.BUILDING_UPDATE_FRAGMENT, true);
@@ -163,9 +163,9 @@ public class BuildingDetailFragment extends Fragment {
     }
 
     private void deleteBuilding(OkHttpClient client) {
-        Log.e("QUERY", ArgumentsKeys.BUILDING_QUERY + "/" + mBuildingId);
+        Log.e("QUERY", Constants.BUILDING_QUERY + "/" + mBuildingId);
         Request request = new Request.Builder()
-                .url(ArgumentsKeys.BUILDING_QUERY + "/" + mBuildingId)
+                .url(Constants.BUILDING_QUERY + "/" + mBuildingId)
                 .delete()
                 .build();
 
@@ -183,6 +183,7 @@ public class BuildingDetailFragment extends Fragment {
                     mActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+                            buildingService.deleteBuilding(mBuildingId);
                             mActivity.onBackPressed();
                         }
                     });
