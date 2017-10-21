@@ -8,9 +8,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.util.ArrayMap;
 import android.support.v4.util.Pair;
-import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
+import android.support.v4.view.ViewPager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -23,7 +21,6 @@ import android.widget.DatePicker;
 import android.widget.Spinner;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
-import com.example.martinjmartinez.proyectofinal.Entities.Device;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
@@ -55,12 +52,14 @@ public class StatisticsFragment extends Fragment {
     private Button mEndDateButton;
     private Date mStartDate;
     private Date mEndDate;
+    private ChartsViewPagerAdapter chartsViewPagerAdapter;
     static public String objectId;
     private Building mBuilding;
     private Spinner mDateSpinner;
     private Realm realm;
     private RecyclerView charts;
     private List<Building> chartData;
+    private ViewPager chartsViewPager;
 
     public StatisticsFragment() {
     }
@@ -79,9 +78,10 @@ public class StatisticsFragment extends Fragment {
 
         iniVariables(view);
         initListeners();
-        setAdapters();
+
         Date today = DateUtils.getCurrentDate();
         setupDatePickerButtons(new Pair<>(today, today));
+        setAdapters();
         return view;
     }
 
@@ -93,39 +93,26 @@ public class StatisticsFragment extends Fragment {
         mStartDateButton = (Button) view.findViewById(R.id.start_date);
         mEndDateButton = (Button) view.findViewById(R.id.end_date);
         mDateSpinner = (Spinner) view.findViewById(R.id.spinnerFilters);
-        charts = (RecyclerView) view.findViewById(R.id.chart_list_stat);
         mStartDate = DateUtils.getCurrentDate();
         mEndDate = DateUtils.getCurrentDate();
         chartData = new ArrayList<>();
+        chartsViewPager = (ViewPager) view.findViewById(R.id.charts);
+    }
 
-        mBuilding = buildingService.getBuildingById(objectId);
-        chartData.add(mBuilding);
-        chartData.add(mBuilding);
-        chartData.add(mBuilding);
-
+    private void setAdapters() {
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(getContext(), R.array.date_filters_array, R.layout.support_simple_spinner_dropdown_item);
-
 
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mDateSpinner.setAdapter(adapter);
         mDateSpinner.setSelection(0);
 
-
+        setupViewPager(chartsViewPager);
     }
 
-    private void setAdapters() {
-        mBuilding = buildingService.getBuildingById(objectId);
-        chartData.clear();
-        chartData.add(mBuilding);
-        chartData.add(mBuilding);
-        chartData.add(mBuilding);
+    private void setupViewPager(ViewPager viewPager) {
+        chartsViewPagerAdapter = new ChartsViewPagerAdapter(getChildFragmentManager(), getContext(), objectId, mStartDate, mEndDate);
 
-        StatisticsListAdapter statisticsListAdapter = new StatisticsListAdapter(chartData, mStartDate, mEndDate);
-        RecyclerView.LayoutManager mLayoutManager1 = new LinearLayoutManager(mActivity, GridLayoutManager.HORIZONTAL, false);
-
-        charts.setLayoutManager(mLayoutManager1);
-        charts.setItemAnimator(new DefaultItemAnimator());
-        charts.setAdapter(statisticsListAdapter);
+        viewPager.setAdapter(chartsViewPagerAdapter);
     }
 
     private void initListeners() {
@@ -149,12 +136,14 @@ public class StatisticsFragment extends Fragment {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 Date today = DateUtils.getCurrentDate();
+                Date startOfDate = DateUtils.getStartOfDate(today);
                 ArrayMap<Integer, Pair<Date, Date>> spinnerDateMapping = new ArrayMap<>();
 
-                spinnerDateMapping.put(0, new Pair<>(Utils.firstDayOfCurrentWeek(), today));
-                spinnerDateMapping.put(1, new Pair<>(Utils.firstDayOfPreviousWeek(), Utils.lastDayOfPreviousWeek()));
-                spinnerDateMapping.put(2, new Pair<>(Utils.firstDayOfCurrentMonth(), today));
-                spinnerDateMapping.put(3, new Pair<>(Utils.firstDayOfPreviousMonth(), Utils.lastDayOfPreviousMonth()));
+                spinnerDateMapping.put(0, new Pair<>(startOfDate, today));
+                spinnerDateMapping.put(1, new Pair<>(Utils.firstDayOfCurrentWeek(), today));
+                spinnerDateMapping.put(2, new Pair<>(Utils.firstDayOfPreviousWeek(), Utils.lastDayOfPreviousWeek()));
+                spinnerDateMapping.put(3, new Pair<>(Utils.firstDayOfCurrentMonth(), today));
+                spinnerDateMapping.put(4, new Pair<>(Utils.firstDayOfPreviousMonth(), Utils.lastDayOfPreviousMonth()));
 
                 setupDatePickerButtons(spinnerDateMapping.get(position));
             }
@@ -244,8 +233,7 @@ public class StatisticsFragment extends Fragment {
                             }
                         }
 
-                        refreshCharts();
-
+                        setupViewPager(chartsViewPager);
                     }
                 }, year, month, day);
 
@@ -264,7 +252,7 @@ public class StatisticsFragment extends Fragment {
         mStartDate = dates.first;
         mEndDate = dates.second;
 
-        refreshCharts();
+        setupViewPager(chartsViewPager);
 
         String startDateString = DateUtils.format(DATE_FORMAT_SHORT, mStartDate);
         String endDateString = DateUtils.format(DATE_FORMAT_SHORT, mEndDate);
@@ -273,8 +261,5 @@ public class StatisticsFragment extends Fragment {
         mEndDateButton.setText(endDateString);
     }
 
-    void refreshCharts () {
-       setAdapters();
-    }
 }
 

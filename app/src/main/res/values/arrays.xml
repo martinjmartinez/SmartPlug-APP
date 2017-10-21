@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="date_filters_array">
+        <item>Today</item>
         <item>This Week</item>
         <item>Last Week</item>
         <item>This Month</item>

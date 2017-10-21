@@ -11,6 +11,14 @@ import java.util.Locale;
 
 public final class DateUtils {
 
+    public static final String DATE_FORMAT_SHORT = "dd/MM/yyyy";
+    public static final String DATE_FORMAT_WITH_TIME = "dd/MM/yyyy hh:mm a";
+    public static final String DATE_FORMAT_CND_INVOICE = "yyyyMMdd";
+    public static final String DATE_FORMAT_DEFAULT = "yyyy-MM-dd HH:mm:ss";
+    public static final String DATE_FORMAT_DEFAULT_WITH_SEPARATOR = "yyyy-MM-dd'T'HH:mm:ss";
+    public static final String TIME_FORMAT_TWENTY_FOUR_HOURS = "HH:mm";
+    public static final String TIME_FORMAT_TWELVE_HOURS = "hh:mm a";
+
     private static ArrayMap<String, SimpleDateFormat> mDateFormatter;
 
     static {
@@ -41,5 +49,15 @@ public final class DateUtils {
 
     public static Date getCurrentDate() {
         return Calendar.getInstance().getTime();
+    }
+
+    public static Date getStartOfDate(Date date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.set(Calendar.HOUR_OF_DAY,00);
+        calendar.set(Calendar.MINUTE,00);
+        calendar.set(Calendar.SECOND,00);
+
+        return calendar.getTime();
     }
 }
