@@ -30,7 +30,7 @@ import io.realm.Realm;
 import io.realm.RealmResults;
 import io.realm.Sort;
 
-public class BuildingsChartFragment extends Fragment {
+public class BuildingsLineChartFragment extends Fragment {
 
     private Date mStartDate;
     private Date mEndDate;
@@ -41,13 +41,13 @@ public class BuildingsChartFragment extends Fragment {
     private LineChart chart;
     private TextView title;
 
-    public static BuildingsChartFragment newInstance(String buildingId, Date startDate, Date endDate) {
+    public static BuildingsLineChartFragment newInstance(String buildingId, Date startDate, Date endDate) {
         Bundle args = new Bundle();
         args.putLong("startDate", startDate.getTime());
         args.putLong("endDate", endDate.getTime());
         args.putString("buildingId", buildingId);
 
-        BuildingsChartFragment fragment = new BuildingsChartFragment();
+        BuildingsLineChartFragment fragment = new BuildingsLineChartFragment();
         fragment.setArguments(args);
 
         return fragment;
@@ -103,7 +103,7 @@ public class BuildingsChartFragment extends Fragment {
         dataSets.add(new LineDataSet(entries, mBuilding.getName()));
 
         if (!results.isEmpty()) {
-            ChartUtils.makeChart(chart, dataSets, dates);
+            ChartUtils.makeLineChart(chart, dataSets, dates);
             chart.invalidate();
         }
     }

@@ -3,13 +3,18 @@ package com.example.martinjmartinez.proyectofinal.Utils;
 import android.util.Log;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Historial;
+import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
+import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.github.mikephil.charting.utils.ColorTemplate;
 
@@ -24,7 +29,7 @@ import io.realm.RealmResults;
 
 public final class ChartUtils {
 
-    public static void makeChart(LineChart chart, List<ILineDataSet> datasets, final Map<String, Integer> mapDates) {
+    public static void makeLineChart(LineChart chart, List<ILineDataSet> datasets, final Map<String, Integer> mapDates) {
 
         if (!datasets.isEmpty()) {
             for (int j = 0; j < datasets.size(); j++) {
@@ -166,5 +171,43 @@ public final class ChartUtils {
             return newMapDates;
         }
         return mapDates;
+    }
+
+    public static void makeBarChart(List<IBarDataSet> datasets, BarChart chart, final List<String> labels) {
+
+        for (int j = 0; j < datasets.size(); j++) {
+            ((BarDataSet) datasets.get(j)).setColors(ColorTemplate.MATERIAL_COLORS);
+            datasets.get(j).setValueTextSize(10.0f);
+        }
+
+        BarData data = new BarData(datasets);
+
+        chart.setData(data);
+        chart.getLegend().setEnabled(false);
+        chart.setFitBars(true); // make the x-axis fit exactly all bars
+
+        IAxisValueFormatter formatter = new IAxisValueFormatter() {
+
+            @Override
+            public String getFormattedValue(float value, AxisBase axis) {
+                int intValue = (int) value;
+                if (labels.size() > intValue && intValue >= 0) {
+
+                    return labels.get(intValue);
+                }
+                return labels.get(intValue);
+            }
+
+            // we don't draw numbers, so no decimal digits needed
+            public int getDecimalDigits() {
+                return 0;
+            }
+        };
+
+        XAxis xAxis = chart.getXAxis();
+        xAxis.setGranularity(1f); // minimum axis-step (interval) is 1
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis.setValueFormatter(formatter);
+        chart.invalidate(); // refresh
     }
 }

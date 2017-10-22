@@ -5,6 +5,7 @@ import android.app.DatePickerDialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.util.ArrayMap;
 import android.support.v4.util.Pair;
@@ -52,10 +53,11 @@ public class StatisticsFragment extends Fragment {
     private Button mEndDateButton;
     private Date mStartDate;
     private Date mEndDate;
-    private ChartsViewPagerAdapter chartsViewPagerAdapter;
+    private StatisticsChartsViewPagerAdapter statisticsChartsViewPagerAdapter;
     static public String objectId;
     private Building mBuilding;
     private Spinner mDateSpinner;
+    private TabLayout tabLayout;
     private Realm realm;
     private RecyclerView charts;
     private List<Building> chartData;
@@ -97,6 +99,7 @@ public class StatisticsFragment extends Fragment {
         mEndDate = DateUtils.getCurrentDate();
         chartData = new ArrayList<>();
         chartsViewPager = (ViewPager) view.findViewById(R.id.charts);
+        tabLayout = (TabLayout) view.findViewById(R.id.tabDots);
     }
 
     private void setAdapters() {
@@ -110,9 +113,10 @@ public class StatisticsFragment extends Fragment {
     }
 
     private void setupViewPager(ViewPager viewPager) {
-        chartsViewPagerAdapter = new ChartsViewPagerAdapter(getChildFragmentManager(), getContext(), objectId, mStartDate, mEndDate);
+        statisticsChartsViewPagerAdapter = new StatisticsChartsViewPagerAdapter(getChildFragmentManager(), getContext(), objectId, mStartDate, mEndDate);
 
-        viewPager.setAdapter(chartsViewPagerAdapter);
+        tabLayout.setupWithViewPager(viewPager, true);
+        viewPager.setAdapter(statisticsChartsViewPagerAdapter);
     }
 
     private void initListeners() {

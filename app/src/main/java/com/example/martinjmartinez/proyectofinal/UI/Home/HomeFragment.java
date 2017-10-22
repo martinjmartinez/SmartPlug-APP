@@ -5,7 +5,9 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.ViewPager;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
@@ -24,6 +26,7 @@ import com.example.martinjmartinez.proyectofinal.Services.HistorialService;
 import com.example.martinjmartinez.proyectofinal.Services.SpaceService;
 import com.example.martinjmartinez.proyectofinal.UI.Devices.Adapters.DeviceListAdapter;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
+import com.example.martinjmartinez.proyectofinal.UI.Statistics.StatisticsChartsViewPagerAdapter;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
 import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 
@@ -40,7 +43,9 @@ public class HomeFragment extends Fragment {
 
     private String mBuildingId;
     private Building mBuilding;
-    private RecyclerView mMostUsedDevicesRecycleView, mGraphsRecycleView;
+    private RecyclerView mMostUsedDevicesRecycleView;
+    private ViewPager chartsViewPager;
+    private HomeChartViewPagerAdapter homeChartViewPagerAdapter;
     private List<Space> mSpacesList;
     private List<Device> mDeviceList;
     private List<Building> mChartList;
@@ -48,6 +53,7 @@ public class HomeFragment extends Fragment {
     private Activity mActivity;
     private MainActivity mMainActivity;
     private BuildingService buildingService;
+    private TabLayout tabLayout;
     private SpaceService spaceService;
     private DeviceService deviceService;
     private HistorialService historialService;
@@ -106,16 +112,13 @@ public class HomeFragment extends Fragment {
         mChartList = new ArrayList<>();
         mAPI = new API();
         mMostUsedDevicesRecycleView = (RecyclerView) view.findViewById(R.id.most_used_devices);
-        mGraphsRecycleView = (RecyclerView) view.findViewById(R.id.chart_list);
+        chartsViewPager = (ViewPager) view.findViewById(R.id.bar_chart_pager);
+        tabLayout = (TabLayout) view.findViewById(R.id.tabDots);
+
     }
 
-    private void setAdapters(List<Device> devicesList, List<Building> charts) {
-        ChartListAdapter chartListAdapter = new ChartListAdapter(charts, mActivity);
-        RecyclerView.LayoutManager mLayoutManager1 = new LinearLayoutManager(mActivity, GridLayoutManager.HORIZONTAL, false);
-
-        mGraphsRecycleView.setLayoutManager(mLayoutManager1);
-        mGraphsRecycleView.setItemAnimator(new DefaultItemAnimator());
-        mGraphsRecycleView.setAdapter(chartListAdapter);
+    private void setAdapters(List<Device> devicesList) {
+        setupViewPager(chartsViewPager);
 
         DeviceListAdapter deviceListAdapter = new DeviceListAdapter(devicesList, getActivity(), this);
         RecyclerView.LayoutManager mLayoutManager2 = new LinearLayoutManager(mActivity, GridLayoutManager.HORIZONTAL, false);
@@ -130,11 +133,19 @@ public class HomeFragment extends Fragment {
 
     public void getBuilding() {
         mBuilding = buildingService.getBuildingById(mBuildingId);
+
         mChartList.clear();
         mChartList.add(mBuilding);
         mChartList.add(mBuilding);
 
         mDeviceList = mBuilding.getDevices();
-        setAdapters(mDeviceList, mChartList);
+        setAdapters(mDeviceList);
+    }
+
+    private void setupViewPager(ViewPager viewPager) {
+        homeChartViewPagerAdapter = new HomeChartViewPagerAdapter(getChildFragmentManager(), getContext(), mBuildingId);
+
+        tabLayout.setupWithViewPager(viewPager, true);
+        viewPager.setAdapter(homeChartViewPagerAdapter);
     }
 }
