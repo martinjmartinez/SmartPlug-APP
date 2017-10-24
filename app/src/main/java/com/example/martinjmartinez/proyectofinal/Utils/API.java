@@ -189,7 +189,7 @@ public class API {
                     if (historials.getJSONObject(i).get("powerLog") instanceof JSONArray) {
                         JSONArray logs = historials.getJSONObject(i).getJSONArray("powerLog");
 
-                        if (logs.length() > 0) {
+                        if (logs.length() > 0 && endDate != 0) {
                             double total = 0;
 
                             for (int j = 0; j < logs.length(); j++) {

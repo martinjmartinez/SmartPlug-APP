@@ -22,7 +22,7 @@ public class Historial extends RealmObject {
 
     private Date endDate;
 
-    private double totalHours;
+    private double totalTimeInSeconds;
 
     private RealmList<Log> powerLog;
 
@@ -46,12 +46,12 @@ public class Historial extends RealmObject {
         this.device = device;
     }
 
-    public double getTotalHours() {
-        return totalHours;
+    public double getTotalTimeInSeconds() {
+        return totalTimeInSeconds;
     }
 
-    public void setTotalHours(double totalHours) {
-        this.totalHours = totalHours;
+    public void setTotalTimeInSeconds(double totalTimeInSeconds) {
+        this.totalTimeInSeconds = totalTimeInSeconds;
     }
 
     public RealmList<Log> getPowerLog() {

@@ -230,7 +230,7 @@ public class DeviceUpdateFragment extends Fragment {
         mSpaceSpinner.setVisibility(View.VISIBLE);
         deviceSpace.setVisibility(View.GONE);
 
-        setUpSpacesSpinner(mDevice.getBuilding().getSpaces());
+        setUpSpacesSpinner(spaceService.allActiveSpacesByBuilding(mDevice.getBuilding().get_id()));
     }
 
     public void setUpSpacesSpinner(List<Space> items) {

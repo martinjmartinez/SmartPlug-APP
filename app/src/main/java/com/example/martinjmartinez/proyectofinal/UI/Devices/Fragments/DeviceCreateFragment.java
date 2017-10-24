@@ -251,7 +251,7 @@ public class DeviceCreateFragment extends Fragment {
         } else {
             mSpaceSpinner.setVisibility(View.VISIBLE);
             deviceSpace.setVisibility(View.GONE);
-            setUpSpacesSpinner(mBuilding.getSpaces());
+            setUpSpacesSpinner(spaceService.allActiveSpacesByBuilding(mBuilding.get_id()));
             deviceBuilding.setText(mBuilding.getName());
         }
     }

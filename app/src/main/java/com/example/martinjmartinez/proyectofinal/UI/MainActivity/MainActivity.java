@@ -272,7 +272,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void getBuildings(final boolean refreshSpinner) {
-        mBuildingList = buildingService.allBuildings();
+        mBuildingList = buildingService.allActiveBuildings();
 
         if (!mBuildingList.isEmpty()) {
             if (refreshSpinner) {

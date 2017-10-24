@@ -228,6 +228,7 @@ public class DeviceDetailFragment extends Fragment {
                         @Override
                         public void run() {
                             deviceService.deleteDevice(mDeviceId);
+                            changeStatus(mAPI.getClient(), Constants.OFF_QUERY);
                             mActivity.onBackPressed();
                         }
                     });
@@ -511,9 +512,9 @@ public class DeviceDetailFragment extends Fragment {
         ip_address.setText(device.getIp_address());
         averagePower.setText(Utils.decimalFormat.format(device.getAverageConsumption()) + " W");
         status.setChecked(device.isStatus());
-        if (mDevice.getHistorials().size() > 2) {
+        if (mDevice.getHistorials().size() >= 1 && mDevice.getHistorials().size() != 1) {
             if(mDevice.isStatus()){
-                lastTimeUsed.setText(Utils.formatDefaultDate(mDevice.getHistorials().get(mDevice.getHistorials().size()-2).getEndDate()));
+                lastTimeUsed.setText(Utils.formatDefaultDate(mDevice.getHistorials().get(mDevice.getHistorials().size()-1).getEndDate()));
             }else {
                 lastTimeUsed.setText(Utils.formatDefaultDate(mDevice.getHistorials().last().getEndDate()));
             }

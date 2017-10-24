@@ -16,7 +16,7 @@ public final class DateUtils {
     public static final String DATE_FORMAT_CND_INVOICE = "yyyyMMdd";
     public static final String DATE_FORMAT_DEFAULT = "yyyy-MM-dd HH:mm:ss";
     public static final String DATE_FORMAT_DEFAULT_WITH_SEPARATOR = "yyyy-MM-dd'T'HH:mm:ss";
-    public static final String TIME_FORMAT_TWENTY_FOUR_HOURS = "HH:mm";
+    public static final String TIME_FORMAT_TWENTY_FOUR_HOURS = "HH:mm:ss";
     public static final String TIME_FORMAT_TWELVE_HOURS = "hh:mm a";
 
     private static ArrayMap<String, SimpleDateFormat> mDateFormatter;

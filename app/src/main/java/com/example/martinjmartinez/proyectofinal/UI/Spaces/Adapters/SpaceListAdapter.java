@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Space;
 import com.example.martinjmartinez.proyectofinal.R;
+import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
 import com.example.martinjmartinez.proyectofinal.UI.Spaces.Fragments.SpaceDetailFragment;
 import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
@@ -20,14 +21,15 @@ import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 
 import java.util.List;
 
-/**
- * Created by MartinJMartinez on 7/13/2017.
- */
+import io.realm.Realm;
 
 public class SpaceListAdapter extends ArrayAdapter<Space> {
 
+    private DeviceService deviceService;
+
     public SpaceListAdapter(Context context, int resource, List<Space> items) {
         super(context, resource, items);
+        deviceService = new DeviceService(Realm.getDefaultInstance());
     }
 
     @Override
@@ -53,7 +55,7 @@ public class SpaceListAdapter extends ArrayAdapter<Space> {
 
             name.setText(space.getName());
             if (space.getDevices() != null) {
-                devices.setText(space.getDevices().size() + "");
+                devices.setText(deviceService.allActiveDevicesBySpace(space.get_id()).size() + "");
                 average.setText(Utils.decimalFormat.format(space.getAverageConsumption()) + "W");
             }
         }

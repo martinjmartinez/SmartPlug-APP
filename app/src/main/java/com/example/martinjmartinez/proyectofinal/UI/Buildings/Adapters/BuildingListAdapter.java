@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
 import com.example.martinjmartinez.proyectofinal.R;
+import com.example.martinjmartinez.proyectofinal.Services.SpaceService;
 import com.example.martinjmartinez.proyectofinal.UI.Buildings.Fragments.BuildingDetailFragment;
 import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
@@ -19,14 +20,16 @@ import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 
 import java.util.List;
 
-/**
- * Created by MartinJMartinez on 7/15/2017.
- */
+import io.realm.Realm;
 
 public class BuildingListAdapter extends ArrayAdapter<Building> {
 
+    private SpaceService spaceService;
+
     public BuildingListAdapter(Context context, int resource, List<Building> items) {
         super(context, resource, items);
+
+        spaceService = new SpaceService(Realm.getDefaultInstance());
     }
 
     @Override
@@ -50,7 +53,7 @@ public class BuildingListAdapter extends ArrayAdapter<Building> {
             initListener(detailsImage, building);
 
             name.setText(building.getName());
-            spaces.setText(building.getSpaces().size() + "");
+            spaces.setText(spaceService.allActiveSpacesByBuilding(building.get_id()).size() + "");
         }
 
         return view;
