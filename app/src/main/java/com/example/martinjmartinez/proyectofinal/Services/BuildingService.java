@@ -22,20 +22,26 @@ public class BuildingService extends SmartPLugApplication {
         return results;
     }
 
-    public void createBuilding(String _id, String name) {
+    public List<Building> allActiveBuildings() {
+        RealmResults<Building> results = realm.where(Building.class).equalTo("isActive", true).findAll();
+
+        return results;
+    }
+
+    public void createBuilding(String _id, String name, boolean isActive) {
         realm.beginTransaction();
 
         Building building = realm.createObject(Building.class, _id);
         building.setName(name);
-
+        building.setActive(isActive);
         realm.commitTransaction();
     }
 
-    public void updateOrCreateBuilding(String _id, String name) {
+    public void updateOrCreateBuilding(String _id, String name, boolean isActive) {
         if(getBuildingById(_id) != null) {
-            updateBuildingName(_id, name);
+            updateBuildingName(_id, name, isActive);
         } else {
-            createBuilding(_id, name);
+            createBuilding(_id, name, isActive);
         }
     }
 
@@ -45,12 +51,13 @@ public class BuildingService extends SmartPLugApplication {
         return building;
     }
 
-    public void updateBuildingName(String _id, String name) {
+    public void updateBuildingName(String _id, String name, boolean isActive) {
         Building building = getBuildingById(_id);
 
         realm.beginTransaction();
 
         building.setName(name);
+        building.setActive(isActive);
 
         realm.commitTransaction();
     }
@@ -71,7 +78,7 @@ public class BuildingService extends SmartPLugApplication {
 
         realm.beginTransaction();
 
-        building.deleteFromRealm();
+        building.setActive(false);
 
         realm.commitTransaction();
     }

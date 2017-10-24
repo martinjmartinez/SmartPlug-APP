@@ -18,6 +18,8 @@ public class Device extends RealmObject {
 
     private Space space;
 
+    private boolean isActive;
+
     private Building building;
 
     private double power;
@@ -101,6 +103,14 @@ public class Device extends RealmObject {
         this.averageConsumption = averageConsumption;
     }
 
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public void setActive(boolean active) {
+        isActive = active;
+    }
+
     public RealmResults<Historial> getHistorials() {
         return historials;
     }
@@ -127,5 +137,9 @@ public class Device extends RealmObject {
                 "\"building\":\"" + building.get_id() + "\"" +
                   id +
                 '}';
+    }
+
+    public String toIsActiveString() {
+        return "{\"isActive\":\"" + isActive()+"\"}";
     }
 }

@@ -26,7 +26,13 @@ public class SpaceService {
         return results;
     }
 
-    public void createSpace(String _id, String name, String buildingId) {
+    public List<Space> allActiveSpacesByBuilding(String buildingId) {
+        RealmResults<Space> results = realm.where(Space.class).equalTo("building._id", buildingId).equalTo("isActive", true).findAll();
+
+        return results;
+    }
+
+    public void createSpace(String _id, String name, String buildingId, boolean isActive) {
         Building building = realm.where(Building.class).equalTo("_id", buildingId).findFirst();
 
         realm.beginTransaction();
@@ -35,15 +41,16 @@ public class SpaceService {
 
         space.setName(name);
         space.setBuilding(building);
+        space.setActive(isActive);
 
         realm.commitTransaction();
     }
 
-    public void updateOrCreateSpace(String _id, String name, String buildingId) {
+    public void updateOrCreateSpace(String _id, String name, String buildingId, boolean isActive) {
         if(getSpaceById(_id) != null) {
-            updateSpace(_id, name, buildingId);
+            updateSpace(_id, name, buildingId, isActive);
         } else {
-            createSpace(_id, name, buildingId);
+            createSpace(_id, name, buildingId,isActive);
         }
     }
 
@@ -92,14 +99,15 @@ public class SpaceService {
         realm.commitTransaction();
     }
 
-    public void updateSpace(String _id, String name, String buildingId) {
+    public void updateSpace(String _id, String name, String buildingId, boolean isActive) {
         Space space = getSpaceById(_id);
         Building building = realm.where(Building.class).equalTo("_id", buildingId).findFirst();
 
         realm.beginTransaction();
 
+        space.setName(name);
         space.setBuilding(building);
-        space.setBuilding(building);
+        space.setActive(isActive);
 
         realm.commitTransaction();
     }
@@ -110,7 +118,7 @@ public class SpaceService {
 
         realm.beginTransaction();
 
-        space.deleteFromRealm();
+        space.setActive(false);
 
         realm.commitTransaction();
     }

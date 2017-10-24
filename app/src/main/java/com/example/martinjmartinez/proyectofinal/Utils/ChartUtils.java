@@ -1,7 +1,5 @@
 package com.example.martinjmartinez.proyectofinal.Utils;
 
-import android.util.Log;
-
 import com.example.martinjmartinez.proyectofinal.Entities.Historial;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.LineChart;

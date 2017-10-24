@@ -18,6 +18,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Device;
+import com.example.martinjmartinez.proyectofinal.Entities.Space;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
 import com.example.martinjmartinez.proyectofinal.Services.HistorialService;
@@ -203,9 +204,13 @@ public class DeviceDetailFragment extends Fragment {
 
     private void deleteSpace(OkHttpClient client) {
         Log.e("QUERY", Constants.DEVICE_QUERY);
+        Device newDevice = new Device();
+        newDevice.setActive(false);
+        MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+        RequestBody body = RequestBody.create(JSON, newDevice.toIsActiveString());
         Request request = new Request.Builder()
                 .url(Constants.DEVICE_QUERY + "/" + mDeviceId)
-                .delete()
+                .patch(body)
                 .build();
 
         client.newCall(request).enqueue(new Callback() {

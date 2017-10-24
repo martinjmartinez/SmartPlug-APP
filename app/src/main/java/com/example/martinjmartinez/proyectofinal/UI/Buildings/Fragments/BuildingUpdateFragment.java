@@ -135,7 +135,7 @@ public class BuildingUpdateFragment extends Fragment {
             public void onClick(View v) {
                 if (!Utils.isEditTextEmpty(name)) {
                     if (!name.getText().toString().equals(mBuilding.getName())) {
-                        buildingService.updateBuildingName(mBuildingId, name.getText().toString());
+                        buildingService.updateBuildingName(mBuildingId, name.getText().toString(), mBuilding.isActive());
 
                         Building building = buildingService.getBuildingById(mBuildingId);
 

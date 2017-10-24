@@ -30,8 +30,10 @@ import java.io.IOException;
 import io.realm.Realm;
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 /**
@@ -164,9 +166,13 @@ public class BuildingDetailFragment extends Fragment {
 
     private void deleteBuilding(OkHttpClient client) {
         Log.e("QUERY", Constants.BUILDING_QUERY + "/" + mBuildingId);
+        Building newBuilding = new Building();
+        newBuilding.setActive(false);
+        MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+        RequestBody body = RequestBody.create(JSON, newBuilding.toIsActiveString());
         Request request = new Request.Builder()
                 .url(Constants.BUILDING_QUERY + "/" + mBuildingId)
-                .delete()
+                .patch(body)
                 .build();
 
         client.newCall(request).enqueue(new Callback() {

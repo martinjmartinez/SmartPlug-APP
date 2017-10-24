@@ -14,6 +14,8 @@ public class Building  extends RealmObject{
 
     private double averageConsumption;
 
+    private boolean isActive;
+
     @LinkingObjects("building")
     private final RealmResults<Space> spaces = null;
 
@@ -33,6 +35,14 @@ public class Building  extends RealmObject{
 
     public void setAverageConsumption(double averageConsumption) {
         this.averageConsumption = averageConsumption;
+    }
+
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public void setActive(boolean active) {
+        isActive = active;
     }
 
     public RealmResults<Historial> getHistorials() {
@@ -62,5 +72,9 @@ public class Building  extends RealmObject{
     @Override
     public String toString() {
         return "{\"name\":\"" + getName()+"\"}";
+    }
+
+    public String toIsActiveString() {
+        return "{\"isActive\":\"" + isActive()+"\"}";
     }
 }

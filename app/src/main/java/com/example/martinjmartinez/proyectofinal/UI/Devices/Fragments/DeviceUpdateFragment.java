@@ -164,12 +164,12 @@ public class DeviceUpdateFragment extends Fragment {
             public void onClick(View v) {
                 if (!Utils.isEditTextEmpty(name)) {
                     if (mSpace != null) {
-                        deviceService.updateDevice(mDeviceId, name.getText().toString(), mDevice.isStatus(), ipAddress.getText().toString(), mSpace.get_id(), mSpace.getBuilding().get_id(), mDevice.getAverageConsumption());
+                        deviceService.updateDevice(mDeviceId, name.getText().toString(), mDevice.isStatus(), ipAddress.getText().toString(), mSpace.get_id(), mSpace.getBuilding().get_id(), mDevice.getAverageConsumption(), mDevice.isActive());
                         spaceService.updateSapacePowerAverageConsumption(mSpace.get_id());
                         spaceService.updateSapacePowerAverageConsumption(lastSpace.get_id());
 
                     } else {
-                        deviceService.updateDevice(mDeviceId, name.getText().toString(), mDevice.isStatus(), ipAddress.getText().toString(), "", mDevice.getBuilding().get_id(), mDevice.getAverageConsumption());
+                        deviceService.updateDevice(mDeviceId, name.getText().toString(), mDevice.isStatus(), ipAddress.getText().toString(), "", mDevice.getBuilding().get_id(), mDevice.getAverageConsumption(), mDevice.isActive());
                     }
                     Device newDevice = deviceService.getDeviceById(mDeviceId);
                     updateDevice(mAPI.getClient(), newDevice.deviceToString());

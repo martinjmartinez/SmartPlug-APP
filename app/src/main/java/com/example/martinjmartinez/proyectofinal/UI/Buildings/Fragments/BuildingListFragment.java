@@ -135,7 +135,7 @@ public class BuildingListFragment extends Fragment {
     }
 
     public void getBuildings() {
-        mBuildingList = buildingService.allBuildings();
+        mBuildingList = buildingService.allActiveBuildings();
 
         shouldEmptyMessageShow(mBuildingList);
     }

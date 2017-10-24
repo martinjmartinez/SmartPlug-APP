@@ -150,7 +150,7 @@ public class SpaceListFragment extends Fragment {
     }
 
     public void getSpaces() {
-        mSpacesList = buildingService.getBuildingById(mBuildingId).getSpaces();
+        mSpacesList = spaceService.allActiveSpacesByBuilding(mBuildingId);
 
        shouldEmptyMessageShow(mSpacesList);
     }

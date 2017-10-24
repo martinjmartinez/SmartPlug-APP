@@ -31,7 +31,19 @@ public class DeviceService {
         return results;
     }
 
-    public void createDevice(String _id, String name, Boolean isOn, String ip_address, String spaceId, String buildingId, double powerAverage) {
+    public List<Device> allActiveDevicesByBuilding(String buildingId) {
+        RealmResults<Device> results = realm.where(Device.class).equalTo("building._id", buildingId).equalTo("isActive", true).findAll();
+
+        return results;
+    }
+
+    public List<Device> allActiveDevicesBySpace(String spaceId) {
+        RealmResults<Device> results = realm.where(Device.class).equalTo("space._id", spaceId).equalTo("isActive", true).findAll();
+
+        return results;
+    }
+
+    public void createDevice(String _id, String name, Boolean isOn, String ip_address, String spaceId, String buildingId, double powerAverage, boolean isActive) {
         Space space = spaceService.getSpaceById(spaceId);
         Building building = buildingService.getBuildingById(buildingId);
 
@@ -45,6 +57,7 @@ public class DeviceService {
         device.setSpace(space);
         device.setIp_address(ip_address);
         device.setAverageConsumption(powerAverage);
+        device.setActive(isActive);
 
         realm.commitTransaction();
     }
@@ -55,19 +68,19 @@ public class DeviceService {
         return device;
     }
 
-    public void updateOrCreateDevice(String _id, String name, Boolean isOn, String ip_address, String spaceId, String buildingId, double powerAverage) {
+    public void updateOrCreateDevice(String _id, String name, Boolean isOn, String ip_address, String spaceId, String buildingId, double powerAverage, boolean isActive) {
         if(getDeviceById(_id) != null) {
-            updateDevice(_id, name, isOn, ip_address, spaceId, buildingId, powerAverage);
+            updateDevice(_id, name, isOn, ip_address, spaceId, buildingId, powerAverage, isActive);
         } else {
-            createDevice(_id, name, isOn, ip_address, spaceId, buildingId, powerAverage);
+            createDevice(_id, name, isOn, ip_address, spaceId, buildingId, powerAverage, isActive);
         }
     }
 
-    public void updateDevice(String _id, String name, Boolean isOn, String ip_address, String spaceId, String buildingId, double powerAverage) {
+    public void updateDevice(String _id, String name, Boolean isOn, String ip_address, String spaceId, String buildingId, double powerAverage, boolean isActive) {
         Device device = getDeviceById(_id);
         Space space = spaceService.getSpaceById(spaceId);
         Building building = buildingService.getBuildingById(buildingId);
-        Log.e("BUILDINGW", buildingId + "fff");
+
         realm.beginTransaction();
 
         device.setName(name);
@@ -76,6 +89,7 @@ public class DeviceService {
         device.setSpace(space);
         device.setIp_address(ip_address);
         device.setAverageConsumption(powerAverage);
+        device.setActive(isActive);
 
         realm.commitTransaction();
     }
@@ -160,7 +174,7 @@ public class DeviceService {
 
         realm.beginTransaction();
 
-        device.deleteFromRealm();
+        device.setActive(false);
 
         realm.commitTransaction();
     }

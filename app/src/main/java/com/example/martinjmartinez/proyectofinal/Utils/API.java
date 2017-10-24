@@ -48,8 +48,9 @@ public class API {
             JSONObject buildingData = new JSONObject(response.body().string());
             String _id = buildingData.getString("_id");
             String name = buildingData.getString("name");
+            boolean isActive = buildingData.getBoolean("isActive");
 
-            buildingService.createBuilding(_id, name);
+            buildingService.createBuilding(_id, name, isActive);
 
         } catch (JSONException | IOException e) {
             Log.e("getBuildingFromCloud", e.getMessage());
@@ -64,9 +65,10 @@ public class API {
             String ip_address = deviceData.getString("ip_address");
             Boolean isOn = deviceData.getBoolean("status");
             Double powerAverage = deviceData.getDouble("powerAverage");
+            boolean isActive = deviceData.getBoolean("isActive");
 
             Log.e("BUILDINGD", mBuildingId + "65");
-            deviceService.createDevice(_id, name, isOn, ip_address, mSpaceId, mBuildingId, powerAverage);
+            deviceService.createDevice(_id, name, isOn, ip_address, mSpaceId, mBuildingId, powerAverage, isActive);
 
         } catch (JSONException | IOException e) {
             Log.e("getBuildingFromCloud", e.getMessage());
@@ -92,8 +94,9 @@ public class API {
             JSONObject spaceData = new JSONObject(response.body().string());
             String _id = spaceData.getString("_id");
             String name = spaceData.getString("name");
+            boolean isActive = spaceData.getBoolean("isActive");
 
-            spaceService.createSpace(_id, name, mBuildingId);
+            spaceService.createSpace(_id, name, mBuildingId, isActive);
 
         } catch (JSONException | IOException e) {
             Log.e("getSpaceFromCloud", e.getMessage());
@@ -108,6 +111,7 @@ public class API {
                 String name = devices.getJSONObject(i).getString("name");
                 String ip_address = devices.getJSONObject(i).getString("ip_address");
                 Boolean isOn = devices.getJSONObject(i).getBoolean("status");
+                boolean isActive = devices.getJSONObject(i).getBoolean("isActive");
                 String spaceId;
                 String buildingId = devices.getJSONObject(i).getString("building");
                 Double powerAverage = devices.getJSONObject(i).getDouble("powerAverage");
@@ -118,7 +122,7 @@ public class API {
                     spaceId = "";
                 }
 
-                deviceService.updateOrCreateDevice(_id, name, isOn, ip_address, spaceId, buildingId, powerAverage);
+                deviceService.updateOrCreateDevice(_id, name, isOn, ip_address, spaceId, buildingId, powerAverage, isActive);
 
                 if (devices.getJSONObject(i).has("lastHistoryId")) {
                     String lastHistoryId = devices.getJSONObject(i).getString("lastHistoryId");
@@ -245,9 +249,10 @@ public class API {
             for (int i = 0; i < spaces.length(); i++) {
                 String _id = spaces.getJSONObject(i).getString("_id");
                 String name = spaces.getJSONObject(i).getString("name");
+                boolean isActive = spaces.getJSONObject(i).getBoolean("isActive");
                 String buildingId = spaces.getJSONObject(i).getString("building");
 
-                spaceService.updateOrCreateSpace(_id, name, buildingId);
+                spaceService.updateOrCreateSpace(_id, name, buildingId, isActive);
             }
         } catch (JSONException | IOException e) {
             Log.e("getSpacesFromCloud", e.getMessage());
@@ -261,8 +266,9 @@ public class API {
             for (int i = 0; i < buildings.length(); i++) {
                 String _id = buildings.getJSONObject(i).getString("_id");
                 String name = buildings.getJSONObject(i).getString("name");
+                boolean isActive = buildings.getJSONObject(i).getBoolean("isActive");
 
-                buildingService.updateOrCreateBuilding(_id, name);
+                buildingService.updateOrCreateBuilding(_id, name, isActive);
             }
 
         } catch (JSONException | IOException e) {

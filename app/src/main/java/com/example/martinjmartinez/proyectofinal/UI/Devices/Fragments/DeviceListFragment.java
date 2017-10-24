@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.realm.Realm;
+import io.realm.RealmResults;
 
 /**
  * Created by MartinJMartinez on 7/14/2017.
@@ -53,6 +54,7 @@ public class DeviceListFragment extends Fragment {
     private BuildingService buildingService;
     private SpaceService spaceService;
     private LinearLayout mEmptyDeviceListLayout;
+    private Realm realm;
 
     public DeviceListFragment() {
     }
@@ -61,7 +63,7 @@ public class DeviceListFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-       // getArgumentsBundle();
+        // getArgumentsBundle();
 
     }
 
@@ -98,10 +100,8 @@ public class DeviceListFragment extends Fragment {
         iniVariables(view);
 
         if (!mBuildingId.isEmpty() && mSpaceId.isEmpty()) {
-            Log.e("ALGO", "KLK");
             getDevicesByBuilding();
         } else if (mBuildingId.isEmpty() && !mSpaceId.isEmpty()) {
-            Log.e("ALGO2", "KLK");
             getDevicesBySpace();
         }
         initListeners();
@@ -117,9 +117,10 @@ public class DeviceListFragment extends Fragment {
     }
 
     private void iniVariables(View view) {
-        deviceService = new DeviceService(Realm.getDefaultInstance());
-        buildingService = new BuildingService(Realm.getDefaultInstance());
-        spaceService = new SpaceService(Realm.getDefaultInstance());
+        realm = Realm.getDefaultInstance();
+        deviceService = new DeviceService(realm);
+        buildingService = new BuildingService(realm);
+        spaceService = new SpaceService(realm);
         mDevicesList = new ArrayList<>();
         mGridView = (RecyclerView) view.findViewById(R.id.devices_grid);
         mAPI = new API();
@@ -149,13 +150,15 @@ public class DeviceListFragment extends Fragment {
     }
 
     private void getDevicesByBuilding() {
-        mDevicesList = buildingService.getBuildingById(mBuildingId).getDevices();
+        mDevicesList = deviceService.allActiveDevicesByBuilding(mBuildingId);
+
         shouldEmptyMessageShow();
     }
 
     private void getDevicesBySpace() {
-        mDevicesList = spaceService.getSpaceById(mSpaceId).getDevices();
-       shouldEmptyMessageShow();
+        mDevicesList = deviceService.allActiveDevicesBySpace(mSpaceId);
+
+        shouldEmptyMessageShow();
     }
 
     private void shouldEmptyMessageShow() {

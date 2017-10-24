@@ -16,6 +16,8 @@ public class Space extends RealmObject {
 
     private double averageConsumption;
 
+    private boolean isActive;
+
     @LinkingObjects("space")
     private final RealmResults<Device> devices = null;
 
@@ -51,6 +53,14 @@ public class Space extends RealmObject {
         this._id = _id;
     }
 
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public void setActive(boolean active) {
+        isActive = active;
+    }
+
     public String getName() {
         return name;
     }
@@ -77,5 +87,9 @@ public class Space extends RealmObject {
                 "\"name\":\"" + name + "\"," +
                 "\"building\":\"" + building.get_id() + "\"" +
                 '}';
+    }
+
+    public String toIsActiveString() {
+        return "{\"isActive\":\"" + isActive()+"\"}";
     }
 }

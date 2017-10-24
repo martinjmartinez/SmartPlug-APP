@@ -279,7 +279,7 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
                                 mAPI.getHistorialFromCloudEnd(jsonObject, deviceId);
                                 notifyDataSetChanged();
                                 if (homeFragment != null) {
-                                    homeFragment.getBuilding();
+                                    homeFragment.refreshChart();
                                 }
                             }
                         });

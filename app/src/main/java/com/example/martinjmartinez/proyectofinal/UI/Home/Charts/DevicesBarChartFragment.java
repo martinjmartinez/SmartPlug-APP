@@ -8,10 +8,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.example.martinjmartinez.proyectofinal.Entities.Building;
 import com.example.martinjmartinez.proyectofinal.Entities.Device;
 import com.example.martinjmartinez.proyectofinal.R;
-import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
+import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
 import com.example.martinjmartinez.proyectofinal.Utils.ChartUtils;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.data.BarDataSet;
@@ -27,10 +26,9 @@ public class DevicesBarChartFragment extends Fragment {
 
     private Realm realm;
     private String buildingId;
-    private BuildingService buildingService;
-    private Building mBuilding;
     private BarChart chart;
     private TextView title;
+    private DeviceService deviceService;
 
     public static DevicesBarChartFragment newInstance(String buildingId) {
         Bundle args = new Bundle();
@@ -48,11 +46,8 @@ public class DevicesBarChartFragment extends Fragment {
         if (getArguments() != null) {
 
             buildingId = getArguments().getString("buildingId");
-
             realm = Realm.getDefaultInstance();
-            buildingService = new BuildingService(realm);
-            mBuilding = buildingService.getBuildingById(buildingId);
-
+            deviceService = new DeviceService(realm);
         }
     }
 
@@ -81,9 +76,9 @@ public class DevicesBarChartFragment extends Fragment {
         ArrayList<BarEntry> yVals = new ArrayList<>();
         List<IBarDataSet> datasets = new ArrayList<>();
         int counter = 0;
-
-        if (mBuilding.getDevices() != null) {
-            for (Device device : mBuilding.getDevices()) {
+        List<Device> devices = deviceService.allActiveDevicesByBuilding(buildingId);
+        if (devices != null) {
+            for (Device device : devices) {
                 xVals.add(device.getName());
                 yVals.add(new BarEntry(counter, (float) device.getAverageConsumption()));
                 datasets.add(new BarDataSet(yVals, device.getName()));

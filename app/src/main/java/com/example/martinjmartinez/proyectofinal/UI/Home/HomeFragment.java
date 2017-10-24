@@ -34,10 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.realm.Realm;
-
-/**
- * Created by MartinJMartinez on 7/19/2017.
- */
+import io.realm.RealmResults;
 
 public class HomeFragment extends Fragment {
 
@@ -57,6 +54,7 @@ public class HomeFragment extends Fragment {
     private SpaceService spaceService;
     private DeviceService deviceService;
     private HistorialService historialService;
+    private Realm realm;
 
     public HomeFragment() {
     }
@@ -103,10 +101,11 @@ public class HomeFragment extends Fragment {
     }
 
     private void iniVariables(View view) {
-        spaceService = new SpaceService(Realm.getDefaultInstance());
-        deviceService = new DeviceService(Realm.getDefaultInstance());
-        historialService = new HistorialService(Realm.getDefaultInstance());
-        buildingService = new BuildingService(Realm.getDefaultInstance());
+        realm = Realm.getDefaultInstance();
+        spaceService = new SpaceService(realm);
+        deviceService = new DeviceService(realm);
+        historialService = new HistorialService(realm);
+        buildingService = new BuildingService(realm);
         mDeviceList = new ArrayList<>();
         mSpacesList = new ArrayList<>();
         mChartList = new ArrayList<>();
@@ -118,7 +117,7 @@ public class HomeFragment extends Fragment {
     }
 
     private void setAdapters(List<Device> devicesList) {
-        setupViewPager(chartsViewPager);
+        refreshChart();
 
         DeviceListAdapter deviceListAdapter = new DeviceListAdapter(devicesList, getActivity(), this);
         RecyclerView.LayoutManager mLayoutManager2 = new LinearLayoutManager(mActivity, GridLayoutManager.HORIZONTAL, false);
@@ -126,20 +125,17 @@ public class HomeFragment extends Fragment {
         mMostUsedDevicesRecycleView.setLayoutManager(mLayoutManager2);
         mMostUsedDevicesRecycleView.setItemAnimator(new DefaultItemAnimator());
         mMostUsedDevicesRecycleView.setAdapter(deviceListAdapter);
-
-
     }
-
 
     public void getBuilding() {
         mBuilding = buildingService.getBuildingById(mBuildingId);
+        mDeviceList = deviceService.allActiveDevicesByBuilding(mBuildingId);
 
-        mChartList.clear();
-        mChartList.add(mBuilding);
-        mChartList.add(mBuilding);
-
-        mDeviceList = mBuilding.getDevices();
         setAdapters(mDeviceList);
+    }
+
+    public void refreshChart() {
+        setupViewPager(chartsViewPager);
     }
 
     private void setupViewPager(ViewPager viewPager) {

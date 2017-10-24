@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.realm.Realm;
+import io.realm.RealmResults;
 
 public class SpacesBarChartFragment extends Fragment {
 
@@ -77,13 +78,14 @@ public class SpacesBarChartFragment extends Fragment {
     }
 
     public void fillChart() {
+        RealmResults<Space> results = realm.where(Space.class).equalTo("building._id", mBuilding.get_id()).equalTo("isActive", true).findAll();
         final ArrayList<String> xVals = new ArrayList<>();
         ArrayList<BarEntry> yVals = new ArrayList<>();
         List<IBarDataSet> datasets = new ArrayList<>();
         int counter = 0;
 
-        if (mBuilding.getSpaces() != null) {
-            for (Space space : mBuilding.getSpaces()) {
+        if (results != null) {
+            for (Space space : results) {
                 xVals.add(space.getName());
                 yVals.add(new BarEntry(counter, (float) space.getAverageConsumption()));
                 datasets.add(new BarDataSet(yVals, space.getName()));
