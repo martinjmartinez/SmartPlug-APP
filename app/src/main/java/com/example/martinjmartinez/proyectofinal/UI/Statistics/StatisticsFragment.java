@@ -27,6 +27,8 @@ import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
 import com.example.martinjmartinez.proyectofinal.Services.SpaceService;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
+import com.example.martinjmartinez.proyectofinal.UI.Statistics.Adapters.StatisticsChartDetailsViewPagerAdapter;
+import com.example.martinjmartinez.proyectofinal.UI.Statistics.Adapters.StatisticsChartsViewPagerAdapter;
 import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.example.martinjmartinez.proyectofinal.Utils.DateUtils;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
@@ -54,14 +56,17 @@ public class StatisticsFragment extends Fragment {
     private Date mStartDate;
     private Date mEndDate;
     private StatisticsChartsViewPagerAdapter statisticsChartsViewPagerAdapter;
+    private StatisticsChartDetailsViewPagerAdapter statisticsChartDetailsViewPagerAdapter;
     static public String objectId;
     private Building mBuilding;
     private Spinner mDateSpinner;
-    private TabLayout tabLayout;
+    private TabLayout chartTabLayout;
+    private TabLayout detailsTabLayout;
     private Realm realm;
     private RecyclerView charts;
     private List<Building> chartData;
     private ViewPager chartsViewPager;
+    private ViewPager chartsInfoViewPager;
 
     public StatisticsFragment() {
     }
@@ -99,7 +104,9 @@ public class StatisticsFragment extends Fragment {
         mEndDate = DateUtils.getCurrentDate();
         chartData = new ArrayList<>();
         chartsViewPager = (ViewPager) view.findViewById(R.id.charts);
-        tabLayout = (TabLayout) view.findViewById(R.id.tabDots);
+        chartsInfoViewPager = (ViewPager) view.findViewById(R.id.viewpagerDetails);
+        chartTabLayout = (TabLayout) view.findViewById(R.id.tabDots);
+        detailsTabLayout = (TabLayout) view.findViewById(R.id.detailsTabDots);
     }
 
     private void setAdapters() {
@@ -109,14 +116,17 @@ public class StatisticsFragment extends Fragment {
         mDateSpinner.setAdapter(adapter);
         mDateSpinner.setSelection(0);
 
-        setupViewPager(chartsViewPager);
+        setupViewPager(chartsViewPager, chartsInfoViewPager);
     }
 
-    private void setupViewPager(ViewPager viewPager) {
+    private void setupViewPager(ViewPager chartViewPager, ViewPager detailsViewPager) {
         statisticsChartsViewPagerAdapter = new StatisticsChartsViewPagerAdapter(getChildFragmentManager(), getContext(), objectId, mStartDate, mEndDate);
+        statisticsChartDetailsViewPagerAdapter = new StatisticsChartDetailsViewPagerAdapter(getChildFragmentManager(), getContext(), objectId, mStartDate, mEndDate);
 
-        tabLayout.setupWithViewPager(viewPager, true);
-        viewPager.setAdapter(statisticsChartsViewPagerAdapter);
+        detailsTabLayout.setupWithViewPager(detailsViewPager, true);
+        chartTabLayout.setupWithViewPager(chartViewPager, true);
+        detailsViewPager.setAdapter(statisticsChartDetailsViewPagerAdapter);
+        chartViewPager.setAdapter(statisticsChartsViewPagerAdapter);
     }
 
     private void initListeners() {
@@ -163,6 +173,33 @@ public class StatisticsFragment extends Fragment {
                 mMainActivity.onBackPressed();
             }
         });
+
+        chartsViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+
+            private int mScrollState = ViewPager.SCROLL_STATE_IDLE;
+
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+                if (mScrollState == ViewPager.SCROLL_STATE_IDLE) {
+                    return;
+                }
+                chartsInfoViewPager.scrollTo(chartsViewPager.getScrollX(), chartsInfoViewPager.getScrollY());
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+                mScrollState = state;
+                if (state == ViewPager.SCROLL_STATE_IDLE) {
+                    chartsInfoViewPager.setCurrentItem(chartsViewPager.getCurrentItem(), false);
+                }
+            }
+        });
+
     }
 
     @Override
@@ -237,7 +274,7 @@ public class StatisticsFragment extends Fragment {
                             }
                         }
 
-                        setupViewPager(chartsViewPager);
+                        setupViewPager(chartsViewPager, chartsInfoViewPager);
                     }
                 }, year, month, day);
 
@@ -256,7 +293,7 @@ public class StatisticsFragment extends Fragment {
         mStartDate = dates.first;
         mEndDate = dates.second;
 
-        setupViewPager(chartsViewPager);
+        setupViewPager(chartsViewPager, chartsInfoViewPager);
 
         String startDateString = DateUtils.format(DATE_FORMAT_SHORT, mStartDate);
         String endDateString = DateUtils.format(DATE_FORMAT_SHORT, mEndDate);

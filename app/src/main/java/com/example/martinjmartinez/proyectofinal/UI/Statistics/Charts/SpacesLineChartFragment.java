@@ -13,7 +13,7 @@ import com.example.martinjmartinez.proyectofinal.Entities.Historial;
 import com.example.martinjmartinez.proyectofinal.Entities.Space;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
-import com.example.martinjmartinez.proyectofinal.Utils.ChartUtils;
+import com.example.martinjmartinez.proyectofinal.Utils.Chart.ChartUtils;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineDataSet;
@@ -111,7 +111,7 @@ public class SpacesLineChartFragment extends Fragment {
             RealmResults<Historial> results = realm.where(Historial.class).between("startDate", mStartDate, mEndDate).between("endDate", mStartDate, mEndDate).equalTo("space._id", space.get_id()).findAll().sort("startDate", Sort.ASCENDING);
 
             if (!results.isEmpty()) {
-                entriesResults = ChartUtils.fetchData(results, dates);
+                entriesResults = ChartUtils.fetchDataChart(results, dates);
                 entries = new ArrayList<>();
 
                 entries.addAll(entriesResults.values());

@@ -2,7 +2,9 @@ package com.example.martinjmartinez.proyectofinal.Utils;
 
 
 import android.support.v4.util.ArrayMap;
+import android.util.Log;
 
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -59,5 +61,34 @@ public final class DateUtils {
         calendar.set(Calendar.SECOND,00);
 
         return calendar.getTime();
+    }
+
+    public static String multiLineMediumFormat(String dateString){
+        DateFormat outputFormat = new SimpleDateFormat("MMM d,\n yyyy");
+        DateFormat inputFormat = new SimpleDateFormat("MMM d, yyyy");
+        Date date = new Date();
+        try {
+            date = inputFormat.parse(dateString);
+        }catch (ParseException ex) {
+            Log.e("ParseEx", ex.getMessage());
+        }
+
+        return outputFormat.format(date);
+    }
+
+    public static String timeFormatter(long seconds){
+        String elapsedTime = android.text.format.DateUtils.formatElapsedTime(seconds);
+
+        if (elapsedTime.length() == 5) {
+            if (elapsedTime.startsWith("00:")) {
+                elapsedTime = elapsedTime + " S";
+            } else {
+                elapsedTime = elapsedTime + " M";
+            }
+        } else {
+            elapsedTime = elapsedTime + " H";
+        }
+
+        return  elapsedTime;
     }
 }

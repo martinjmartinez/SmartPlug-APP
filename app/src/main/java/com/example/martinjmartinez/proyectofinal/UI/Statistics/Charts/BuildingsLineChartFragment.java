@@ -12,7 +12,7 @@ import com.example.martinjmartinez.proyectofinal.Entities.Building;
 import com.example.martinjmartinez.proyectofinal.Entities.Historial;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
-import com.example.martinjmartinez.proyectofinal.Utils.ChartUtils;
+import com.example.martinjmartinez.proyectofinal.Utils.Chart.ChartUtils;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.data.Entry;
 
@@ -97,7 +97,7 @@ public class BuildingsLineChartFragment extends Fragment {
         chart.clear();
 
         dates = ChartUtils.sortDates(historials, dates);
-        results = ChartUtils.fetchData(historials, dates);
+        results = ChartUtils.fetchDataChart(historials, dates);
         entries = new ArrayList<>();
         entries.addAll(results.values());
         dataSets.add(new LineDataSet(entries, mBuilding.getName()));

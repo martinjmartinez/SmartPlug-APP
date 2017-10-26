@@ -11,7 +11,7 @@ import android.widget.TextView;
 import com.example.martinjmartinez.proyectofinal.Entities.Device;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
-import com.example.martinjmartinez.proyectofinal.Utils.ChartUtils;
+import com.example.martinjmartinez.proyectofinal.Utils.Chart.ChartUtils;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;

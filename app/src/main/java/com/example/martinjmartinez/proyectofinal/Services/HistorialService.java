@@ -4,6 +4,7 @@ import com.example.martinjmartinez.proyectofinal.App.SmartPLugApplication;
 import com.example.martinjmartinez.proyectofinal.Entities.Device;
 import com.example.martinjmartinez.proyectofinal.Entities.Historial;
 import com.example.martinjmartinez.proyectofinal.Entities.Log;
+import com.example.martinjmartinez.proyectofinal.Utils.DateUtils;
 
 import java.util.Date;
 import java.util.List;
@@ -29,10 +30,10 @@ public class HistorialService extends SmartPLugApplication {
 
     public void createHistorial(String _id, Date startDate, Date endDate, String deviceId, RealmList<Log> powerLog, double powerAverage) {
         Device device = deviceService.getDeviceById(deviceId);
-        double totalHours = 0;
+        long secs = 0;
         if (powerLog.size() != 0) {
-            long secs = (endDate.getTime() - startDate.getTime()) / 1000;
-            totalHours = secs;
+            secs = (endDate.getTime() - startDate.getTime()) / 1000;
+            DateUtils.timeFormatter(secs);
         }
         realm.beginTransaction();
 
@@ -44,7 +45,7 @@ public class HistorialService extends SmartPLugApplication {
         historial.setPowerAverage(powerAverage);
         historial.setBuilding(device.getBuilding());
         historial.setSpace(device.getSpace());
-        historial.setTotalTimeInSeconds(totalHours);
+        historial.setTotalTimeInSeconds(secs);
 
         realm.commitTransaction();
     }
