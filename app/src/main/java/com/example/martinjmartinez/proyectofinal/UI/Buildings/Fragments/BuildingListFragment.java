@@ -14,35 +14,37 @@ import android.widget.GridView;
 import android.widget.LinearLayout;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
+import com.example.martinjmartinez.proyectofinal.Models.BuildingFB;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.UI.Buildings.Adapters.BuildingListAdapter;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.UI.Spaces.Fragments.SpaceListFragment;
-import com.example.martinjmartinez.proyectofinal.Utils.API;
 import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import io.realm.Realm;
 
-/**
- * Created by MartinJMartinez on 7/15/2017.
- */
-
 public class BuildingListFragment extends Fragment {
 
     private List<Building> mBuildingList;
     private GridView mGridView;
-    private API mAPI;
     private Activity mActivity;
     private FloatingActionButton mAddBuildingButton;
     private LinearLayout mEmptyBuildingListLayout;
     private MainActivity mMainActivity;
     private BuildingService buildingService;
+    private DatabaseReference databaseReference;
+    private BuildingListAdapter buildingListAdapter;
 
     public BuildingListFragment() {
     }
@@ -53,6 +55,7 @@ public class BuildingListFragment extends Fragment {
 
         Utils.setActionBarIcon(getActivity(), true);
         initVariables(view);
+        getBuildings();
         initListeners();
 
         return view;
@@ -87,17 +90,16 @@ public class BuildingListFragment extends Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        getBuildings();
+
     }
 
     private void initVariables(View view) {
         buildingService = new BuildingService(Realm.getDefaultInstance());
         mBuildingList = new ArrayList<>();
         mGridView = (GridView) view.findViewById(R.id.building_grid);
-        mAPI = new API();
         mEmptyBuildingListLayout = (LinearLayout) view.findViewById(R.id.empty_building_list_layout);
         mAddBuildingButton = (FloatingActionButton) view.findViewById(R.id.add_building_button);
-
+        databaseReference = FirebaseDatabase.getInstance().getReference("Buildings");
     }
 
     private void initListeners() {
@@ -132,6 +134,43 @@ public class BuildingListFragment extends Fragment {
                 Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.BUILDING_LIST_FRAGMENT), buildingCreateFragment, FragmentKeys.BUILDING_CREATION_FRAGMENT, addToBackStack);
             }
         });
+
+        databaseReference.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                BuildingFB buildingFB = dataSnapshot.getValue(BuildingFB.class);
+
+                buildingService.updateBuildingName(buildingFB);
+                if(buildingListAdapter != null) {
+                    buildingListAdapter.notifyDataSetChanged();
+                }
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                BuildingFB buildingFB = dataSnapshot.getValue(BuildingFB.class);
+
+                buildingService.updateBuildingName(buildingFB);
+                if(buildingListAdapter != null) {
+                    buildingListAdapter.notifyDataSetChanged();
+                }
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     public void getBuildings() {
@@ -147,11 +186,12 @@ public class BuildingListFragment extends Fragment {
         } else {
             mGridView.setVisibility(View.GONE);
             mEmptyBuildingListLayout.setVisibility(View.VISIBLE);
+            buildingListAdapter = new BuildingListAdapter(getContext(), R.layout.building_list_item, buildingList);
         }
     }
 
     void initSpacesList(List<Building> buildingsList) {
-        BuildingListAdapter buildingListAdapter = new BuildingListAdapter(getContext(), R.layout.building_list_item, buildingsList);
+        buildingListAdapter = new BuildingListAdapter(getContext(), R.layout.building_list_item, buildingsList);
         mGridView.setAdapter(buildingListAdapter);
     }
 }

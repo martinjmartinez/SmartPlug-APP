@@ -7,7 +7,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,9 +18,9 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.martinjmartinez.proyectofinal.Entities.Building;
 import com.example.martinjmartinez.proyectofinal.Entities.Device;
 import com.example.martinjmartinez.proyectofinal.Entities.Space;
+import com.example.martinjmartinez.proyectofinal.Models.DeviceFB;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
@@ -31,26 +31,15 @@ import com.example.martinjmartinez.proyectofinal.Utils.API;
 import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 
-import java.io.IOException;
 import java.util.List;
 
 import io.realm.Realm;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 
-/**
- * Created by MartinJMartinez on 10/12/2017.
- */
+
 
 public class DeviceUpdateFragment extends Fragment {
 
     private Device mDevice;
-    private API mAPI;
     private Activity mActivity;
     private EditText name;
     private EditText ipAddress;
@@ -58,9 +47,9 @@ public class DeviceUpdateFragment extends Fragment {
     private TextView deviceBuilding;
     private TextView deviceSpace;
     private Button saveDevice;
-    private String mSpaceId, mDeviceId;
+    private String mDeviceId;
     private Space mSpace, lastSpace;
-    private Building mBuilding;
+
     private Spinner mSpaceSpinner;
     private SpaceSpinnerAdapter mSpaceSpinnerAdapter;
     private MainActivity mMainActivity;
@@ -119,7 +108,6 @@ public class DeviceUpdateFragment extends Fragment {
         deviceService = new DeviceService(Realm.getDefaultInstance());
         buildingService = new BuildingService(Realm.getDefaultInstance());
         spaceService = new SpaceService(Realm.getDefaultInstance());
-        mAPI = new API();
         name = (EditText) view.findViewById(R.id.device_create_name);
         ipAddress = (EditText) view.findViewById(R.id.device_create_ip);
         displayName = (TextView) view.findViewById(R.id.device_create_display_name);
@@ -164,15 +152,18 @@ public class DeviceUpdateFragment extends Fragment {
             public void onClick(View v) {
                 if (!Utils.isEditTextEmpty(name)) {
                     if (mSpace != null) {
-                        deviceService.updateDevice(mDeviceId, name.getText().toString(), mDevice.isStatus(), ipAddress.getText().toString(), mSpace.get_id(), mSpace.getBuilding().get_id(), mDevice.getAverageConsumption(), mDevice.isActive());
+                        DeviceFB deviceFB = new DeviceFB(mDeviceId, name.getText().toString(), mDevice.isStatus(), ipAddress.getText().toString(), mSpace.get_id(), mDevice.isActive(), mSpace.getBuilding().get_id(), mDevice.getAverageConsumption(), mDevice.getPower());
+                        deviceService.updateDeviceCloud(deviceFB);
                         spaceService.updateSapacePowerAverageConsumption(mSpace.get_id());
-                        spaceService.updateSapacePowerAverageConsumption(lastSpace.get_id());
-
+                        if (lastSpace != null) {
+                            spaceService.updateSapacePowerAverageConsumption(lastSpace.get_id());
+                        }
                     } else {
-                        deviceService.updateDevice(mDeviceId, name.getText().toString(), mDevice.isStatus(), ipAddress.getText().toString(), "", mDevice.getBuilding().get_id(), mDevice.getAverageConsumption(), mDevice.isActive());
+                        DeviceFB deviceFB = new DeviceFB(mDeviceId, name.getText().toString(), mDevice.isStatus(), ipAddress.getText().toString(), "",  mDevice.isActive(), mDevice.getBuilding().get_id(), mDevice.getAverageConsumption(), mDevice.getPower());
+
+                        deviceService.updateDeviceCloud(deviceFB);
                     }
-                    Device newDevice = deviceService.getDeviceById(mDeviceId);
-                    updateDevice(mAPI.getClient(), newDevice.deviceToString());
+                    mActivity.onBackPressed();
                 } else {
                     Toast.makeText(getActivity(), "Please, name your device.", Toast.LENGTH_SHORT).show();
                 }
@@ -183,39 +174,6 @@ public class DeviceUpdateFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 mMainActivity.onBackPressed();
-            }
-        });
-    }
-
-    private void updateDevice(OkHttpClient client, String data) {
-        Log.e("QUERY", Constants.DEVICE_QUERY);
-        MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-        RequestBody body = RequestBody.create(JSON, data);
-        Log.e("JSON", data);
-        Request request = new Request.Builder()
-                .url(Constants.DEVICE_QUERY + "/" + mDeviceId)
-                .patch(body)
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.e("Error", e.getMessage());
-            }
-
-            @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                if (!response.isSuccessful()) {
-                    Log.e("ERROR12", response.body().string());
-                } else {
-                    Log.e("RESPONSE12", response.body().string());
-                    mActivity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mActivity.onBackPressed();
-                        }
-                    });
-                }
             }
         });
     }

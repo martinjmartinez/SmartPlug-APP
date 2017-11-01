@@ -3,7 +3,6 @@ package com.example.martinjmartinez.proyectofinal.UI.Statistics.ChartDetails;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,22 +13,18 @@ import android.widget.TextView;
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
 import com.example.martinjmartinez.proyectofinal.Entities.Device;
 import com.example.martinjmartinez.proyectofinal.Entities.Historial;
-import com.example.martinjmartinez.proyectofinal.Entities.Space;
 import com.example.martinjmartinez.proyectofinal.Models.HistorialReview;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
 import com.example.martinjmartinez.proyectofinal.UI.Devices.Adapters.DeviceSpinnerAdapter;
-import com.example.martinjmartinez.proyectofinal.UI.Spaces.Adapters.SpaceSpinnerAdapter;
 import com.example.martinjmartinez.proyectofinal.Utils.Chart.ChartUtils;
 import com.example.martinjmartinez.proyectofinal.Utils.DateUtils;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.TreeMap;
 
 import io.realm.Realm;
 import io.realm.RealmResults;
@@ -147,16 +142,16 @@ public class DevicesChartDetailsFragment extends Fragment {
 
             for (HistorialReview historialReview : results) {
 
-                if (historialReview.getPowerAverage() < minDay.getPowerAverage())
+                if (historialReview.getPowerConsumed() < minDay.getPowerConsumed())
                     minDay = historialReview;
-                if (historialReview.getPowerAverage() > maxDay.getPowerAverage())
+                if (historialReview.getPowerConsumed() > maxDay.getPowerConsumed())
                     maxDay = historialReview;
             }
 
             maxDate.setText(maxDay.getDate());
             minDate.setText(minDay.getDate());
-            maxPower.setText(Utils.decimalFormat.format(maxDay.getPowerAverage()) + " W");
-            minPower.setText(Utils.decimalFormat.format(minDay.getPowerAverage()) + " W");
+            maxPower.setText(Utils.decimalFormat.format(maxDay.getPowerConsumed()) + " W/h");
+            minPower.setText(Utils.decimalFormat.format(minDay.getPowerConsumed()) + " W/h");
             maxTime.setText(DateUtils.timeFormatter(maxDay.getTotalTimeInSeconds()));
             minTime.setText(DateUtils.timeFormatter(minDay.getTotalTimeInSeconds()));
         }

@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Device;
+import com.example.martinjmartinez.proyectofinal.Models.DeviceFB;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
 import com.example.martinjmartinez.proyectofinal.Utils.Chart.ChartUtils;
@@ -16,6 +17,12 @@ import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +36,8 @@ public class DevicesBarChartFragment extends Fragment {
     private BarChart chart;
     private TextView title;
     private DeviceService deviceService;
+    private DatabaseReference databaseReference;
+    private List<Device> devices;
 
     public static DevicesBarChartFragment newInstance(String buildingId) {
         Bundle args = new Bundle();
@@ -48,7 +57,52 @@ public class DevicesBarChartFragment extends Fragment {
             buildingId = getArguments().getString("buildingId");
             realm = Realm.getDefaultInstance();
             deviceService = new DeviceService(realm);
+            databaseReference = FirebaseDatabase.getInstance().getReference("Devices");
+
         }
+    }
+
+    private void initListeners() {
+        databaseReference.orderByChild("buildingId").equalTo(buildingId).addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                DeviceFB deviceFB = dataSnapshot.getValue(DeviceFB.class);
+                deviceService.updateDeviceLocal(deviceFB);
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                DeviceFB deviceFB = dataSnapshot.getValue(DeviceFB.class);
+                deviceService.updateDeviceLocal(deviceFB);
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                fillChart();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     @Override
@@ -59,6 +113,8 @@ public class DevicesBarChartFragment extends Fragment {
         title = (TextView) view.findViewById(R.id.chart_title_home);
 
         chart.getDescription().setEnabled(false);
+        devices = new ArrayList<>();
+
 
         return view;
     }
@@ -67,8 +123,8 @@ public class DevicesBarChartFragment extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        initListeners();
         title.setText("Devices");
-        fillChart();
     }
 
     public void fillChart() {
@@ -76,7 +132,8 @@ public class DevicesBarChartFragment extends Fragment {
         ArrayList<BarEntry> yVals = new ArrayList<>();
         List<IBarDataSet> datasets = new ArrayList<>();
         int counter = 0;
-        List<Device> devices = deviceService.allActiveDevicesByBuilding(buildingId);
+        devices = deviceService.allActiveDevicesByBuilding(buildingId);
+
         if (devices != null) {
             for (Device device : devices) {
                 xVals.add(device.getName());

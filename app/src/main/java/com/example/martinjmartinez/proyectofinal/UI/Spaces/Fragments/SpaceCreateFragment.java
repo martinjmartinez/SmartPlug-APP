@@ -7,7 +7,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,26 +22,14 @@ import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.Services.SpaceService;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
-import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 
-import java.io.IOException;
-
 import io.realm.Realm;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 
 public class SpaceCreateFragment extends Fragment {
 
     private Space mSpace;
-    private API mAPI;
     private Activity mActivity;
-    private String mQuery;
     private EditText name;
     private TextView displayName;
     private TextView spaceBuilding;
@@ -105,7 +92,6 @@ public class SpaceCreateFragment extends Fragment {
         spaceService = new SpaceService(Realm.getDefaultInstance());
         mSpace = new Space();
         mActivity = getActivity();
-        mAPI = new API();
     }
 
     private void initListeners() {
@@ -130,9 +116,8 @@ public class SpaceCreateFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if (!Utils.isEditTextEmpty(name) && mSpace != null) {
-                    mSpace.setName(name.getText().toString());
-                    mSpace.setBuilding(mBuilding);
-                    createSpace(mAPI.getClient(), mSpace.toString());
+                    spaceService.createSpace(name.getText().toString(), mBuildingId, true);
+                    mActivity.onBackPressed();
                 } else {
                     Toast.makeText(getActivity(), "Please, name your Space.", Toast.LENGTH_SHORT).show();
                 }
@@ -147,48 +132,15 @@ public class SpaceCreateFragment extends Fragment {
         });
     }
 
-    private void createSpace(OkHttpClient client, String data) {
-        Log.e("QUERY", Constants.SPACE_QUERY);
-        MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-        RequestBody body = RequestBody.create(JSON, data);
-        Log.e("JSON", data);
-        Request request = new Request.Builder()
-                .url(Constants.SPACE_QUERY)
-                .post(body)
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.e("Error", e.getMessage());
-            }
-
-            @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                if (!response.isSuccessful()) {
-                    Log.e("ERROR", response.body().string());
-                } else {
-                    mActivity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mAPI.getSpaceFromCloud(response, mBuildingId);
-                            mActivity.onBackPressed();
-                        }
-                    });
-                }
-            }
-        });
-    }
-
     private void initView(View view) {
         name = (EditText) view.findViewById(R.id.space_create_name);
         displayName = (TextView) view.findViewById(R.id.space_create_display_name);
         spaceBuilding = (TextView) view.findViewById(R.id.space_create_building);
         saveSpace = (Button) view.findViewById(R.id.space_create_save_button);
-        getBuilding(mAPI.getClient());
+        getBuilding();
     }
 
-    private void getBuilding(OkHttpClient client) {
+    private void getBuilding() {
         mBuilding = buildingService.getBuildingById(mBuildingId);
         spaceBuilding.setText(mBuilding.getName());
     }

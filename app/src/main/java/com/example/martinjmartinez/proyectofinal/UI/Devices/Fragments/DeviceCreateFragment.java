@@ -7,7 +7,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,8 +18,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
-import com.example.martinjmartinez.proyectofinal.Entities.Device;
 import com.example.martinjmartinez.proyectofinal.Entities.Space;
+import com.example.martinjmartinez.proyectofinal.Models.DeviceFB;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
@@ -31,22 +30,13 @@ import com.example.martinjmartinez.proyectofinal.Utils.API;
 import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 
-
-import java.io.IOException;
 import java.util.List;
 
 import io.realm.Realm;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 
 public class DeviceCreateFragment extends Fragment {
 
-    private Device mDevice;
+    private DeviceFB mDevice;
     private API mAPI;
     private Activity mActivity;
     private String mBuildingId;
@@ -56,7 +46,7 @@ public class DeviceCreateFragment extends Fragment {
     private TextView deviceBuilding;
     private TextView deviceSpace;
     private Button saveDevice;
-    private String mSpaceId, mDeviceId;
+    private String mSpaceId;
     private Space mSpace;
     private Building mBuilding;
     private Spinner mSpaceSpinner;
@@ -168,16 +158,22 @@ public class DeviceCreateFragment extends Fragment {
         saveDevice.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mDevice = new Device();
+                mDevice = new DeviceFB();
                 if (!Utils.isEditTextEmpty(name) && mDevice != null && !Utils.isEditTextEmpty(ipAddress)) {
                     mDevice.setName(name.getText().toString());
                     mDevice.setIp_address(ipAddress.getText().toString());
                     mDevice.setStatus(false);
-                    mDevice.setBuilding(mBuilding);
-                    Log.e("BUILDING", mBuilding.get_id());
-                    mDevice.setSpace(mSpace);
-
-                    createDevice(mAPI.getClient(), mDevice.deviceToString());
+                    mDevice.setBuildingId(mBuilding.get_id());
+                    mDevice.setPower(0);
+                    mDevice.setActive(true);
+                    if (mSpace ==null) {
+                        mDevice.setSpaceId("");
+                        deviceService.createDevice(mDevice);
+                    } else {
+                        mDevice.setSpaceId(mSpace.get_id());
+                        deviceService.createDevice(mDevice);
+                    }
+                    mMainActivity.onBackPressed();
                 } else {
                     Toast.makeText(getActivity(), "Please, fill all the fields.", Toast.LENGTH_SHORT).show();
                 }
@@ -191,45 +187,6 @@ public class DeviceCreateFragment extends Fragment {
             }
         });
     }
-
-    private void createDevice(OkHttpClient client, String data) {
-        Log.e("QUERY", Constants.DEVICE_QUERY);
-        MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-        RequestBody body = RequestBody.create(JSON, data);
-        Log.e("JSON", data);
-        Request request = new Request.Builder()
-                .url(Constants.DEVICE_QUERY)
-                .post(body)
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.e("Error", e.getMessage());
-            }
-
-            @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                if (!response.isSuccessful()) {
-                    Log.e("ERROR1", response.body().string());
-                } else {
-                    mActivity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (mSpace != null) {
-                                mAPI.getDeviceFromCloud(response, mSpace.get_id(), mBuilding.get_id());
-                            } else {
-                                mAPI.getDeviceFromCloud(response, "", mBuilding.get_id());
-                            }
-
-                            mMainActivity.onBackPressed();
-                        }
-                    });
-                }
-            }
-        });
-    }
-
 
     public void setUpSpacesSpinner(List<Space> items) {
         if (items.size() != 0) {

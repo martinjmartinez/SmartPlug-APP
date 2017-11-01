@@ -1,6 +1,5 @@
 package com.example.martinjmartinez.proyectofinal.UI.Home;
 
-
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
@@ -19,6 +18,7 @@ import android.view.ViewGroup;
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
 import com.example.martinjmartinez.proyectofinal.Entities.Device;
 import com.example.martinjmartinez.proyectofinal.Entities.Space;
+import com.example.martinjmartinez.proyectofinal.Models.DeviceFB;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
@@ -28,6 +28,11 @@ import com.example.martinjmartinez.proyectofinal.UI.Devices.Adapters.DeviceListA
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.Utils.API;
 import com.example.martinjmartinez.proyectofinal.Utils.Constants;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,14 +42,12 @@ import io.realm.Realm;
 public class HomeFragment extends Fragment {
 
     private String mBuildingId;
-    private Building mBuilding;
     private RecyclerView mMostUsedDevicesRecycleView;
     private ViewPager chartsViewPager;
     private HomeChartViewPagerAdapter homeChartViewPagerAdapter;
     private List<Space> mSpacesList;
     private List<Device> mDeviceList;
     private List<Building> mChartList;
-    private API mAPI;
     private Activity mActivity;
     private MainActivity mMainActivity;
     private BuildingService buildingService;
@@ -53,6 +56,8 @@ public class HomeFragment extends Fragment {
     private DeviceService deviceService;
     private HistorialService historialService;
     private Realm realm;
+    private DatabaseReference databaseReference;
+    private DeviceListAdapter deviceListAdapter;
 
     public HomeFragment() {
     }
@@ -89,6 +94,7 @@ public class HomeFragment extends Fragment {
         View view = inflater.inflate(R.layout.home_fragment, container, false);
 
         iniVariables(view);
+        initListeners();
         getBuilding();
 
         return view;
@@ -96,6 +102,40 @@ public class HomeFragment extends Fragment {
 
     private void initListeners() {
 
+        databaseReference.orderByChild("buildingId").equalTo(mBuildingId).addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                DeviceFB deviceFB = dataSnapshot.getValue(DeviceFB.class);
+
+                deviceService.updateDeviceLocal(deviceFB);
+                deviceListAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                DeviceFB deviceFB = dataSnapshot.getValue(DeviceFB.class);
+
+                deviceService.updateDeviceLocal(deviceFB);
+
+                deviceListAdapter.notifyDataSetChanged();
+
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     private void iniVariables(View view) {
@@ -107,17 +147,17 @@ public class HomeFragment extends Fragment {
         mDeviceList = new ArrayList<>();
         mSpacesList = new ArrayList<>();
         mChartList = new ArrayList<>();
-        mAPI = new API();
         mMostUsedDevicesRecycleView = (RecyclerView) view.findViewById(R.id.most_used_devices);
         chartsViewPager = (ViewPager) view.findViewById(R.id.bar_chart_pager);
         tabLayout = (TabLayout) view.findViewById(R.id.tabDots);
+        databaseReference = FirebaseDatabase.getInstance().getReference("Devices");
 
     }
 
     private void setAdapters(List<Device> devicesList) {
         refreshChart();
 
-        DeviceListAdapter deviceListAdapter = new DeviceListAdapter(devicesList, getActivity(), this);
+        deviceListAdapter = new DeviceListAdapter(devicesList, getActivity(), this);
         RecyclerView.LayoutManager mLayoutManager2 = new LinearLayoutManager(mActivity, GridLayoutManager.HORIZONTAL, false);
 
         mMostUsedDevicesRecycleView.setLayoutManager(mLayoutManager2);
@@ -126,10 +166,7 @@ public class HomeFragment extends Fragment {
     }
 
     public void getBuilding() {
-        mBuilding = buildingService.getBuildingById(mBuildingId);
-        mDeviceList = deviceService.allActiveDevicesByBuilding(mBuildingId);
-
-        setAdapters(mDeviceList);
+        setAdapters(deviceService.allActiveDevicesByBuilding(mBuildingId));
     }
 
     public void refreshChart() {

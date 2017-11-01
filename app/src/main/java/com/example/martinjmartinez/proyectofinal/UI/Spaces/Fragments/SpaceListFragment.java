@@ -14,16 +14,20 @@ import android.widget.GridView;
 import android.widget.LinearLayout;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Space;
+import com.example.martinjmartinez.proyectofinal.Models.SpaceFB;
 import com.example.martinjmartinez.proyectofinal.R;
-import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.Services.SpaceService;
 import com.example.martinjmartinez.proyectofinal.UI.Devices.Fragments.DeviceListFragment;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.UI.Spaces.Adapters.SpaceListAdapter;
-import com.example.martinjmartinez.proyectofinal.Utils.API;
 import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,12 +40,12 @@ public class SpaceListFragment extends Fragment {
     private GridView mGridView;
     private LinearLayout mEmptySpaceListLayout;
     private FloatingActionButton mAddSpaceButton;
-    private API mAPI;
     private Activity mActivity;
     private String mBuildingId;
     private MainActivity mMainActivity;
     private SpaceService spaceService;
-    private BuildingService buildingService;
+    private DatabaseReference databaseReference;
+    private SpaceListAdapter spaceListAdapter;
 
     public SpaceListFragment() {
     }
@@ -67,6 +71,7 @@ public class SpaceListFragment extends Fragment {
         View view = inflater.inflate(R.layout.space_list_fragment, container, false);
 
         initVariables(view);
+        getSpaces();
         initListeners();
 
         return view;
@@ -76,7 +81,7 @@ public class SpaceListFragment extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         getArgumentsBundle();
-        getSpaces();
+
     }
 
     @Override
@@ -90,7 +95,6 @@ public class SpaceListFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-
         mMainActivity.getSupportActionBar().setTitle("Spaces");
     }
 
@@ -106,12 +110,11 @@ public class SpaceListFragment extends Fragment {
 
     private void initVariables(View view) {
         spaceService = new SpaceService(Realm.getDefaultInstance());
-        buildingService = new BuildingService(Realm.getDefaultInstance());
-        mSpacesList = new ArrayList<>();
         mGridView = (GridView) view.findViewById(R.id.spaces_grid);
-        mAPI = new API();
         mEmptySpaceListLayout = (LinearLayout) view.findViewById(R.id.empty_space_list_layout);
         mAddSpaceButton = (FloatingActionButton) view.findViewById(R.id.add_space_button);
+        databaseReference = FirebaseDatabase.getInstance().getReference("Spaces");
+        mSpacesList = new ArrayList<>();
     }
 
     private void initListeners() {
@@ -147,14 +150,50 @@ public class SpaceListFragment extends Fragment {
                 mMainActivity.onBackPressed();
             }
         });
+
+        databaseReference.orderByChild("buildingId").equalTo(mBuildingId).addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                SpaceFB spaceFB = dataSnapshot.getValue(SpaceFB.class);
+
+                spaceService.updateSpace(spaceFB);
+                if (spaceListAdapter != null) {
+                    spaceListAdapter.notifyDataSetChanged();
+                }
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                SpaceFB spaceFB = dataSnapshot.getValue(SpaceFB.class);
+
+                spaceService.updateSpace(spaceFB);
+                if (spaceListAdapter != null) {
+                    spaceListAdapter.notifyDataSetChanged();
+                }
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
-    public void getSpaces() {
+    private void getSpaces() {
         mSpacesList = spaceService.allActiveSpacesByBuilding(mBuildingId);
 
-       shouldEmptyMessageShow(mSpacesList);
+        shouldEmptyMessageShow(mSpacesList);
     }
-
     private void shouldEmptyMessageShow(List<Space> spaceList) {
         if (!spaceList.isEmpty()) {
             mEmptySpaceListLayout.setVisibility(View.GONE);
@@ -162,11 +201,12 @@ public class SpaceListFragment extends Fragment {
         } else {
             mGridView.setVisibility(View.GONE);
             mEmptySpaceListLayout.setVisibility(View.VISIBLE);
+            spaceListAdapter = new SpaceListAdapter(getContext(), R.layout.space_list_item, spaceList);
         }
     }
 
     void initSpacesList(List<Space> spacesList) {
-        SpaceListAdapter spaceListAdapter = new SpaceListAdapter(getContext(), R.layout.space_list_item, spacesList);
+        spaceListAdapter = new SpaceListAdapter(getContext(), R.layout.space_list_item, spacesList);
         mGridView.setAdapter(spaceListAdapter);
     }
 }

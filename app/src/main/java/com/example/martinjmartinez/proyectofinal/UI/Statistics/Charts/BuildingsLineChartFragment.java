@@ -97,7 +97,7 @@ public class BuildingsLineChartFragment extends Fragment {
         chart.clear();
 
         dates = ChartUtils.sortDates(historials, dates);
-        results = ChartUtils.fetchDataChart(historials, dates);
+        results = ChartUtils.fetchConsumptionData(historials, dates);
         entries = new ArrayList<>();
         entries.addAll(results.values());
         dataSets.add(new LineDataSet(entries, mBuilding.getName()));

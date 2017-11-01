@@ -4,35 +4,38 @@ import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
-
+import com.example.martinjmartinez.proyectofinal.Models.HistorialFB;
 import com.example.martinjmartinez.proyectofinal.R;
+import com.example.martinjmartinez.proyectofinal.Services.HistorialService;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
-import com.example.martinjmartinez.proyectofinal.Utils.API;
-import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 
-import java.io.IOException;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import java.util.Date;
 
 import io.realm.Realm;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+
 
 public class LoaderActivity extends AppCompatActivity {
 
-    private API mAPI;
+
     private Realm realm;
+    private HistorialService historialService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_loader);
 
-        mAPI = new API();
         realm = Realm.getDefaultInstance();
+        historialService = new HistorialService(realm);
 
-        getData(mAPI.getClient());
+        getData();
     }
 
     @Override
@@ -45,125 +48,55 @@ public class LoaderActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
-    public void getData(OkHttpClient client) {
-        getBuildings(client);
+    public void getData() {
+        getHistorials();
     }
 
-    public void getBuildings(final OkHttpClient client) {
-        Request request = new Request.Builder()
-                .url(Constants.BUILDING_QUERY)
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
+    public void getHistorials() {
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Histories");
+        databaseReference.addChildEventListener(new ChildEventListener() {
             @Override
-            public void onFailure(Call call, IOException e) {
-                Log.e("getBuildings", e.getMessage());
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                HistorialFB historialFB = dataSnapshot.getValue(HistorialFB.class);
+                Log.e("Entro", "getHistorials");
+                if (historialFB.getEndDate() == 0) {
+                    historialService.updateHistorial(historialFB.get_id(), new Date(historialFB.getStartDate()),new Date(),historialFB.getDeviceId(), historialFB.getPowerAverage());
+                } else {
+                    historialService.updateHistorial(historialFB.get_id(), new Date(historialFB.getStartDate()),new Date(historialFB.getEndDate()),historialFB.getDeviceId(), historialFB.getPowerAverage());
+                }
+
             }
 
             @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                if (!response.isSuccessful()) {
-                    throw new IOException("Unexpected code at getBuildings" + response);
-                } else {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mAPI.getBuildingsFromCloud(response);
-                        }
-                    });
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
 
-                    getSpaces(client);
-                }
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
 
             }
         });
-    }
 
-    public void getSpaces(final OkHttpClient client) {
-        Request request = new Request.Builder()
-                .url(Constants.SPACE_QUERY)
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onFailure(Call call, IOException e) {
-                Log.e("getSpaces", e.getMessage());
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                loadFinished();
             }
 
             @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                if (!response.isSuccessful()) {
-                    throw new IOException("Unexpected code at getSpaces" + response);
-                } else {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mAPI.getSpacesFromCloud(response);
-                        }
-                    });
+            public void onCancelled(DatabaseError databaseError) {
 
-                    getDevices(client);
-                }
-            }
-        });
-    }
-
-    public void getDevices(final OkHttpClient client) {
-        Request request = new Request.Builder()
-                .url(Constants.DEVICE_QUERY)
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.e("getDevices", e.getMessage());
-            }
-
-            @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                if (!response.isSuccessful()) {
-                    throw new IOException("Unexpected code at getDevices" + response);
-                } else {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mAPI.getDevicesFromCloud(response);
-                        }
-                    });
-
-                    getHistorials(client);
-                }
-            }
-        });
-    }
-
-    public void getHistorials(OkHttpClient client) {
-        Request request = new Request.Builder()
-                .url(Constants.HISTORY_QUERY)
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.e("getHistorials", e.getMessage());
-            }
-
-            @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                if (!response.isSuccessful()) {
-                    throw new IOException("Unexpected code at getHistorials" + response);
-                } else {
-                    final String string = response.body().string();
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mAPI.getHistorialsFromCloud(string);
-
-                        }
-                    });
-
-                    loadFinished();
-                }
             }
         });
     }

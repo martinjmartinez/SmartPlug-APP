@@ -17,6 +17,8 @@ import android.widget.LinearLayout;
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
 import com.example.martinjmartinez.proyectofinal.Entities.Device;
 import com.example.martinjmartinez.proyectofinal.Entities.Space;
+import com.example.martinjmartinez.proyectofinal.Models.BuildingFB;
+import com.example.martinjmartinez.proyectofinal.Models.DeviceFB;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
@@ -27,6 +29,11 @@ import com.example.martinjmartinez.proyectofinal.Utils.API;
 import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,15 +41,10 @@ import java.util.List;
 import io.realm.Realm;
 import io.realm.RealmResults;
 
-/**
- * Created by MartinJMartinez on 7/14/2017.
- */
-
 public class DeviceListFragment extends Fragment {
 
     private RecyclerView mGridView;
-    private API mAPI;
-    private Building mBuilding;
+
     private String mBuildingId, mSpaceId;
     private FloatingActionButton mAddDeviceButton;
     private Activity mActivity;
@@ -55,6 +57,7 @@ public class DeviceListFragment extends Fragment {
     private SpaceService spaceService;
     private LinearLayout mEmptyDeviceListLayout;
     private Realm realm;
+    private DatabaseReference databaseReference;
 
     public DeviceListFragment() {
     }
@@ -63,7 +66,7 @@ public class DeviceListFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // getArgumentsBundle();
+        getArgumentsBundle();
 
     }
 
@@ -99,12 +102,13 @@ public class DeviceListFragment extends Fragment {
 
         iniVariables(view);
 
+        initListeners();
         if (!mBuildingId.isEmpty() && mSpaceId.isEmpty()) {
             getDevicesByBuilding();
         } else if (mBuildingId.isEmpty() && !mSpaceId.isEmpty()) {
             getDevicesBySpace();
         }
-        initListeners();
+
 
         return view;
     }
@@ -123,9 +127,9 @@ public class DeviceListFragment extends Fragment {
         spaceService = new SpaceService(realm);
         mDevicesList = new ArrayList<>();
         mGridView = (RecyclerView) view.findViewById(R.id.devices_grid);
-        mAPI = new API();
         mAddDeviceButton = (FloatingActionButton) view.findViewById(R.id.add_device_button);
         mEmptyDeviceListLayout = (LinearLayout) view.findViewById(R.id.empty_device_list_layout);
+        databaseReference = FirebaseDatabase.getInstance().getReference("Devices");
     }
 
     private void initListeners() {
@@ -147,6 +151,43 @@ public class DeviceListFragment extends Fragment {
                 mMainActivity.onBackPressed();
             }
         });
+
+        databaseReference.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                DeviceFB deviceFB = dataSnapshot.getValue(DeviceFB.class);
+
+                deviceService.updateDeviceLocal(deviceFB);
+                if(mDevicesListAdapter != null) {
+                    mDevicesListAdapter.notifyDataSetChanged();
+                }
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                DeviceFB deviceFB = dataSnapshot.getValue(DeviceFB.class);
+
+                deviceService.updateDeviceLocal(deviceFB);
+                if(mDevicesListAdapter != null) {
+                    mDevicesListAdapter.notifyDataSetChanged();
+                }
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     private void getDevicesByBuilding() {
@@ -156,6 +197,7 @@ public class DeviceListFragment extends Fragment {
     }
 
     private void getDevicesBySpace() {
+        Log.e("SpaceId", mSpaceId + "  dfff");
         mDevicesList = deviceService.allActiveDevicesBySpace(mSpaceId);
 
         shouldEmptyMessageShow();
@@ -168,6 +210,7 @@ public class DeviceListFragment extends Fragment {
         } else {
             mGridView.setVisibility(View.GONE);
             mEmptyDeviceListLayout.setVisibility(View.VISIBLE);
+            mDevicesListAdapter = new DeviceListAdapter(mDevicesList, getActivity(), this);
         }
     }
 

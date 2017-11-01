@@ -6,9 +6,8 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 
-import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.UI.Statistics.Charts.BuildingsLineChartFragment;
-import com.example.martinjmartinez.proyectofinal.UI.Statistics.Charts.DevicesLineChartFragment;
+import com.example.martinjmartinez.proyectofinal.UI.Statistics.Charts.Device.DevicesLineChartFragment;
 import com.example.martinjmartinez.proyectofinal.UI.Statistics.Charts.SpacesLineChartFragment;
 
 import java.util.Date;

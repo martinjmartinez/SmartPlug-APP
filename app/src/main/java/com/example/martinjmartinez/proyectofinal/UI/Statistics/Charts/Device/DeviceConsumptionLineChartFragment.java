@@ -1,4 +1,4 @@
-package com.example.martinjmartinez.proyectofinal.UI.Statistics.Charts;
+package com.example.martinjmartinez.proyectofinal.UI.Statistics.Charts.Device;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -8,11 +8,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.example.martinjmartinez.proyectofinal.Entities.Building;
 import com.example.martinjmartinez.proyectofinal.Entities.Device;
 import com.example.martinjmartinez.proyectofinal.Entities.Historial;
 import com.example.martinjmartinez.proyectofinal.R;
-import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
+import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
 import com.example.martinjmartinez.proyectofinal.Utils.Chart.ChartUtils;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.data.Entry;
@@ -30,24 +29,24 @@ import io.realm.Realm;
 import io.realm.RealmResults;
 import io.realm.Sort;
 
-public class DevicesLineChartFragment extends Fragment {
+public class DeviceConsumptionLineChartFragment extends Fragment {
 
     private Date mStartDate;
     private Date mEndDate;
-    private Building mBuilding;
-    private String buildingId;
-    private BuildingService buildingService;
+    private String deviceId;
     private Realm realm;
+    private Device mDevice;
+    private DeviceService deviceService;
     private LineChart chart;
     private TextView title;
 
-    public static DevicesLineChartFragment newInstance(String buildingId, Date startDate, Date endDate) {
+    public static DeviceConsumptionLineChartFragment newInstance(String deviceId, Date startDate, Date endDate) {
         Bundle args = new Bundle();
         args.putLong("startDate", startDate.getTime());
         args.putLong("endDate", endDate.getTime());
-        args.putString("buildingId", buildingId);
+        args.putString("deviceId", deviceId);
 
-        DevicesLineChartFragment fragment = new DevicesLineChartFragment();
+        DeviceConsumptionLineChartFragment fragment = new DeviceConsumptionLineChartFragment();
         fragment.setArguments(args);
 
         return fragment;
@@ -60,12 +59,11 @@ public class DevicesLineChartFragment extends Fragment {
 
             mStartDate = new Date(getArguments().getLong("startDate"));
             mEndDate = new Date(getArguments().getLong("endDate"));
-            buildingId = getArguments().getString("buildingId");
+            deviceId = getArguments().getString("deviceId");
 
             realm = Realm.getDefaultInstance();
-            buildingService = new BuildingService(realm);
-            mBuilding = buildingService.getBuildingById(buildingId);
-
+            deviceService = new DeviceService(realm);
+            mDevice = deviceService.getDeviceById(deviceId);
         }
     }
 
@@ -85,43 +83,41 @@ public class DevicesLineChartFragment extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        title.setText("Devices");
+        title.setText("Power Consumption  (W/h)");
         fillChart();
     }
 
-    public Map<String, Integer> getDates(List<Device> devices, Map<String, Integer> dates) {
-        for (Device device : devices) {
-            RealmResults<Historial> results = realm.where(Historial.class).between("startDate", mStartDate, mEndDate).between("endDate", mStartDate, mEndDate).equalTo("device._id", device.get_id()).findAll().sort("startDate", Sort.ASCENDING);
+    public Map<String, Integer> getDates(Map<String, Integer> dates) {
 
-            if (!results.isEmpty()) {
-                dates = ChartUtils.sortDates(results, dates);
-            }
+        RealmResults<Historial> results = realm.where(Historial.class).between("startDate", mStartDate, mEndDate).between("endDate", mStartDate, mEndDate).equalTo("device._id", mDevice.get_id()).findAll().sort("startDate", Sort.ASCENDING);
+
+        if (!results.isEmpty()) {
+            dates = ChartUtils.sortDates(results, dates);
         }
+
 
         return dates;
     }
 
     public void fillChart() {
         Map<String, Integer> dates = new TreeMap<>();
-        List<Device> devices = mBuilding.getDevices().sort("_id", Sort.ASCENDING);
         Map<String, Entry> entriesResults;
         ArrayList<Entry> entries;
         List<ILineDataSet> dataSets = new ArrayList<>();
 
-        dates = getDates(devices,dates);
+        dates = getDates(dates);
 
-        for (Device device : devices) {
-            RealmResults<Historial> results = realm.where(Historial.class).between("startDate", mStartDate, mEndDate).between("endDate", mStartDate, mEndDate).equalTo("device._id", device.get_id()).findAll().sort("startDate", Sort.ASCENDING);
+        RealmResults<Historial> results = realm.where(Historial.class).between("startDate", mStartDate, mEndDate).between("endDate", mStartDate, mEndDate).equalTo("device._id", mDevice.get_id()).findAll().sort("startDate", Sort.ASCENDING);
 
-            if (!results.isEmpty()) {
-                entriesResults = ChartUtils.fetchDataChart(results, dates);
-                entries = new ArrayList<>();
+        if (!results.isEmpty()) {
+            entriesResults = ChartUtils.fetchConsumptionData(results, dates);
+            entries = new ArrayList<>();
 
-                entries.addAll(entriesResults.values());
-                dataSets.add(new LineDataSet(entries, device.getName()));
-            }
+            entries.addAll(entriesResults.values());
+            dataSets.add(new LineDataSet(entries, mDevice.getName()));
         }
 
         ChartUtils.makeLineChart(chart, dataSets, dates);
     }
+
 }

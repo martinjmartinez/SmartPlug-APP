@@ -18,12 +18,15 @@ public class HistorialReview {
 
     private List<Log> powerLog;
 
-    private double powerAverage;
+    private double powerConsumed;
 
-    public HistorialReview(String date, double powerAverage, long totalTimeInSeconds) {
+    private double averagePower;
+
+    public HistorialReview(String date, double powerConsumed, long totalTimeInSeconds, double averagePower) {
         this.date = date;
-        this.powerAverage = powerAverage;
+        this.powerConsumed = powerConsumed;
         this.totalTimeInSeconds = totalTimeInSeconds;
+        this.averagePower = averagePower;
     }
 
     public String getDate() {
@@ -74,11 +77,19 @@ public class HistorialReview {
         this.powerLog = powerLog;
     }
 
-    public double getPowerAverage() {
-        return powerAverage;
+    public double getPowerConsumed() {
+        return powerConsumed;
     }
 
-    public void setPowerAverage(double powerAverage) {
-        this.powerAverage = powerAverage;
+    public void setPowerConsumed(double powerConsumed) {
+        this.powerConsumed = powerConsumed;
+    }
+
+    public double getAveragePower() {
+        return averagePower;
+    }
+
+    public void setAveragePower(double averagePower) {
+        this.averagePower = averagePower;
     }
 }

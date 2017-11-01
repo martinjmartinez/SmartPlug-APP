@@ -38,7 +38,7 @@ public final class ChartUtils {
 
         if (!datasets.isEmpty()) {
             for (int j = 0; j < datasets.size(); j++) {
-                ((LineDataSet) datasets.get(j)).setColor(ColorTemplate.MATERIAL_COLORS[j]);
+                ((LineDataSet) datasets.get(j)).setColor(ColorTemplate.MATERIAL_COLORS[j%4]);
                 ((LineDataSet) datasets.get(j)).setLineWidth(2.0f);
                 datasets.get(j).setValueTextSize(10.0f);
             }
@@ -81,7 +81,7 @@ public final class ChartUtils {
         chart.invalidate();
     }
 
-    public static Map<String, Entry> fetchDataChart(RealmResults<Historial> historials, Map<String, Integer> mapDates) {
+    public static Map<String, Entry> fetchConsumptionData(RealmResults<Historial> historials, Map<String, Integer> mapDates) {
         Map<String, Entry> entries = new TreeMap<>();
 
         if (!historials.isEmpty()) {
@@ -94,19 +94,67 @@ public final class ChartUtils {
 
             for (Historial historial : historials) {
                 if (Utils.formatSimpleDate(lasteDate).contains(Utils.formatSimpleDate(historial.getStartDate()))) {
-                    sum = sum + historial.getPowerAverage();
+                    sum = sum + historial.getPowerConsumed() ;
                     i++;
                     count++;
 
                     if (historials.size() == count) {
                         index = mapDates.get(Utils.formatSimpleDate(historial.getStartDate()));
-                        entries.put(Utils.formatSimpleDate(historial.getStartDate()), new Entry(index, (float) sum / i));
+                        entries.put(Utils.formatSimpleDate(historial.getStartDate()), new Entry(index, (float) sum));
 
                     }
                 } else {
 
                     index = mapDates.get(Utils.formatSimpleDate(lasteDate));
-                    entries.put(Utils.formatSimpleDate(lasteDate), new Entry(index, (float) sum / i));
+                    entries.put(Utils.formatSimpleDate(lasteDate), new Entry(index, (float) sum));
+
+                    lasteDate = historial.getStartDate();
+                    count++;
+                    if (historials.size() == count) {
+
+                        index = mapDates.get(Utils.formatSimpleDate(historial.getStartDate()));
+
+                        entries.put(Utils.formatSimpleDate(historial.getStartDate()), new Entry(index, (float) historial.getPowerConsumed()));
+
+                    } else {
+                        sum = 0;
+                        i = 0;
+                        sum = sum + historial.getPowerConsumed();
+                        i++;
+                    }
+                }
+            }
+            return entries;
+        }
+        return entries;
+    }
+
+    public static Map<String, Entry> fetchPowerData(RealmResults<Historial> historials, Map<String, Integer> mapDates) {
+        Map<String, Entry> entries = new TreeMap<>();
+
+        if (!historials.isEmpty()) {
+            int count = 0;
+            int index;
+            int i = 0;
+            double sum = 0;
+
+            Date lasteDate = historials.first().getStartDate();
+
+            for (Historial historial : historials) {
+                if (Utils.formatSimpleDate(lasteDate).contains(Utils.formatSimpleDate(historial.getStartDate()))) {
+                    sum = sum + historial.getPowerAverage() ;
+                    i++;
+                    count++;
+
+                    if (historials.size() == count) {
+                        index = mapDates.get(Utils.formatSimpleDate(historial.getStartDate()));
+                        entries.put(Utils.formatSimpleDate(historial.getStartDate()), new Entry(index, (float) sum/i));
+
+                    }
+                } else {
+
+                    index = mapDates.get(Utils.formatSimpleDate(lasteDate));
+                    entries.put(Utils.formatSimpleDate(lasteDate), new Entry(index, (float) sum/i));
 
                     lasteDate = historial.getStartDate();
                     count++;
@@ -129,6 +177,54 @@ public final class ChartUtils {
         return entries;
     }
 
+    public static Map<String, Entry> fetchTimeData(RealmResults<Historial> historials, Map<String, Integer> mapDates) {
+        Map<String, Entry> entries = new TreeMap<>();
+
+        if (!historials.isEmpty()) {
+            int count = 0;
+            int index;
+            int i = 0;
+            double sum = 0;
+
+            Date lasteDate = historials.first().getStartDate();
+
+            for (Historial historial : historials) {
+                if (Utils.formatSimpleDate(lasteDate).contains(Utils.formatSimpleDate(historial.getStartDate()))) {
+                    sum = sum + historial.getTotalTimeInSeconds() ;
+                    i++;
+                    count++;
+
+                    if (historials.size() == count) {
+                        index = mapDates.get(Utils.formatSimpleDate(historial.getStartDate()));
+                        entries.put(Utils.formatSimpleDate(historial.getStartDate()), new Entry(index, (float) sum/60));
+
+                    }
+                } else {
+
+                    index = mapDates.get(Utils.formatSimpleDate(lasteDate));
+                    entries.put(Utils.formatSimpleDate(lasteDate), new Entry(index, (float) sum/60));
+
+                    lasteDate = historial.getStartDate();
+                    count++;
+                    if (historials.size() == count) {
+
+                        index = mapDates.get(Utils.formatSimpleDate(historial.getStartDate()));
+
+                        entries.put(Utils.formatSimpleDate(historial.getStartDate()), new Entry(index, (float) historial.getTotalTimeInSeconds()));
+
+                    } else {
+                        sum = 0;
+                        i = 0;
+                        sum = sum + historial.getTotalTimeInSeconds();
+                        i++;
+                    }
+                }
+            }
+            return entries;
+        }
+        return entries;
+    }
+
     public static List<HistorialReview> fetchDataDetails(RealmResults<Historial> historials) {
         List<HistorialReview> resutls = new ArrayList<>();
 
@@ -137,32 +233,36 @@ public final class ChartUtils {
             long time = 0;
             int i = 0;
             double sum = 0;
+            double sum2 =0;
             Date lasteDate = historials.first().getStartDate();
 
             for (Historial historial : historials) {
                 if (Utils.formatSimpleDate(lasteDate).contains(Utils.formatSimpleDate(historial.getStartDate()))) {
-                    sum = sum + historial.getPowerAverage();
+                    sum = sum + historial.getPowerConsumed();
+                    sum2 = sum2 + historial.getPowerAverage();
                     time = (long) (time + historial.getTotalTimeInSeconds());
                     i++;
                     count++;
 
                     if (historials.size() == count) {
-                        resutls.add(new HistorialReview(Utils.formatSimpleDate(historial.getStartDate()), sum / i, time));
+                        resutls.add(new HistorialReview(Utils.formatSimpleDate(historial.getStartDate()), sum, time, sum2/i));
 
                     }
                 } else {
-                    resutls.add(new HistorialReview(Utils.formatSimpleDate(lasteDate), sum / i, time));
+                    resutls.add(new HistorialReview(Utils.formatSimpleDate(lasteDate), sum, time, sum2 / i));
 
                     lasteDate = historial.getStartDate();
                     count++;
                     if (historials.size() == count) {
-                        resutls.add(new HistorialReview(Utils.formatSimpleDate(historial.getStartDate()), historial.getPowerAverage(), time));
+                        resutls.add(new HistorialReview(Utils.formatSimpleDate(historial.getStartDate()), historial.getPowerConsumed(), time, historial.getPowerAverage()));
 
                     } else {
                         sum = 0;
+                        sum2 = 0;
                         time = 0;
                         i = 0;
-                        sum = sum + historial.getPowerAverage();
+                        sum = sum + historial.getPowerConsumed();
+                        sum2 = sum2 + historial.getPowerAverage();
                         time = (long) (time + historial.getTotalTimeInSeconds());
                         i++;
                     }
@@ -255,7 +355,7 @@ public final class ChartUtils {
         };
 
         XAxis xAxis = chart.getXAxis();
-        xAxis.setGranularity(1f); // minimum axis-step (interval) is 1
+        xAxis.setGranularity(2f); // minimum axis-step (interval) is 1
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         xAxis.setValueFormatter(formatter);
         chart.invalidate(); // refresh

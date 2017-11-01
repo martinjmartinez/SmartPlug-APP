@@ -8,7 +8,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +16,7 @@ import android.widget.TextView;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
 import com.example.martinjmartinez.proyectofinal.Entities.Space;
+import com.example.martinjmartinez.proyectofinal.Models.BuildingFB;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
@@ -24,26 +24,17 @@ import com.example.martinjmartinez.proyectofinal.Utils.API;
 import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
-
-import java.io.IOException;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import io.realm.Realm;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-
-/**
- * Created by MartinJMartinez on 7/15/2017.
- */
 
 public class BuildingDetailFragment extends Fragment {
 
     private Building mBuilding;
-    private API mAPI;
     private Activity mActivity;
     private String mBuildingId;
     private TextView mNameTextView;
@@ -55,7 +46,8 @@ public class BuildingDetailFragment extends Fragment {
     private TextView mInfoTextView;
     private MainActivity mMainActivity;
     private BuildingService buildingService;
-
+    private DatabaseReference databaseReference;
+    private Context context;
 
     public BuildingDetailFragment() {
     }
@@ -66,6 +58,7 @@ public class BuildingDetailFragment extends Fragment {
 
         Bundle bundle = this.getArguments();
         mBuildingId = bundle != null ? bundle.getString(Constants.BUILDING_ID, "") : "";
+        context = getContext();
     }
 
     @Override
@@ -73,8 +66,8 @@ public class BuildingDetailFragment extends Fragment {
         View view = inflater.inflate(R.layout.building_fragment, container, false);
 
         iniVariables(view);
-        getBuilding();
         initListeners();
+        getBuilding();
 
         return view;
     }
@@ -101,13 +94,11 @@ public class BuildingDetailFragment extends Fragment {
         if (mMainActivity.getSupportFragmentManager().getBackStackEntryCount() <= 1) {
             mMainActivity.toggleDrawerIcon(true, 0, null);
         }
-
     }
 
     private void iniVariables(View view) {
         buildingService = new BuildingService(Realm.getDefaultInstance());
         mBuilding = new Building();
-        mAPI = new API();
         mNameTextView = (TextView) view.findViewById(R.id.building_detail_name);
         mSpacesTextView = (TextView) view.findViewById(R.id.building_detail_spaces);
         mEditButton = (Button) view.findViewById(R.id.building_detail_update);
@@ -115,6 +106,7 @@ public class BuildingDetailFragment extends Fragment {
         mPowerTextView = (TextView) view.findViewById(R.id.building_detail_power);
         mDevicesTextView = (TextView) view.findViewById(R.id.building_detail_devices);
         mInfoTextView = (TextView) view.findViewById(R.id.building_detail_delete_info);
+        databaseReference = FirebaseDatabase.getInstance().getReference("Buildings");
     }
 
     private void initListeners() {
@@ -138,7 +130,9 @@ public class BuildingDetailFragment extends Fragment {
                 builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        deleteBuilding(mAPI.getClient());
+                        buildingService.deleteBuilding(mBuildingId);
+                        mActivity.onBackPressed();
+                        //deleteBuilding(mAPI.getClient());
                     }
                 });
 
@@ -162,38 +156,18 @@ public class BuildingDetailFragment extends Fragment {
             }
         });
 
-    }
-
-    private void deleteBuilding(OkHttpClient client) {
-        Log.e("QUERY", Constants.BUILDING_QUERY + "/" + mBuildingId);
-        Building newBuilding = new Building();
-        newBuilding.setActive(false);
-        MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-        RequestBody body = RequestBody.create(JSON, newBuilding.toIsActiveString());
-        Request request = new Request.Builder()
-                .url(Constants.BUILDING_QUERY + "/" + mBuildingId)
-                .patch(body)
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
+        databaseReference.child(mBuildingId).addValueEventListener(new ValueEventListener() {
             @Override
-            public void onFailure(Call call, IOException e) {
-                Log.e("Error", e.getMessage());
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                BuildingFB buildingFB = dataSnapshot.getValue(BuildingFB.class);
+                buildingService.updateBuildingName(buildingFB);
+                Building building = buildingService.getBuildingById(mBuildingId);
+                initView(building);
             }
 
             @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                if (!response.isSuccessful()) {
-                    Log.e("ERROR", response.body().string());
-                } else {
-                    mActivity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            buildingService.deleteBuilding(mBuildingId);
-                            mActivity.onBackPressed();
-                        }
-                    });
-                }
+            public void onCancelled(DatabaseError databaseError) {
+
             }
         });
     }
@@ -215,11 +189,11 @@ public class BuildingDetailFragment extends Fragment {
             if (devices > 0) {
                 mDeleteButton.setClickable(false);
                 mInfoTextView.setVisibility(View.VISIBLE);
-                mDeleteButton.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.disabled));
+                mDeleteButton.setBackgroundColor(ContextCompat.getColor(context, R.color.disabled));
             } else {
                 mDeleteButton.setClickable(true);
                 mInfoTextView.setVisibility(View.GONE);
-                mDeleteButton.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.alert));
+                mDeleteButton.setBackgroundColor(ContextCompat.getColor(context, R.color.alert));
             }
         }
     }

@@ -1,5 +1,7 @@
 package com.example.martinjmartinez.proyectofinal.Entities;
 
+import java.util.Date;
+
 import io.realm.RealmObject;
 import io.realm.RealmResults;
 import io.realm.annotations.LinkingObjects;
@@ -28,6 +30,8 @@ public class Device extends RealmObject {
 
     private double averageConsumption;
 
+    private Date lastTimeUsed;
+
     @LinkingObjects("device")
     private final RealmResults<Historial> historials = null;
 
@@ -53,6 +57,14 @@ public class Device extends RealmObject {
 
     public void setStatus(boolean status) {
         this.status = status;
+    }
+
+    public Date getLastTimeUsed() {
+        return lastTimeUsed;
+    }
+
+    public void setLastTimeUsed(Date lastTimeUsed) {
+        this.lastTimeUsed = lastTimeUsed;
     }
 
     public String getIp_address() {

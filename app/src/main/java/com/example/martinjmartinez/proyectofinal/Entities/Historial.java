@@ -1,6 +1,5 @@
 package com.example.martinjmartinez.proyectofinal.Entities;
 
-
 import java.util.Date;
 
 import io.realm.RealmList;
@@ -27,6 +26,8 @@ public class Historial extends RealmObject {
     private RealmList<Log> powerLog;
 
     private double powerAverage;
+
+    private double powerConsumed;
 
     public Historial() {}
 
@@ -100,5 +101,13 @@ public class Historial extends RealmObject {
 
     public void setEndDate(Date endDate) {
         this.endDate = endDate;
+    }
+
+    public double getPowerConsumed() {
+        return powerConsumed;
+    }
+
+    public void setPowerConsumed(double powerConsumed) {
+        this.powerConsumed = powerConsumed;
     }
 }
