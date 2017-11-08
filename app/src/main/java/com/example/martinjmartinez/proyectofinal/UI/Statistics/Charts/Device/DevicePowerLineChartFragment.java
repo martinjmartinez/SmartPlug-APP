@@ -92,7 +92,7 @@ public class DevicePowerLineChartFragment extends Fragment {
 
     public Map<String, Integer> getDates(Map<String, Integer> dates) {
 
-        RealmResults<Historial> results = realm.where(Historial.class).between("startDate", mStartDate, mEndDate).between("endDate", mStartDate, mEndDate).equalTo("device._id", mDevice.get_id()).findAll().sort("startDate", Sort.ASCENDING);
+        RealmResults<Historial> results = realm.where(Historial.class).equalTo("device._id", mDevice.get_id()).between("startDate", mStartDate, mEndDate).between("lastLogDate", mStartDate, mEndDate).findAll().sort("startDate", Sort.ASCENDING);
 
         if (!results.isEmpty()) {
             dates = ChartUtils.sortDates(results, dates);
@@ -110,7 +110,7 @@ public class DevicePowerLineChartFragment extends Fragment {
 
         dates = getDates(dates);
 
-        RealmResults<Historial> results = realm.where(Historial.class).between("startDate", mStartDate, mEndDate).between("endDate", mStartDate, mEndDate).equalTo("device._id", mDevice.get_id()).findAll().sort("startDate", Sort.ASCENDING);
+        RealmResults<Historial> results = realm.where(Historial.class).equalTo("device._id", mDevice.get_id()).between("startDate", mStartDate, mEndDate).between("lastLogDate", mStartDate, mEndDate).findAll().sort("startDate", Sort.ASCENDING);
 
         if (!results.isEmpty()) {
             entriesResults = ChartUtils.fetchPowerData(results, dates);

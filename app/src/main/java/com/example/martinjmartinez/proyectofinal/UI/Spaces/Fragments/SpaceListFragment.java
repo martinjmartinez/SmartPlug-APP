@@ -28,6 +28,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +47,7 @@ public class SpaceListFragment extends Fragment {
     private SpaceService spaceService;
     private DatabaseReference databaseReference;
     private SpaceListAdapter spaceListAdapter;
+    private ValueEventListener spacesListener;
 
     public SpaceListFragment() {
     }
@@ -151,42 +153,34 @@ public class SpaceListFragment extends Fragment {
             }
         });
 
-        databaseReference.orderByChild("buildingId").equalTo(mBuildingId).addChildEventListener(new ChildEventListener() {
+        spacesListener = new ValueEventListener() {
             @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                SpaceFB spaceFB = dataSnapshot.getValue(SpaceFB.class);
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()) {
+                    SpaceFB spaceFB = dataSnapshot1.getValue(SpaceFB.class);
 
-                spaceService.updateSpace(spaceFB);
+                    spaceService.updateSpace(spaceFB);
+                }
+
                 if (spaceListAdapter != null) {
                     spaceListAdapter.notifyDataSetChanged();
                 }
-            }
-
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-                SpaceFB spaceFB = dataSnapshot.getValue(SpaceFB.class);
-
-                spaceService.updateSpace(spaceFB);
-                if (spaceListAdapter != null) {
-                    spaceListAdapter.notifyDataSetChanged();
-                }
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
 
             }
-        });
+        };
+
+        databaseReference.addValueEventListener(spacesListener);
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+
+        databaseReference.removeEventListener(spacesListener);
     }
 
     private void getSpaces() {
@@ -194,6 +188,7 @@ public class SpaceListFragment extends Fragment {
 
         shouldEmptyMessageShow(mSpacesList);
     }
+
     private void shouldEmptyMessageShow(List<Space> spaceList) {
         if (!spaceList.isEmpty()) {
             mEmptySpaceListLayout.setVisibility(View.GONE);
@@ -206,6 +201,7 @@ public class SpaceListFragment extends Fragment {
     }
 
     void initSpacesList(List<Space> spacesList) {
+
         spaceListAdapter = new SpaceListAdapter(getContext(), R.layout.space_list_item, spacesList);
         mGridView.setAdapter(spaceListAdapter);
     }

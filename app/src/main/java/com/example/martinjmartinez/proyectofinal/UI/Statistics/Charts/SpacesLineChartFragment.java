@@ -3,21 +3,31 @@ package com.example.martinjmartinez.proyectofinal.UI.Statistics.Charts;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
+import com.example.martinjmartinez.proyectofinal.Entities.Device;
 import com.example.martinjmartinez.proyectofinal.Entities.Historial;
 import com.example.martinjmartinez.proyectofinal.Entities.Space;
+import com.example.martinjmartinez.proyectofinal.Models.HistorialFB;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
+import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
+import com.example.martinjmartinez.proyectofinal.Services.HistorialService;
 import com.example.martinjmartinez.proyectofinal.Utils.Chart.ChartUtils;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -36,9 +46,13 @@ public class SpacesLineChartFragment extends Fragment {
     private Building mBuilding;
     private String buildingId;
     private BuildingService buildingService;
+    private HistorialService historialService;
+    private DeviceService deviceService;
     private Realm realm;
     private LineChart chart;
     private TextView title;
+    private DatabaseReference databaseReference;
+    private ChildEventListener listener;
 
     public static SpacesLineChartFragment newInstance(String buildingId, Date startDate, Date endDate) {
         Bundle args = new Bundle();
@@ -59,9 +73,11 @@ public class SpacesLineChartFragment extends Fragment {
             mStartDate = new Date(getArguments().getLong("startDate"));
             mEndDate = new Date(getArguments().getLong("endDate"));
             buildingId = getArguments().getString("buildingId");
-
+            databaseReference = FirebaseDatabase.getInstance().getReference("Histories");
             realm = Realm.getDefaultInstance();
             buildingService = new BuildingService(realm);
+            deviceService = new DeviceService(realm);
+            historialService = new HistorialService(realm);
             mBuilding = buildingService.getBuildingById(buildingId);
         }
     }
@@ -86,9 +102,16 @@ public class SpacesLineChartFragment extends Fragment {
         fillChart();
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+
+    }
+
+
     public Map<String, Integer> getDates(List<Space> spaces, Map<String, Integer> dates) {
         for (Space space : spaces) {
-            RealmResults<Historial> results = realm.where(Historial.class).between("startDate", mStartDate, mEndDate).between("endDate", mStartDate, mEndDate).equalTo("space._id", space.get_id()).findAll().sort("startDate", Sort.ASCENDING);
+            RealmResults<Historial> results = realm.where(Historial.class).equalTo("space._id", space.get_id()).between("startDate", mStartDate, mEndDate).between("lastLogDate", mStartDate, mEndDate).findAll().sort("startDate", Sort.ASCENDING);
 
             if (!results.isEmpty()) {
                 dates = ChartUtils.sortDates(results, dates);
@@ -98,6 +121,7 @@ public class SpacesLineChartFragment extends Fragment {
         return dates;
     }
 
+
     public void fillChart() {
         Map<String, Integer> dates = new TreeMap<>();
         List<Space> spaces = mBuilding.getSpaces().sort("_id", Sort.ASCENDING);
@@ -105,10 +129,10 @@ public class SpacesLineChartFragment extends Fragment {
         ArrayList<Entry> entries;
         List<ILineDataSet> dataSets = new ArrayList<>();
 
-        dates = getDates(spaces,dates);
+        dates = getDates(spaces, dates);
 
         for (Space space : spaces) {
-            RealmResults<Historial> results = realm.where(Historial.class).between("startDate", mStartDate, mEndDate).between("endDate", mStartDate, mEndDate).equalTo("space._id", space.get_id()).findAll().sort("startDate", Sort.ASCENDING);
+            RealmResults<Historial> results = realm.where(Historial.class).equalTo("space._id", space.get_id()).between("startDate", mStartDate, mEndDate).between("lastLogDate", mStartDate, mEndDate).findAll().sort("startDate", Sort.ASCENDING);
 
             if (!results.isEmpty()) {
                 entriesResults = ChartUtils.fetchConsumptionData(results, dates);

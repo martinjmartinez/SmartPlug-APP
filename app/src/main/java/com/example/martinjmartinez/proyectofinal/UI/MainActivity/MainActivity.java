@@ -19,17 +19,25 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
+import com.example.martinjmartinez.proyectofinal.Entities.Historial;
+import com.example.martinjmartinez.proyectofinal.Models.HistorialFB;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
+import com.example.martinjmartinez.proyectofinal.Services.HistorialService;
 import com.example.martinjmartinez.proyectofinal.UI.Buildings.Adapters.BuildingSpinnerAdapter;
 import com.example.martinjmartinez.proyectofinal.UI.Buildings.Fragments.BuildingListFragment;
 import com.example.martinjmartinez.proyectofinal.UI.Devices.Fragments.DeviceListFragment;
 import com.example.martinjmartinez.proyectofinal.UI.Home.HomeFragment;
 import com.example.martinjmartinez.proyectofinal.UI.Spaces.Fragments.SpaceListFragment;
+import com.example.martinjmartinez.proyectofinal.UI.Statistics.Charts.BuildingsLineChartFragment;
 import com.example.martinjmartinez.proyectofinal.UI.Statistics.StatisticsFragment;
-import com.example.martinjmartinez.proyectofinal.Utils.API;
 import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.List;
 
@@ -38,21 +46,23 @@ import io.realm.Realm;
 
 public class MainActivity extends AppCompatActivity {
 
-    private DeviceListFragment mDeviceListFragment;
     private Toolbar mToolbar;
     private DrawerLayout mDrawerLayout;
     private NavigationView mNavigationView;
     private ActionBarDrawerToggle mActionBarDrawerToggle;
     private BuildingListFragment mBuildingListFragment;
     private Spinner mSelectBuildingSpinner;
+    private HistorialService historialService;
     private BuildingSpinnerAdapter mBuildingSpinnerAdapter;
-    private API mAPI;
     private List<Building> mBuildingList;
     private Building mSelectedBuilding;
     private Activity mActivity;
     private int mLastBuildingSelected;
     private boolean doubleBackToExitPressedOnce;
     private BuildingService buildingService;
+    private DatabaseReference historiesDatabaseReference;
+    private ChildEventListener historiesListener;
+    private Realm realm;
 
     public ActionBarDrawerToggle getActionBarDrawerToggle() {
         return mActionBarDrawerToggle;
@@ -75,15 +85,15 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-
     public void initVariables() {
         buildingService = new BuildingService(Realm.getDefaultInstance());
-        mDeviceListFragment = new DeviceListFragment();
         mBuildingListFragment = new BuildingListFragment();
-        mAPI = new API();
         mActivity = this;
         View headerView = mNavigationView.getHeaderView(0);
         mSelectBuildingSpinner = (Spinner) headerView.findViewById(R.id.buildings_spinner);
+        realm = Realm.getDefaultInstance();
+        historialService = new HistorialService(realm);
+        historiesDatabaseReference = FirebaseDatabase.getInstance().getReference("Histories");
     }
 
     public void setUpBuildingSpinner(List<Building> items) {
@@ -211,6 +221,61 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+
+        historiesListener = new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                HistorialFB historialFB = dataSnapshot.getValue(HistorialFB.class);
+                Historial historial = historialService.getHistorialById(historialFB.get_id());
+
+                if (historial != null) {
+                    historialService.updateHistorialDataLocallty(historialFB);
+                } else {
+                    historialService.createHistory(historialFB);
+                }
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                HistorialFB historialFB = dataSnapshot.getValue(HistorialFB.class);
+                Historial historial = historialService.getHistorialById(historialFB.get_id());
+
+                if (historial != null) {
+                    historialService.updateHistorialDataLocallty(historialFB);
+                } else {
+                    historialService.createHistory(historialFB);
+                }
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        };
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        historiesDatabaseReference.addChildEventListener(historiesListener);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        historiesDatabaseReference.removeEventListener(historiesListener);
     }
 
     public void prepareSpaceListFragment() {

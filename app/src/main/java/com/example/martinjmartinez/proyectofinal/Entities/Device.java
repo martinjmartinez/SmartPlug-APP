@@ -16,8 +16,6 @@ public class Device extends RealmObject {
 
     private boolean status;
 
-    private String ip_address;
-
     private Space space;
 
     private boolean isActive;
@@ -65,14 +63,6 @@ public class Device extends RealmObject {
 
     public void setLastTimeUsed(Date lastTimeUsed) {
         this.lastTimeUsed = lastTimeUsed;
-    }
-
-    public String getIp_address() {
-        return ip_address;
-    }
-
-    public void setIp_address(String ip_address) {
-        this.ip_address = ip_address;
     }
 
     public Space getSpace() {
@@ -125,33 +115,5 @@ public class Device extends RealmObject {
 
     public RealmResults<Historial> getHistorials() {
         return historials;
-    }
-
-    public String statusToString() {
-        return "{" +
-                "\"status\":" + status +
-                '}';
-    }
-
-    public String averageToString() {
-        return "{" +
-                "\"powerAverage\":" + averageConsumption +
-                '}';
-    }
-
-    public String deviceToString() {
-        String id = space == null ? "" : ",\"space\":\"" + space.get_id() + "\"";
-
-        return "{" +
-                "\"name\":\"" + name + "\"," +
-                "\"ip_address\":\"" + ip_address + "\"," +
-                "\"status\":" + status + "," +
-                "\"building\":\"" + building.get_id() + "\"" +
-                  id +
-                '}';
-    }
-
-    public String toIsActiveString() {
-        return "{\"isActive\":\"" + isActive()+"\"}";
     }
 }

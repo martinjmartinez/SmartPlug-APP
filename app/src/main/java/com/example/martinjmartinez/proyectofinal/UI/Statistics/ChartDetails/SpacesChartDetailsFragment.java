@@ -123,7 +123,7 @@ public class SpacesChartDetailsFragment extends Fragment {
     }
 
     public void fetchResults() {
-        RealmResults<Historial> historials = realm.where(Historial.class).between("startDate", mStartDate, mEndDate).between("endDate", mStartDate, mEndDate).equalTo("space._id", space.get_id()).findAll().sort("startDate", Sort.ASCENDING);
+        RealmResults<Historial> historials = realm.where(Historial.class).equalTo("space._id", space.get_id()).between("startDate", mStartDate, mEndDate).between("lastLogDate", mStartDate, mEndDate).findAll().sort("startDate", Sort.ASCENDING);
         List<HistorialReview> results = ChartUtils.fetchDataDetails(historials);
 
         getMaxAndMinDays(results);
@@ -154,7 +154,7 @@ public class SpacesChartDetailsFragment extends Fragment {
         List<Space> spacesInHistorials = new ArrayList<>();
 
         for(Space space: mBuilding.getSpaces()) {
-            RealmResults<Historial> historials = realm.where(Historial.class).between("startDate", mStartDate, mEndDate).between("endDate", mStartDate, mEndDate).equalTo("space._id", space.get_id()).findAll().sort("startDate", Sort.ASCENDING);
+            RealmResults<Historial> historials = realm.where(Historial.class).equalTo("space._id", space.get_id()).between("startDate", mStartDate, mEndDate).between("lastLogDate", mStartDate, mEndDate).findAll().sort("startDate", Sort.ASCENDING);
 
             if (!historials.isEmpty()) {
                 spacesInHistorials.add(space);

@@ -8,9 +8,19 @@ public class Log extends RealmObject {
     @PrimaryKey
     private String _id;
 
+    private Historial historial;
+
     private double power;
 
     public Log() {
+    }
+
+    public Historial getHistorial() {
+        return historial;
+    }
+
+    public void setHistorial(Historial historial) {
+        this.historial = historial;
     }
 
     public Log(double power) {

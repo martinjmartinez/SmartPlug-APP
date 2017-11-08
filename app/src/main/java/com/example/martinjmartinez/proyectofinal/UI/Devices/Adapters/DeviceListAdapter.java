@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +15,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Device;
+import com.example.martinjmartinez.proyectofinal.Models.HistorialFB;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
 import com.example.martinjmartinez.proyectofinal.Services.HistorialService;
@@ -88,10 +90,14 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
                     deviceService.updateDeviceStatus(device.get_id(), true);
                     String historyid = historialService.startHistorial(new Date(), device.get_id());
                     deviceService.updateDeviceLastHistoryId(device.get_id(), historyid);
+
                 } else {
                     deviceService.updateDeviceStatus(device.get_id(), false);
-                    historialService.updateHistorialEndDate(device.getLastHistoryId(), new Date());
-                    deviceService.updateDevicePowerAverageConsumption(device.get_id());
+                    deviceService.updateDevicePower(device.get_id(), 0);
+                    HistorialFB historialFB = historialService.castToHistorialFB(historialService.getHistorialById(device.getLastHistoryId()), new Date());
+
+                    Log.e("DeviceListAdapter", "getHistoryLogs");
+                    historialService.closeHistory(historialFB);
                     holder.mAverage.setText(Utils.decimalFormat.format(device.getAverageConsumption()) + " W");
                 }
             }

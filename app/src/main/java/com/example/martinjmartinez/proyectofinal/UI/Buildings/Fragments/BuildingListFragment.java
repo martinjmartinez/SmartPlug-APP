@@ -28,6 +28,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +46,7 @@ public class BuildingListFragment extends Fragment {
     private BuildingService buildingService;
     private DatabaseReference databaseReference;
     private BuildingListAdapter buildingListAdapter;
+    private ValueEventListener buildingsListener;
 
     public BuildingListFragment() {
     }
@@ -135,48 +137,39 @@ public class BuildingListFragment extends Fragment {
             }
         });
 
-        databaseReference.addChildEventListener(new ChildEventListener() {
+        buildingsListener = new ValueEventListener() {
             @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                BuildingFB buildingFB = dataSnapshot.getValue(BuildingFB.class);
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()) {
+                    BuildingFB buildingFB = dataSnapshot1.getValue(BuildingFB.class);
 
-                buildingService.updateBuildingName(buildingFB);
-                if(buildingListAdapter != null) {
-                    buildingListAdapter.notifyDataSetChanged();
+                    buildingService.updateBuildingName(buildingFB);
+                    if(buildingListAdapter != null) {
+                        buildingListAdapter.notifyDataSetChanged();
+                    }
                 }
-            }
-
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-                BuildingFB buildingFB = dataSnapshot.getValue(BuildingFB.class);
-
-                buildingService.updateBuildingName(buildingFB);
-                if(buildingListAdapter != null) {
-                    buildingListAdapter.notifyDataSetChanged();
-                }
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
 
             }
-        });
+        };
+
+        databaseReference.addValueEventListener(buildingsListener);
     }
 
     public void getBuildings() {
         mBuildingList = buildingService.allActiveBuildings();
 
         shouldEmptyMessageShow(mBuildingList);
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+
+        databaseReference.addValueEventListener(buildingsListener);
     }
 
     private void shouldEmptyMessageShow(List<Building> buildingList) {

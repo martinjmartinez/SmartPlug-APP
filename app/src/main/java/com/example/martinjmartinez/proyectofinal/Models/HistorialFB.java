@@ -1,13 +1,5 @@
 package com.example.martinjmartinez.proyectofinal.Models;
 
-import com.example.martinjmartinez.proyectofinal.Entities.Log;
-
-import java.util.ArrayList;
-
-/**
- * Created by MartinJMartinez on 10/30/2017.
- */
-
 public class HistorialFB {
 
     private String _id;
@@ -22,9 +14,13 @@ public class HistorialFB {
 
     private long endDate;
 
-    private double totalTimeInSeconds;
+    private int numberOfLogs;
 
-    private ArrayList<Log> powerLog;
+    private long lastLogDate;
+
+    private double sumOfLogs;
+
+    private double totalTimeInSeconds;
 
     private double powerAverage;
 
@@ -33,23 +29,21 @@ public class HistorialFB {
     public HistorialFB() {
     }
 
-    public HistorialFB(String _id, String deviceId, String spaceId, String buildingId, long startDate, long endDate, double totalTimeInSeconds, ArrayList<Log> powerLog, double powerAverage, double powerConsumed) {
+    public HistorialFB(String _id, String deviceId, long startDate, long endDate, double powerAverage) {
         this._id = _id;
         this.deviceId = deviceId;
-        this.spaceId = spaceId;
-        this.buildingId = buildingId;
         this.startDate = startDate;
         this.endDate = endDate;
-        this.totalTimeInSeconds = totalTimeInSeconds;
-        this.powerLog = powerLog;
         this.powerAverage = powerAverage;
-        this.powerConsumed = powerConsumed;
+
     }
 
-    public HistorialFB(String _id, long startDate, String deviceId) {
+    public HistorialFB(String _id, long startDate, String deviceId, String buildingId, String spaceId) {
         this._id = _id;
         this.deviceId = deviceId;
         this.startDate = startDate;
+        this.buildingId = buildingId;
+        this.spaceId = spaceId;
     }
 
     public String get_id() {
@@ -66,6 +60,30 @@ public class HistorialFB {
 
     public void setTotalTimeInSeconds(double totalTimeInSeconds) {
         this.totalTimeInSeconds = totalTimeInSeconds;
+    }
+
+    public int getNumberOfLogs() {
+        return numberOfLogs;
+    }
+
+    public void setNumberOfLogs(int numberOfLogs) {
+        this.numberOfLogs = numberOfLogs;
+    }
+
+    public double getSumOfLogs() {
+        return sumOfLogs;
+    }
+
+    public void setSumOfLogs(double sumOfLogs) {
+        this.sumOfLogs = sumOfLogs;
+    }
+
+    public long getLastLogDate() {
+        return lastLogDate;
+    }
+
+    public void setLastLogDate(long lastLogDate) {
+        this.lastLogDate = lastLogDate;
     }
 
     public double getPowerAverage() {
@@ -124,11 +142,4 @@ public class HistorialFB {
         this.endDate = endDate;
     }
 
-    public ArrayList<Log> getPowerLog() {
-        return powerLog;
-    }
-
-    public void setPowerLog(ArrayList<Log> powerLog) {
-        this.powerLog = powerLog;
-    }
 }

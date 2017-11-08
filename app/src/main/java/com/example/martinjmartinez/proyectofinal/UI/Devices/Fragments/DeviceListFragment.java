@@ -34,6 +34,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,6 +59,7 @@ public class DeviceListFragment extends Fragment {
     private LinearLayout mEmptyDeviceListLayout;
     private Realm realm;
     private DatabaseReference databaseReference;
+    private ValueEventListener devicesListener;
 
     public DeviceListFragment() {
     }
@@ -152,42 +154,33 @@ public class DeviceListFragment extends Fragment {
             }
         });
 
-        databaseReference.addChildEventListener(new ChildEventListener() {
+        devicesListener = new ValueEventListener() {
             @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                DeviceFB deviceFB = dataSnapshot.getValue(DeviceFB.class);
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()) {
+                    DeviceFB deviceFB = dataSnapshot1.getValue(DeviceFB.class);
 
-                deviceService.updateDeviceLocal(deviceFB);
+                    deviceService.updateDeviceLocal(deviceFB);
+                }
+
                 if(mDevicesListAdapter != null) {
                     mDevicesListAdapter.notifyDataSetChanged();
                 }
-            }
-
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-                DeviceFB deviceFB = dataSnapshot.getValue(DeviceFB.class);
-
-                deviceService.updateDeviceLocal(deviceFB);
-                if(mDevicesListAdapter != null) {
-                    mDevicesListAdapter.notifyDataSetChanged();
-                }
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
 
             }
-        });
+        };
+
+        databaseReference.addValueEventListener(devicesListener);
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        databaseReference.removeEventListener(devicesListener);
     }
 
     private void getDevicesByBuilding() {

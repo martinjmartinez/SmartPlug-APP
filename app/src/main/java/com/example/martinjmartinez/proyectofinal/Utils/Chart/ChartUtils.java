@@ -22,7 +22,6 @@ import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.github.mikephil.charting.utils.ColorTemplate;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -77,6 +76,7 @@ public final class ChartUtils {
 
             // refresh
             chart.invalidate();
+            Log.e("finish", "making chartLine");
         }
         chart.invalidate();
     }
@@ -87,7 +87,6 @@ public final class ChartUtils {
         if (!historials.isEmpty()) {
             int count = 0;
             int index;
-            int i = 0;
             double sum = 0;
 
             Date lasteDate = historials.first().getStartDate();
@@ -95,7 +94,6 @@ public final class ChartUtils {
             for (Historial historial : historials) {
                 if (Utils.formatSimpleDate(lasteDate).contains(Utils.formatSimpleDate(historial.getStartDate()))) {
                     sum = sum + historial.getPowerConsumed() ;
-                    i++;
                     count++;
 
                     if (historials.size() == count) {
@@ -113,14 +111,11 @@ public final class ChartUtils {
                     if (historials.size() == count) {
 
                         index = mapDates.get(Utils.formatSimpleDate(historial.getStartDate()));
-
                         entries.put(Utils.formatSimpleDate(historial.getStartDate()), new Entry(index, (float) historial.getPowerConsumed()));
 
                     } else {
                         sum = 0;
-                        i = 0;
                         sum = sum + historial.getPowerConsumed();
-                        i++;
                     }
                 }
             }
@@ -342,7 +337,6 @@ public final class ChartUtils {
             public String getFormattedValue(float value, AxisBase axis) {
                 int intValue = (int) value;
                 if (labels.size() > intValue && intValue >= 0) {
-
                     return labels.get(intValue);
                 }
                 return labels.get(intValue);
@@ -355,7 +349,7 @@ public final class ChartUtils {
         };
 
         XAxis xAxis = chart.getXAxis();
-        xAxis.setGranularity(2f); // minimum axis-step (interval) is 1
+        xAxis.setGranularity(1f); // minimum axis-step (interval) is 1
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         xAxis.setValueFormatter(formatter);
         chart.invalidate(); // refresh

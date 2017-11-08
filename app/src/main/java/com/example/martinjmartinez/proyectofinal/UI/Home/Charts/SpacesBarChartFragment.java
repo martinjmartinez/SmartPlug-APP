@@ -42,6 +42,7 @@ public class SpacesBarChartFragment extends Fragment {
     private TextView title;
     private DatabaseReference databaseReference;
     private List<Space> spaces;
+    private ChildEventListener spacesListener;
 
     public static SpacesBarChartFragment newInstance(String buildingId) {
         Bundle args = new Bundle();
@@ -79,12 +80,12 @@ public class SpacesBarChartFragment extends Fragment {
     }
 
     private void initListeners() {
-        databaseReference.orderByChild("buildingId").equalTo(buildingId).addChildEventListener(new ChildEventListener() {
+       spacesListener = new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 SpaceFB spaceFB = dataSnapshot.getValue(SpaceFB.class);
                 spaceService.updateSpace(spaceFB);
-
+                fillChart();
 
             }
 
@@ -92,6 +93,7 @@ public class SpacesBarChartFragment extends Fragment {
             public void onChildChanged(DataSnapshot dataSnapshot, String s) {
                 SpaceFB spaceFB = dataSnapshot.getValue(SpaceFB.class);
                 spaceService.updateSpace(spaceFB);
+                fillChart();
             }
 
             @Override
@@ -108,19 +110,16 @@ public class SpacesBarChartFragment extends Fragment {
             public void onCancelled(DatabaseError databaseError) {
 
             }
-        });
+        };
 
-        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                fillChart();
-            }
+        databaseReference.addChildEventListener(spacesListener);
+    }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
 
-            }
-        });
+        databaseReference.removeEventListener(spacesListener);
     }
 
     @Override

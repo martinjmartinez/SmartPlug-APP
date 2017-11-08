@@ -10,7 +10,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.util.ArrayMap;
 import android.support.v4.util.Pair;
 import android.support.v4.view.ViewPager;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,7 +32,6 @@ import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.example.martinjmartinez.proyectofinal.Utils.DateUtils;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 
-
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -48,9 +46,6 @@ public class StatisticsFragment extends Fragment {
 
     private MainActivity mMainActivity;
     private Activity mActivity;
-    private SpaceService spaceService;
-    private DeviceService deviceService;
-    private BuildingService buildingService;
     private Button mStartDateButton;
     private Button mEndDateButton;
     private Date mStartDate;
@@ -58,12 +53,10 @@ public class StatisticsFragment extends Fragment {
     private StatisticsChartsViewPagerAdapter statisticsChartsViewPagerAdapter;
     private StatisticsChartDetailsViewPagerAdapter statisticsChartDetailsViewPagerAdapter;
     static public String objectId;
-    private Building mBuilding;
     private Spinner mDateSpinner;
     private TabLayout chartTabLayout;
     private TabLayout detailsTabLayout;
     private Realm realm;
-    private RecyclerView charts;
     private List<Building> chartData;
     private ViewPager chartsViewPager;
     private ViewPager chartsInfoViewPager;
@@ -94,9 +87,6 @@ public class StatisticsFragment extends Fragment {
 
     private void iniVariables(View view) {
         realm = Realm.getDefaultInstance();
-        spaceService = new SpaceService(realm);
-        deviceService = new DeviceService(realm);
-        buildingService = new BuildingService(realm);
         mStartDateButton = (Button) view.findViewById(R.id.start_date);
         mEndDateButton = (Button) view.findViewById(R.id.end_date);
         mDateSpinner = (Spinner) view.findViewById(R.id.spinnerFilters);

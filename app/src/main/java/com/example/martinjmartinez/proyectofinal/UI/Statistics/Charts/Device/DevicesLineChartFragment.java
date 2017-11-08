@@ -91,7 +91,7 @@ public class DevicesLineChartFragment extends Fragment {
 
     public Map<String, Integer> getDates(List<Device> devices, Map<String, Integer> dates) {
         for (Device device : devices) {
-            RealmResults<Historial> results = realm.where(Historial.class).between("startDate", mStartDate, mEndDate).between("endDate", mStartDate, mEndDate).equalTo("device._id", device.get_id()).findAll().sort("startDate", Sort.ASCENDING);
+            RealmResults<Historial> results = realm.where(Historial.class).equalTo("device._id", device.get_id()).between("startDate", mStartDate, mEndDate).between("lastLogDate", mStartDate, mEndDate).findAll().sort("startDate", Sort.ASCENDING);
 
             if (!results.isEmpty()) {
                 dates = ChartUtils.sortDates(results, dates);
@@ -111,7 +111,7 @@ public class DevicesLineChartFragment extends Fragment {
         dates = getDates(devices,dates);
 
         for (Device device : devices) {
-            RealmResults<Historial> results = realm.where(Historial.class).between("startDate", mStartDate, mEndDate).between("endDate", mStartDate, mEndDate).equalTo("device._id", device.get_id()).findAll().sort("startDate", Sort.ASCENDING);
+            RealmResults<Historial> results = realm.where(Historial.class).equalTo("device._id", device.get_id()).between("startDate", mStartDate, mEndDate).between("lastLogDate", mStartDate, mEndDate).findAll().sort("startDate", Sort.ASCENDING);
 
             if (!results.isEmpty()) {
                 entriesResults = ChartUtils.fetchConsumptionData(results, dates);

@@ -15,9 +15,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.example.martinjmartinez.proyectofinal.Entities.Building;
-import com.example.martinjmartinez.proyectofinal.Entities.Device;
-import com.example.martinjmartinez.proyectofinal.Entities.Space;
+import com.example.martinjmartinez.proyectofinal.Entities.Device;;
 import com.example.martinjmartinez.proyectofinal.Models.DeviceFB;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
@@ -26,15 +24,14 @@ import com.example.martinjmartinez.proyectofinal.Services.HistorialService;
 import com.example.martinjmartinez.proyectofinal.Services.SpaceService;
 import com.example.martinjmartinez.proyectofinal.UI.Devices.Adapters.DeviceListAdapter;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
-import com.example.martinjmartinez.proyectofinal.Utils.API;
 import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import io.realm.Realm;
@@ -45,9 +42,6 @@ public class HomeFragment extends Fragment {
     private RecyclerView mMostUsedDevicesRecycleView;
     private ViewPager chartsViewPager;
     private HomeChartViewPagerAdapter homeChartViewPagerAdapter;
-    private List<Space> mSpacesList;
-    private List<Device> mDeviceList;
-    private List<Building> mChartList;
     private Activity mActivity;
     private MainActivity mMainActivity;
     private BuildingService buildingService;
@@ -58,6 +52,7 @@ public class HomeFragment extends Fragment {
     private Realm realm;
     private DatabaseReference databaseReference;
     private DeviceListAdapter deviceListAdapter;
+    private ValueEventListener devicesListener;
 
     public HomeFragment() {
     }
@@ -101,33 +96,15 @@ public class HomeFragment extends Fragment {
     }
 
     private void initListeners() {
-
-        databaseReference.orderByChild("buildingId").equalTo(mBuildingId).addChildEventListener(new ChildEventListener() {
+        devicesListener = new ValueEventListener() {
             @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                DeviceFB deviceFB = dataSnapshot.getValue(DeviceFB.class);
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()) {
+                    DeviceFB deviceFB = dataSnapshot1.getValue(DeviceFB.class);
 
-                deviceService.updateDeviceLocal(deviceFB);
+                    deviceService.updateDeviceLocal(deviceFB);
+                }
                 deviceListAdapter.notifyDataSetChanged();
-            }
-
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-                DeviceFB deviceFB = dataSnapshot.getValue(DeviceFB.class);
-
-                deviceService.updateDeviceLocal(deviceFB);
-
-                deviceListAdapter.notifyDataSetChanged();
-
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
 
             }
 
@@ -135,7 +112,16 @@ public class HomeFragment extends Fragment {
             public void onCancelled(DatabaseError databaseError) {
 
             }
-        });
+        };
+
+        databaseReference.addValueEventListener(devicesListener);
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+
+        databaseReference.removeEventListener(devicesListener);
     }
 
     private void iniVariables(View view) {
@@ -144,14 +130,10 @@ public class HomeFragment extends Fragment {
         deviceService = new DeviceService(realm);
         historialService = new HistorialService(realm);
         buildingService = new BuildingService(realm);
-        mDeviceList = new ArrayList<>();
-        mSpacesList = new ArrayList<>();
-        mChartList = new ArrayList<>();
+        databaseReference = FirebaseDatabase.getInstance().getReference("Devices");
         mMostUsedDevicesRecycleView = (RecyclerView) view.findViewById(R.id.most_used_devices);
         chartsViewPager = (ViewPager) view.findViewById(R.id.bar_chart_pager);
         tabLayout = (TabLayout) view.findViewById(R.id.tabDots);
-        databaseReference = FirebaseDatabase.getInstance().getReference("Devices");
-
     }
 
     private void setAdapters(List<Device> devicesList) {
@@ -174,7 +156,7 @@ public class HomeFragment extends Fragment {
     }
 
     private void setupViewPager(ViewPager viewPager) {
-        homeChartViewPagerAdapter = new HomeChartViewPagerAdapter(getChildFragmentManager(), getContext(), mBuildingId);
+        homeChartViewPagerAdapter = new HomeChartViewPagerAdapter(getChildFragmentManager(), getContext(), mBuildingId, false);
 
         tabLayout.setupWithViewPager(viewPager, true);
         viewPager.setAdapter(homeChartViewPagerAdapter);

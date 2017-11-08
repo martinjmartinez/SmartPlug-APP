@@ -107,13 +107,12 @@ public class DevicesChartDetailsFragment extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        fetchResults();
 
     }
 
     public void fetchResults() {
         if (device != null) {
-            RealmResults<Historial> historials = realm.where(Historial.class).between("startDate", mStartDate, mEndDate).between("endDate", mStartDate, mEndDate).equalTo("device._id", device.get_id()).findAll().sort("startDate", Sort.ASCENDING);
+            RealmResults<Historial> historials = realm.where(Historial.class).equalTo("device._id", device.get_id()).between("startDate", mStartDate, mEndDate).between("lastLogDate", mStartDate, mEndDate).findAll().sort("startDate", Sort.ASCENDING);
             List<HistorialReview> results = ChartUtils.fetchDataDetails(historials);
 
             getMaxAndMinDays(results);
@@ -161,7 +160,7 @@ public class DevicesChartDetailsFragment extends Fragment {
         List<Device> devicesInHistorials = new ArrayList<>();
 
         for(Device device: mBuilding.getDevices()) {
-            RealmResults<Historial> historials = realm.where(Historial.class).between("startDate", mStartDate, mEndDate).between("endDate", mStartDate, mEndDate).equalTo("device._id", device.get_id()).findAll().sort("startDate", Sort.ASCENDING);
+            RealmResults<Historial> historials = realm.where(Historial.class).equalTo("device._id", device.get_id()).between("startDate", mStartDate, mEndDate).between("lastLogDate", mStartDate, mEndDate).findAll().sort("startDate", Sort.ASCENDING);
 
             if (!historials.isEmpty()) {
                 devicesInHistorials.add(device);

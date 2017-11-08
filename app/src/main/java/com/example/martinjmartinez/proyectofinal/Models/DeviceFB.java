@@ -8,8 +8,6 @@ public class DeviceFB {
 
     private boolean status;
 
-    private String ip_address;
-
     private String spaceId;
 
     private boolean isActive;
@@ -27,11 +25,10 @@ public class DeviceFB {
     public DeviceFB() {
     }
 
-    public DeviceFB(String _id, String name, boolean status, String ip_address, String spaceId, boolean isActive, String buildingId, double averageConsumption, double power) {
+    public DeviceFB(String _id, String name, boolean status, String spaceId, boolean isActive, String buildingId, double averageConsumption, double power) {
         this._id = _id;
         this.name = name;
         this.status = status;
-        this.ip_address = ip_address;
         this.spaceId = spaceId;
         this.isActive = isActive;
         this.buildingId = buildingId;
@@ -69,14 +66,6 @@ public class DeviceFB {
 
     public void setStatus(boolean status) {
         this.status = status;
-    }
-
-    public String getIp_address() {
-        return ip_address;
-    }
-
-    public void setIp_address(String ip_address) {
-        this.ip_address = ip_address;
     }
 
     public double getPower() {

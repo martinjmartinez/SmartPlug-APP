@@ -41,7 +41,6 @@ public class DeviceCreateFragment extends Fragment {
     private Activity mActivity;
     private String mBuildingId;
     private EditText name;
-    private EditText ipAddress;
     private TextView displayName;
     private TextView deviceBuilding;
     private TextView deviceSpace;
@@ -117,7 +116,6 @@ public class DeviceCreateFragment extends Fragment {
         buildingService = new BuildingService(Realm.getDefaultInstance());
         spaceService = new SpaceService(Realm.getDefaultInstance());
         name = (EditText) view.findViewById(R.id.device_create_name);
-        ipAddress = (EditText) view.findViewById(R.id.device_create_ip);
         displayName = (TextView) view.findViewById(R.id.device_create_display_name);
         deviceBuilding = (TextView) view.findViewById(R.id.device_create_building);
         deviceSpace = (TextView) view.findViewById(R.id.device_create_space);
@@ -159,9 +157,8 @@ public class DeviceCreateFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 mDevice = new DeviceFB();
-                if (!Utils.isEditTextEmpty(name) && mDevice != null && !Utils.isEditTextEmpty(ipAddress)) {
+                if (!Utils.isEditTextEmpty(name) && mDevice != null) {
                     mDevice.setName(name.getText().toString());
-                    mDevice.setIp_address(ipAddress.getText().toString());
                     mDevice.setStatus(false);
                     mDevice.setBuildingId(mBuilding.get_id());
                     mDevice.setPower(0);

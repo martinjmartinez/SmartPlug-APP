@@ -51,6 +51,7 @@ public class SpaceDetailFragment extends Fragment {
     private DeviceService deviceService;
     private DatabaseReference databaseReference;
     private Context context;
+    private ValueEventListener spaceListener;
 
     public SpaceDetailFragment() {
     }
@@ -163,7 +164,7 @@ public class SpaceDetailFragment extends Fragment {
             }
         });
 
-        databaseReference.child(mSpaceId).addValueEventListener(new ValueEventListener() {
+        spaceListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 SpaceFB spaceFB = dataSnapshot.getValue(SpaceFB.class);
@@ -176,7 +177,16 @@ public class SpaceDetailFragment extends Fragment {
             public void onCancelled(DatabaseError databaseError) {
 
             }
-        });
+        };
+
+        databaseReference.child(mSpaceId).addValueEventListener(spaceListener);
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+
+        databaseReference.child(mSpaceId).removeEventListener(spaceListener);
     }
 
     private void getSpace() {

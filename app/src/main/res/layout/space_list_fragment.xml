@@ -35,7 +35,7 @@
         android:layout_margin="16dp"
         android:id="@+id/spaces_grid"
         android:layout_width="match_parent"
-        android:numColumns="3"
+        android:numColumns="2"
         android:horizontalSpacing="6dp"
         android:verticalSpacing="6sp"
         android:layout_height="match_parent" />

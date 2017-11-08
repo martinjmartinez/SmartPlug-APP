@@ -9,6 +9,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +21,7 @@ import android.widget.TextView;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Device;
 import com.example.martinjmartinez.proyectofinal.Models.DeviceFB;
+import com.example.martinjmartinez.proyectofinal.Models.HistorialFB;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
 import com.example.martinjmartinez.proyectofinal.Services.HistorialService;
@@ -46,7 +48,6 @@ public class DeviceDetailFragment extends Fragment {
     private Activity mActivity;
     private String mDeviceId;
     private TextView name;
-    private TextView ip_address;
     private TextView space;
     private TextView averagePower;
     private TextView building;
@@ -61,6 +62,8 @@ public class DeviceDetailFragment extends Fragment {
     private LinearLayout statisticsButton;
     private DatabaseReference databaseReference;
     private CompoundButton.OnCheckedChangeListener listener;
+    private ValueEventListener deviceListener;
+
     public DeviceDetailFragment() {
     }
 
@@ -114,7 +117,6 @@ public class DeviceDetailFragment extends Fragment {
         deviceService = new DeviceService(Realm.getDefaultInstance());
         historialService = new HistorialService(Realm.getDefaultInstance());
         name = (TextView) view.findViewById(R.id.device_detail_name);
-        ip_address = (TextView) view.findViewById(R.id.device_detail_ip);
         space = (TextView) view.findViewById(R.id.device_detail_space);
         building = (TextView) view.findViewById(R.id.device_detail_building);
         power = (TextView) view.findViewById(R.id.device_detail_power);
@@ -136,8 +138,10 @@ public class DeviceDetailFragment extends Fragment {
 
                 } else {
                     deviceService.updateDeviceStatus(mDeviceId, false);
-                    historialService.updateHistorialEndDate(mDevice.getLastHistoryId(), new Date());
-                    deviceService.updateDevicePowerAverageConsumption(mDeviceId);
+                    HistorialFB historialFB = historialService.castToHistorialFB(historialService.getHistorialById(mDevice.getLastHistoryId()), new Date());
+                    Log.e("DeviceDetailAdapter", "getHistoryLogs");
+                    historialService.closeHistory(historialFB);
+                    deviceService.updateDevicePower(mDevice.get_id(), 0);
                     averagePower.setText(Utils.decimalFormat.format(mDevice.getAverageConsumption()) + " W");
                 }
 
@@ -209,7 +213,7 @@ public class DeviceDetailFragment extends Fragment {
             }
         });
 
-        databaseReference.child(mDeviceId).addValueEventListener(new ValueEventListener() {
+        deviceListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 DeviceFB deviceFB = dataSnapshot.getValue(DeviceFB.class);
@@ -222,24 +226,25 @@ public class DeviceDetailFragment extends Fragment {
             public void onCancelled(DatabaseError databaseError) {
 
             }
-        });
+        };
+        databaseReference.child(mDeviceId).addValueEventListener(deviceListener);
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
 
+        databaseReference.child(mDeviceId).removeEventListener(deviceListener);
     }
 
     private void initDeviceView(Device device) {
         name.setText(device.getName());
-        ip_address.setText(device.getIp_address());
         status.setOnCheckedChangeListener(null);
         status.setChecked(device.isStatus());
         status.setOnCheckedChangeListener(listener);
         averagePower.setText(Utils.decimalFormat.format(device.getAverageConsumption()) + " W");
 
-        if (mDevice.getLastTimeUsed() != null) {
+        if (mDevice.getLastTimeUsed().getTime() != 0) {
             lastTimeUsed.setText(Utils.formatDefaultDate(mDevice.getLastTimeUsed()));
         } else {
             lastTimeUsed.setText("Never Used");

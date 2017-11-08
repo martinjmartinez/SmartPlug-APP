@@ -270,7 +270,7 @@ public class DeviceStatisticsDetailsFragment  extends Fragment{
 
     public void fetchResults() {
         if (!mDeviceId.isEmpty()) {
-            RealmResults<Historial> historials = realm.where(Historial.class).between("startDate", mStartDate, mEndDate).between("endDate", mStartDate, mEndDate).equalTo("device._id", mDeviceId).findAll().sort("startDate", Sort.ASCENDING);
+            RealmResults<Historial> historials = realm.where(Historial.class).equalTo("device._id", mDeviceId).between("startDate", mStartDate, mEndDate).between("lastLogDate", mStartDate, mEndDate).findAll().sort("startDate", Sort.ASCENDING);
             List<HistorialReview> results = ChartUtils.fetchDataDetails(historials);
 
             getMaxAndMinDays(results);

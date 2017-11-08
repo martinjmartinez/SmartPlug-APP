@@ -48,6 +48,7 @@ public class BuildingDetailFragment extends Fragment {
     private BuildingService buildingService;
     private DatabaseReference databaseReference;
     private Context context;
+    private ValueEventListener buildingListener;
 
     public BuildingDetailFragment() {
     }
@@ -156,7 +157,7 @@ public class BuildingDetailFragment extends Fragment {
             }
         });
 
-        databaseReference.child(mBuildingId).addValueEventListener(new ValueEventListener() {
+        buildingListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 BuildingFB buildingFB = dataSnapshot.getValue(BuildingFB.class);
@@ -169,7 +170,16 @@ public class BuildingDetailFragment extends Fragment {
             public void onCancelled(DatabaseError databaseError) {
 
             }
-        });
+        };
+
+        databaseReference.child(mBuildingId).addValueEventListener(buildingListener);
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+
+        databaseReference.child(mBuildingId).removeEventListener(buildingListener);
     }
 
     private void getBuilding() {

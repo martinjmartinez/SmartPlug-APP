@@ -1,16 +1,15 @@
 package com.example.martinjmartinez.proyectofinal.Services;
 
-
-import android.util.Log;
-
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
 import com.example.martinjmartinez.proyectofinal.Entities.Device;
 import com.example.martinjmartinez.proyectofinal.Entities.Historial;
+import com.example.martinjmartinez.proyectofinal.Entities.Log;
 import com.example.martinjmartinez.proyectofinal.Entities.Space;
 import com.example.martinjmartinez.proyectofinal.Models.DeviceFB;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.util.Date;
 import java.util.List;
 
 import io.realm.Realm;
@@ -23,7 +22,7 @@ public class DeviceService {
     private BuildingService buildingService;
     private DatabaseReference databaseReference;
 
-    public DeviceService (Realm realm) {
+    public DeviceService(Realm realm) {
         this.realm = realm;
         spaceService = new SpaceService(realm);
         buildingService = new BuildingService(realm);
@@ -51,7 +50,6 @@ public class DeviceService {
     public void createDevice(DeviceFB deviceFB) {
         String name = deviceFB.getName();
         boolean isOn = deviceFB.isStatus();
-        String ip_address = deviceFB.getIp_address();
         String spaceId = deviceFB.getSpaceId();
         String buildingId = deviceFB.getBuildingId();
         double powerAverage = deviceFB.getAverageConsumption();
@@ -62,9 +60,9 @@ public class DeviceService {
         Building building = buildingService.getBuildingById(buildingId);
 
         String deviceId = databaseReference.push().getKey();
-        DeviceFB deviceFB2 = new DeviceFB(deviceId, name, isOn, ip_address, spaceId, isActive, buildingId, powerAverage, power);
+        deviceFB.set_id(deviceId);
 
-        databaseReference.child(deviceId).setValue(deviceFB2);
+        databaseReference.child(deviceId).setValue(deviceFB);
 
         realm.beginTransaction();
 
@@ -74,7 +72,6 @@ public class DeviceService {
         device.setStatus(isOn);
         device.setBuilding(building);
         device.setSpace(space);
-        device.setIp_address(ip_address);
         device.setPower(power);
         device.setAverageConsumption(powerAverage);
         device.setActive(isActive);
@@ -88,25 +85,18 @@ public class DeviceService {
         return device;
     }
 
-//    public void updateOrCreateDevice(DeviceFB device) {
-//        if(getDeviceById(_id) != null) {
-//            updateDevice(device);
-//        } else {
-//            //createDevice(name, isOn, ip_address, spaceId, buildingId, powerAverage, isActive);
-//        }
-//    }
-
     public void updateDeviceLocal(DeviceFB deviceFB) {
         String _id = deviceFB.get_id();
         Device device = getDeviceById(_id);
         String name = deviceFB.getName();
         boolean isOn = deviceFB.isStatus();
-        String ip_address = deviceFB.getIp_address();
         String spaceId = deviceFB.getSpaceId();
         String buildingId = deviceFB.getBuildingId();
         double powerAverage = deviceFB.getAverageConsumption();
         boolean isActive = deviceFB.isActive();
         double power = deviceFB.getPower();
+        String lastHistoryId = deviceFB.getLastHistoryId();
+        long lastTimeUsed = deviceFB.getLastTimeUsed();
 
         Space space = spaceService.getSpaceById(spaceId);
         Building building = buildingService.getBuildingById(buildingId);
@@ -117,19 +107,20 @@ public class DeviceService {
         device.setStatus(isOn);
         device.setBuilding(building);
         device.setSpace(space);
-        device.setIp_address(ip_address);
         device.setAverageConsumption(powerAverage);
         device.setActive(isActive);
         device.setPower(power);
+        device.setLastHistoryId(lastHistoryId);
+        device.setLastTimeUsed(new Date(lastTimeUsed));
 
         realm.commitTransaction();
     }
+
     public void updateDeviceCloud(DeviceFB deviceFB) {
         String _id = deviceFB.get_id();
 
         String name = deviceFB.getName();
         boolean isOn = deviceFB.isStatus();
-        String ip_address = deviceFB.getIp_address();
         String spaceId = deviceFB.getSpaceId();
         String buildingId = deviceFB.getBuildingId();
         double powerAverage = deviceFB.getAverageConsumption();
@@ -138,7 +129,6 @@ public class DeviceService {
 
         databaseReference.child(_id).child("name").setValue(name);
         databaseReference.child(_id).child("status").setValue(isOn);
-        databaseReference.child(_id).child("ip_address").setValue(ip_address);
         databaseReference.child(_id).child("spaceId").setValue(spaceId);
         databaseReference.child(_id).child("power").setValue(power);
         databaseReference.child(_id).child("buildingId").setValue(buildingId);
@@ -148,7 +138,7 @@ public class DeviceService {
         updateDeviceLocal(deviceFB);
     }
 
-    public void updateDeviceLastHistoryId(String _id, String lastHistoryId) {
+    public void  updateDeviceLastHistoryId(String _id, String lastHistoryId) {
         Device device = getDeviceById(_id);
 
         databaseReference.child(_id).child("lastHistoryId").setValue(lastHistoryId);
@@ -190,12 +180,18 @@ public class DeviceService {
         if (device != null) {
             double sum = 0;
             double average = 0;
+            int counter = 0;
 
             if (!device.getHistorials().isEmpty()) {
                 for (Historial historial : device.getHistorials()) {
-                    sum = sum + historial.getPowerAverage();
+                    if(historial.getLastLogDate().getTime() != 0){
+                        sum = sum + historial.getPowerAverage();
+                        counter++;
+                    }
                 }
-                average = sum/device.getHistorials().size();
+                if(counter !=0){
+                    average = sum / counter;
+                }
             }
 
             databaseReference.child(_id).child("averageConsumption").setValue(average);
@@ -206,7 +202,7 @@ public class DeviceService {
 
             realm.commitTransaction();
 
-            if(device.getSpace() !=null){
+            if (device.getSpace() != null) {
                 spaceService.updateSapacePowerAverageConsumption(device.getSpace().get_id());
             }
 

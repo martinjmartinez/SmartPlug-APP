@@ -3,6 +3,7 @@ package com.example.martinjmartinez.proyectofinal.UI.Home.Charts;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,6 +39,7 @@ public class DevicesBarChartFragment extends Fragment {
     private DeviceService deviceService;
     private DatabaseReference databaseReference;
     private List<Device> devices;
+    private ChildEventListener devicesListener;
 
     public static DevicesBarChartFragment newInstance(String buildingId) {
         Bundle args = new Bundle();
@@ -49,6 +51,7 @@ public class DevicesBarChartFragment extends Fragment {
 
         return fragment;
     }
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,17 +66,19 @@ public class DevicesBarChartFragment extends Fragment {
     }
 
     private void initListeners() {
-        databaseReference.orderByChild("buildingId").equalTo(buildingId).addChildEventListener(new ChildEventListener() {
+        devicesListener = new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 DeviceFB deviceFB = dataSnapshot.getValue(DeviceFB.class);
                 deviceService.updateDeviceLocal(deviceFB);
+                fillChart();
             }
 
             @Override
             public void onChildChanged(DataSnapshot dataSnapshot, String s) {
                 DeviceFB deviceFB = dataSnapshot.getValue(DeviceFB.class);
                 deviceService.updateDeviceLocal(deviceFB);
+                fillChart();
             }
 
             @Override
@@ -90,19 +95,9 @@ public class DevicesBarChartFragment extends Fragment {
             public void onCancelled(DatabaseError databaseError) {
 
             }
-        });
+        };
 
-        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                fillChart();
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
+        databaseReference.addChildEventListener(devicesListener);
     }
 
     @Override
@@ -115,6 +110,7 @@ public class DevicesBarChartFragment extends Fragment {
         chart.getDescription().setEnabled(false);
         devices = new ArrayList<>();
 
+        initListeners();
 
         return view;
     }
@@ -123,8 +119,14 @@ public class DevicesBarChartFragment extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        initListeners();
         title.setText("Devices");
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+
+        databaseReference.removeEventListener(devicesListener);
     }
 
     public void fillChart() {
@@ -142,7 +144,7 @@ public class DevicesBarChartFragment extends Fragment {
                 counter++;
             }
 
-            ChartUtils.makeBarChart(datasets,chart,xVals);
+            ChartUtils.makeBarChart(datasets, chart, xVals);
         }
     }
 }

@@ -27,7 +27,7 @@ public class StatisticsChartsViewPagerAdapter extends FragmentStatePagerAdapter 
         super(fragmentManager);
 
         mFragmentList = new Fragment[]{
-                BuildingsLineChartFragment.newInstance(buildingId, startDate, endDate),
+                BuildingsLineChartFragment.newInstance(buildingId, startDate, endDate, true),
                 SpacesLineChartFragment.newInstance(buildingId, startDate, endDate),
                 DevicesLineChartFragment.newInstance(buildingId, startDate, endDate)
         };

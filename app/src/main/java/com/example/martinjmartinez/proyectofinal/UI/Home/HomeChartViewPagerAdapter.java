@@ -7,6 +7,12 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 
 import com.example.martinjmartinez.proyectofinal.UI.Home.Charts.DevicesBarChartFragment;
 import com.example.martinjmartinez.proyectofinal.UI.Home.Charts.SpacesBarChartFragment;
+import com.example.martinjmartinez.proyectofinal.UI.Statistics.ChartDetails.BuildingChartDetailsFragment;
+import com.example.martinjmartinez.proyectofinal.UI.Statistics.Charts.BuildingsLineChartFragment;
+import com.example.martinjmartinez.proyectofinal.Utils.DateUtils;
+import com.example.martinjmartinez.proyectofinal.Utils.Utils;
+
+import java.util.Date;
 
 public class HomeChartViewPagerAdapter  extends FragmentStatePagerAdapter {
 
@@ -18,10 +24,11 @@ public class HomeChartViewPagerAdapter  extends FragmentStatePagerAdapter {
 
     private String[] mTabTitlesId;
 
-    public HomeChartViewPagerAdapter(FragmentManager fragmentManager, Context context, String buildingId) {
+    public HomeChartViewPagerAdapter(FragmentManager fragmentManager, Context context, String buildingId, boolean isSingle) {
         super(fragmentManager);
 
         mFragmentList = new Fragment[]{
+                BuildingsLineChartFragment.newInstance(buildingId, Utils.firstDayOfCurrentMonth(), DateUtils.getCurrentDate(), isSingle),
                 SpacesBarChartFragment.newInstance(buildingId),
                 DevicesBarChartFragment.newInstance(buildingId)
         };

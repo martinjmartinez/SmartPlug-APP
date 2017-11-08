@@ -2,8 +2,9 @@ package com.example.martinjmartinez.proyectofinal.Entities;
 
 import java.util.Date;
 
-import io.realm.RealmList;
 import io.realm.RealmObject;
+import io.realm.RealmResults;
+import io.realm.annotations.LinkingObjects;
 import io.realm.annotations.PrimaryKey;
 
 public class Historial extends RealmObject {
@@ -21,15 +22,26 @@ public class Historial extends RealmObject {
 
     private Date endDate;
 
+    private Date lastLogDate;
+
     private double totalTimeInSeconds;
 
-    private RealmList<Log> powerLog;
+    @LinkingObjects("historial")
+    private final RealmResults<Log> logs = null;
 
     private double powerAverage;
 
     private double powerConsumed;
 
     public Historial() {}
+
+    public Date getLastLogDate() {
+        return lastLogDate;
+    }
+
+    public void setLastLogDate(Date lastLogDate) {
+        this.lastLogDate = lastLogDate;
+    }
 
     public String get_id() {
         return _id;
@@ -53,14 +65,6 @@ public class Historial extends RealmObject {
 
     public void setTotalTimeInSeconds(double totalTimeInSeconds) {
         this.totalTimeInSeconds = totalTimeInSeconds;
-    }
-
-    public RealmList<Log> getPowerLog() {
-        return powerLog;
-    }
-
-    public void setPowerLog(RealmList<Log> powerLog) {
-        this.powerLog = powerLog;
     }
 
     public double getPowerAverage() {

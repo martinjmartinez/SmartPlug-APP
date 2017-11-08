@@ -42,7 +42,6 @@ public class DeviceUpdateFragment extends Fragment {
     private Device mDevice;
     private Activity mActivity;
     private EditText name;
-    private EditText ipAddress;
     private TextView displayName;
     private TextView deviceBuilding;
     private TextView deviceSpace;
@@ -109,7 +108,6 @@ public class DeviceUpdateFragment extends Fragment {
         buildingService = new BuildingService(Realm.getDefaultInstance());
         spaceService = new SpaceService(Realm.getDefaultInstance());
         name = (EditText) view.findViewById(R.id.device_create_name);
-        ipAddress = (EditText) view.findViewById(R.id.device_create_ip);
         displayName = (TextView) view.findViewById(R.id.device_create_display_name);
         deviceBuilding = (TextView) view.findViewById(R.id.device_create_building);
         deviceSpace = (TextView) view.findViewById(R.id.device_create_space);
@@ -152,14 +150,14 @@ public class DeviceUpdateFragment extends Fragment {
             public void onClick(View v) {
                 if (!Utils.isEditTextEmpty(name)) {
                     if (mSpace != null) {
-                        DeviceFB deviceFB = new DeviceFB(mDeviceId, name.getText().toString(), mDevice.isStatus(), ipAddress.getText().toString(), mSpace.get_id(), mDevice.isActive(), mSpace.getBuilding().get_id(), mDevice.getAverageConsumption(), mDevice.getPower());
+                        DeviceFB deviceFB = new DeviceFB(mDeviceId, name.getText().toString(), mDevice.isStatus(), mSpace.get_id(), mDevice.isActive(), mSpace.getBuilding().get_id(), mDevice.getAverageConsumption(), mDevice.getPower());
                         deviceService.updateDeviceCloud(deviceFB);
                         spaceService.updateSapacePowerAverageConsumption(mSpace.get_id());
                         if (lastSpace != null) {
                             spaceService.updateSapacePowerAverageConsumption(lastSpace.get_id());
                         }
                     } else {
-                        DeviceFB deviceFB = new DeviceFB(mDeviceId, name.getText().toString(), mDevice.isStatus(), ipAddress.getText().toString(), "",  mDevice.isActive(), mDevice.getBuilding().get_id(), mDevice.getAverageConsumption(), mDevice.getPower());
+                        DeviceFB deviceFB = new DeviceFB(mDeviceId, name.getText().toString(), mDevice.isStatus(), "",  mDevice.isActive(), mDevice.getBuilding().get_id(), mDevice.getAverageConsumption(), mDevice.getPower());
 
                         deviceService.updateDeviceCloud(deviceFB);
                     }
@@ -182,7 +180,6 @@ public class DeviceUpdateFragment extends Fragment {
         mDevice = deviceService.getDeviceById(mDeviceId);
 
         name.setText(mDevice.getName());
-        ipAddress.setText(mDevice.getIp_address());
         displayName.setText(mDevice.getName());
         deviceBuilding.setText(mDevice.getBuilding().getName());
         mSpaceSpinner.setVisibility(View.VISIBLE);
@@ -192,7 +189,7 @@ public class DeviceUpdateFragment extends Fragment {
     }
 
     public void setUpSpacesSpinner(List<Space> items) {
-        if (items.size() != 0) {
+        if (items.size() != 0 && !mDevice.isStatus()) {
             mSpaceSpinnerAdapter = new SpaceSpinnerAdapter(getContext(), R.layout.spaces_item_spinner, items);
             mSpaceSpinner.setAdapter(mSpaceSpinnerAdapter);
             lastSpace = mDevice.getSpace();
