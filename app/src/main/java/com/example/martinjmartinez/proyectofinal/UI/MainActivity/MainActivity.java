@@ -11,6 +11,7 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
@@ -38,6 +39,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.List;
 
@@ -61,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean doubleBackToExitPressedOnce;
     private BuildingService buildingService;
     private DatabaseReference historiesDatabaseReference;
-    private ChildEventListener historiesListener;
+    private ValueEventListener historiesListener;
     private Realm realm;
 
     public ActionBarDrawerToggle getActionBarDrawerToggle() {
@@ -222,39 +224,17 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        historiesListener = new ChildEventListener() {
+        historiesListener = new ValueEventListener() {
             @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                HistorialFB historialFB = dataSnapshot.getValue(HistorialFB.class);
-                Historial historial = historialService.getHistorialById(historialFB.get_id());
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()) {
+                    Log.e("MainActivity", "Historial Listener");
+                    HistorialFB historialFB = dataSnapshot1.getValue(HistorialFB.class);
 
-                if (historial != null) {
-                    historialService.updateHistorialDataLocallty(historialFB);
-                } else {
-                    historialService.createHistory(historialFB);
+                    if (historialFB != null) {
+                       historialService.updateOrCreate(historialFB);
+                    }
                 }
-            }
-
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-                HistorialFB historialFB = dataSnapshot.getValue(HistorialFB.class);
-                Historial historial = historialService.getHistorialById(historialFB.get_id());
-
-                if (historial != null) {
-                    historialService.updateHistorialDataLocallty(historialFB);
-                } else {
-                    historialService.createHistory(historialFB);
-                }
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
             }
 
             @Override
@@ -262,19 +242,20 @@ public class MainActivity extends AppCompatActivity {
 
             }
         };
+
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-
-        historiesDatabaseReference.addChildEventListener(historiesListener);
+        Log.e("MainActivity", "Historial Listener set");
+        historiesDatabaseReference.addValueEventListener(historiesListener);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-
+        Log.e("MainActivity", "Historial Listener remove");
         historiesDatabaseReference.removeEventListener(historiesListener);
     }
 

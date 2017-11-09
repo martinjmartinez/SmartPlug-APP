@@ -3,6 +3,7 @@ package com.example.martinjmartinez.proyectofinal.UI.Home.Charts;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -42,7 +43,7 @@ public class SpacesBarChartFragment extends Fragment {
     private TextView title;
     private DatabaseReference databaseReference;
     private List<Space> spaces;
-    private ChildEventListener spacesListener;
+    private ValueEventListener spacesListener;
 
     public static SpacesBarChartFragment newInstance(String buildingId) {
         Bundle args = new Bundle();
@@ -80,30 +81,14 @@ public class SpacesBarChartFragment extends Fragment {
     }
 
     private void initListeners() {
-       spacesListener = new ChildEventListener() {
+        spacesListener = new ValueEventListener() {
             @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                SpaceFB spaceFB = dataSnapshot.getValue(SpaceFB.class);
-                spaceService.updateSpace(spaceFB);
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()) {
+                    SpaceFB spaceFB = dataSnapshot1.getValue(SpaceFB.class);
+                    spaceService.updateOrCreate(spaceFB);
+                }
                 fillChart();
-
-            }
-
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-                SpaceFB spaceFB = dataSnapshot.getValue(SpaceFB.class);
-                spaceService.updateSpace(spaceFB);
-                fillChart();
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
             }
 
             @Override
@@ -112,7 +97,7 @@ public class SpacesBarChartFragment extends Fragment {
             }
         };
 
-        databaseReference.addChildEventListener(spacesListener);
+        databaseReference.addValueEventListener(spacesListener);
     }
 
     @Override
@@ -131,7 +116,7 @@ public class SpacesBarChartFragment extends Fragment {
     }
 
     public void fillChart() {
-        final ArrayList<String> xVals = new ArrayList<>();
+        ArrayList<String> xVals = new ArrayList<>();
         ArrayList<BarEntry> yVals = new ArrayList<>();
         List<IBarDataSet> datasets = new ArrayList<>();
         int counter = 0;
@@ -139,13 +124,14 @@ public class SpacesBarChartFragment extends Fragment {
 
         if (spaces != null) {
             for (Space space : spaces) {
+                Log.e("Name", space.getName());
                 xVals.add(space.getName());
                 yVals.add(new BarEntry(counter, (float) space.getAverageConsumption()));
                 datasets.add(new BarDataSet(yVals, space.getName()));
                 counter++;
             }
 
-            ChartUtils.makeBarChart(datasets,chart,xVals);
+            ChartUtils.makeBarChart(datasets,chart, xVals);
         }
     }
 }

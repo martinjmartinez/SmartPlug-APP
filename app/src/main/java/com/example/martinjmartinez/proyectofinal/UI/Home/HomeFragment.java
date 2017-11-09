@@ -102,7 +102,7 @@ public class HomeFragment extends Fragment {
                 for (DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()) {
                     DeviceFB deviceFB = dataSnapshot1.getValue(DeviceFB.class);
 
-                    deviceService.updateDeviceLocal(deviceFB);
+                    deviceService.updateOrCreate(deviceFB);
                 }
                 deviceListAdapter.notifyDataSetChanged();
 

@@ -46,35 +46,31 @@ public class HistorialService extends SmartPLugApplication {
         }
 
         historialDatabaseReference.child(historialId).setValue(historialFB);
-        createHistory(historialFB);
+        createHistoryLocal(historialFB);
         return historialId;
     }
 
-    public void createHistory(HistorialFB historialFB) {
+    public void createHistoryLocal(HistorialFB historialFB) {
         Device device = deviceService.getDeviceById(historialFB.getDeviceId());
         realm.beginTransaction();
 
         Historial historial = realm.createObject(Historial.class, historialFB.get_id());
         historial.setStartDate(new Date(historialFB.getStartDate()));
+        historial.setEndDate(new Date(historialFB.getEndDate()));
         historial.setDevice(device);
+        historial.setLastLogDate(new Date(historialFB.getLastLogDate()));
         historial.setBuilding(device.getBuilding());
         historial.setSpace(device.getSpace());
+        historial.setTotalTimeInSeconds(historialFB.getTotalTimeInSeconds());
 
         realm.commitTransaction();
     }
 
     public void closeHistory(HistorialFB historialFB) {
-        //TODO determinar que endDate utilizar al momento de apagarlo
-//
-//        android.util.Log.e("average", historialFB.getPowerAverage() + "    000");
-//        double secs = (historialFB.getEndDate() - historialFB.getStartDate()) / 1000;
-//        double powerConsumed = historialFB.getPowerAverage() * (secs * 0.000277778);
-
         deviceDatabaseReference.child(historialFB.getDeviceId()).child("lastTimeUsed").setValue(historialFB.getEndDate());
-        //historialDatabaseReference.child(historialFB.get_id()).child("powerConsumed").setValue(powerConsumed);
         historialDatabaseReference.child(historialFB.get_id()).child("endDate").setValue(historialFB.getEndDate());
 
-        updateHistorialDataLocallty(historialFB);
+        updateHistorialDataLocal(historialFB);
     }
 
 
@@ -116,13 +112,20 @@ public class HistorialService extends SmartPLugApplication {
         return historialFB;
     }
 
-    public void updateHistorialDataLocallty(HistorialFB historialFB) {
+    public void updateOrCreate(HistorialFB historialFB) {
+        Historial historial = getHistorialById(historialFB.get_id());
+        if (historial != null){
+            updateHistorialDataLocal(historialFB);
+        } else {
+            createHistoryLocal(historialFB);
+        }
+    }
+    public void updateHistorialDataLocal(HistorialFB historialFB) {
         Device device = deviceService.getDeviceById(historialFB.getDeviceId());
         Historial historial = getHistorialById(historialFB.get_id());
 
         realm.beginTransaction();
 
-        device.setLastTimeUsed(new Date(historialFB.getEndDate()));
         historial.setStartDate(new Date(historialFB.getStartDate()));
         historial.setEndDate(new Date(historialFB.getEndDate()));
         historial.setDevice(device);
@@ -137,7 +140,5 @@ public class HistorialService extends SmartPLugApplication {
         historial.setPowerConsumed(historialFB.getPowerConsumed());
 
         realm.commitTransaction();
-
-        deviceService.updateDevicePowerAverageConsumption(device.get_id());
     }
 }

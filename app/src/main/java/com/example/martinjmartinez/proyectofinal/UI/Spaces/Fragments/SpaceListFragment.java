@@ -73,7 +73,6 @@ public class SpaceListFragment extends Fragment {
         View view = inflater.inflate(R.layout.space_list_fragment, container, false);
 
         initVariables(view);
-        getSpaces();
         initListeners();
 
         return view;
@@ -159,12 +158,10 @@ public class SpaceListFragment extends Fragment {
                 for (DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()) {
                     SpaceFB spaceFB = dataSnapshot1.getValue(SpaceFB.class);
 
-                    spaceService.updateSpace(spaceFB);
+                    spaceService.updateOrCreate(spaceFB);
                 }
-
-                if (spaceListAdapter != null) {
-                    spaceListAdapter.notifyDataSetChanged();
-                }
+                getSpaces();
+                spaceListAdapter.notifyDataSetChanged();
             }
 
             @Override
@@ -194,14 +191,13 @@ public class SpaceListFragment extends Fragment {
             mEmptySpaceListLayout.setVisibility(View.GONE);
             initSpacesList(spaceList);
         } else {
+            spaceListAdapter = new SpaceListAdapter(getContext(), R.layout.space_list_item, spaceList);
             mGridView.setVisibility(View.GONE);
             mEmptySpaceListLayout.setVisibility(View.VISIBLE);
-            spaceListAdapter = new SpaceListAdapter(getContext(), R.layout.space_list_item, spaceList);
         }
     }
 
     void initSpacesList(List<Space> spacesList) {
-
         spaceListAdapter = new SpaceListAdapter(getContext(), R.layout.space_list_item, spacesList);
         mGridView.setAdapter(spaceListAdapter);
     }

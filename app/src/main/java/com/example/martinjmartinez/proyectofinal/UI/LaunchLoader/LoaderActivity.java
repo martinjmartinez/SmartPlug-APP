@@ -3,11 +3,17 @@ package com.example.martinjmartinez.proyectofinal.UI.LaunchLoader;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 
+import com.example.martinjmartinez.proyectofinal.Models.BuildingFB;
+import com.example.martinjmartinez.proyectofinal.Models.DeviceFB;
 import com.example.martinjmartinez.proyectofinal.Models.HistorialFB;
+import com.example.martinjmartinez.proyectofinal.Models.SpaceFB;
 import com.example.martinjmartinez.proyectofinal.R;
+import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
 import com.example.martinjmartinez.proyectofinal.Services.HistorialService;
+import com.example.martinjmartinez.proyectofinal.Services.SpaceService;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 
 import com.google.firebase.database.DataSnapshot;
@@ -24,6 +30,8 @@ public class LoaderActivity extends AppCompatActivity {
 
     private Realm realm;
     private HistorialService historialService;
+    private BuildingService buildingService;
+    private SpaceService spaceService;
     private DeviceService deviceService;
 
     @Override
@@ -34,6 +42,8 @@ public class LoaderActivity extends AppCompatActivity {
         realm = Realm.getDefaultInstance();
         historialService = new HistorialService(realm);
         deviceService = new DeviceService(realm);
+        buildingService = new BuildingService(realm);
+        spaceService = new SpaceService(realm);
 
         getData();
     }
@@ -49,21 +59,101 @@ public class LoaderActivity extends AppCompatActivity {
     }
 
     public void getData() {
-        getHistorials();
+        getBuildings();
+    }
+
+    public void getBuildings() {
+        final DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Buildings");
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()) {
+                    BuildingFB buildingFB = dataSnapshot1.getValue(BuildingFB.class);
+                    if (buildingFB != null) {
+                        Log.e("LoaderActivity", "Buildings Listener");
+                        buildingService.updateOrCreate(buildingFB);
+
+                    } else {
+                        databaseReference.removeEventListener(this);
+                    }
+                }
+                databaseReference.removeEventListener(this);
+                getSpaces();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    public void getSpaces() {
+        final DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Spaces");
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()) {
+                    SpaceFB spaceFB = dataSnapshot1.getValue(SpaceFB.class);
+                    if (spaceFB != null) {
+                        Log.e("LoaderActivity", "Spaces Listener");
+                        spaceService.updateOrCreate(spaceFB);
+
+                    } else {
+                        databaseReference.removeEventListener(this);
+                    }
+                }
+                databaseReference.removeEventListener(this);
+                getDevices();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    public void getDevices() {
+        final DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Devices");
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()) {
+                    DeviceFB deviceFB = dataSnapshot1.getValue(DeviceFB.class);
+                    if (deviceFB != null) {
+                        Log.e("LoaderActivity", "Devices Listener");
+                        deviceService.updateOrCreate(deviceFB);
+
+                    } else {
+                        databaseReference.removeEventListener(this);
+                    }
+                }
+                databaseReference.removeEventListener(this);
+                getHistorials();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     public void getHistorials() {
         final DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Histories");
-        databaseReference.addValueEventListener(new ValueEventListener() {
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()) {
                     HistorialFB historialFB = dataSnapshot1.getValue(HistorialFB.class);
                     if (historialFB != null) {
-                        historialService.updateHistorialDataLocallty(historialFB);
+                        Log.e("LoaderActivity", "Historial Listener");
+                        historialService.updateOrCreate(historialFB);
 
                     } else {
                         loadFinished();
+                        databaseReference.removeEventListener(this);
                     }
                 }
                 databaseReference.removeEventListener(this);
@@ -81,6 +171,5 @@ public class LoaderActivity extends AppCompatActivity {
         Intent intent = new Intent(this, MainActivity.class);
         intent.setFlags(intent.getFlags() | Intent.FLAG_ACTIVITY_NO_HISTORY);
         startActivity(intent);
-        finish();
     }
 }

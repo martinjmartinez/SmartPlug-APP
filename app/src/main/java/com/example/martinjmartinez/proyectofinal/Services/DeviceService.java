@@ -6,6 +6,7 @@ import com.example.martinjmartinez.proyectofinal.Entities.Historial;
 import com.example.martinjmartinez.proyectofinal.Entities.Log;
 import com.example.martinjmartinez.proyectofinal.Entities.Space;
 import com.example.martinjmartinez.proyectofinal.Models.DeviceFB;
+import com.example.martinjmartinez.proyectofinal.Models.SpaceFB;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -47,34 +48,38 @@ public class DeviceService {
         return results;
     }
 
-    public void createDevice(DeviceFB deviceFB) {
-        String name = deviceFB.getName();
-        boolean isOn = deviceFB.isStatus();
-        String spaceId = deviceFB.getSpaceId();
-        String buildingId = deviceFB.getBuildingId();
-        double powerAverage = deviceFB.getAverageConsumption();
-        boolean isActive = deviceFB.isActive();
-        double power = deviceFB.getPower();
-
-        Space space = spaceService.getSpaceById(spaceId);
-        Building building = buildingService.getBuildingById(buildingId);
-
+    public void createDeviceCloud(DeviceFB deviceFB) {
         String deviceId = databaseReference.push().getKey();
         deviceFB.set_id(deviceId);
 
         databaseReference.child(deviceId).setValue(deviceFB);
 
+        createDeviceLocal(deviceFB);
+    }
+
+    public void updateOrCreate(DeviceFB deviceFB){
+        Device device = getDeviceById(deviceFB.get_id());
+        if(device != null){
+            updateDeviceLocal(deviceFB);
+        } else {
+            createDeviceLocal(deviceFB);
+        }
+    }
+
+    public void createDeviceLocal(DeviceFB deviceFB) {
+        Space space = spaceService.getSpaceById(deviceFB.getSpaceId());
+        Building building = buildingService.getBuildingById(deviceFB.getBuildingId());
+
         realm.beginTransaction();
+        Device device = realm.createObject(Device.class, deviceFB.get_id());
 
-        Device device = realm.createObject(Device.class, deviceId);
-
-        device.setName(name);
-        device.setStatus(isOn);
+        device.setName(deviceFB.getName());
+        device.setStatus(deviceFB.isStatus());
         device.setBuilding(building);
         device.setSpace(space);
-        device.setPower(power);
-        device.setAverageConsumption(powerAverage);
-        device.setActive(isActive);
+        device.setPower(deviceFB.getPower());
+        device.setAverageConsumption(deviceFB.getAverageConsumption());
+        device.setActive(deviceFB.isActive());
 
         realm.commitTransaction();
     }
@@ -203,7 +208,7 @@ public class DeviceService {
             realm.commitTransaction();
 
             if (device.getSpace() != null) {
-                spaceService.updateSapacePowerAverageConsumption(device.getSpace().get_id());
+                spaceService.updateSpacePowerAverageConsumption(device.getSpace().get_id());
             }
 
         }

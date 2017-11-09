@@ -120,7 +120,7 @@ public class BuildingUpdateFragment extends Fragment {
                 if (!Utils.isEditTextEmpty(name)) {
                     if (!name.getText().toString().equals(mBuilding.getName())) {
                         BuildingFB buildingFB = new BuildingFB(mBuildingId, name.getText().toString(), mBuilding.isActive());
-                        buildingService.updateBuildingName(buildingFB);
+                        buildingService.updateBuildingCloud(buildingFB);
                         mActivity.onBackPressed();
                     } else {
                         Toast.makeText(getActivity(), "Please, update something.", Toast.LENGTH_SHORT).show();

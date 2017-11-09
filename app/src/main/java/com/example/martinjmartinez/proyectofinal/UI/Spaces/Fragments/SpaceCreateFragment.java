@@ -17,6 +17,7 @@ import android.widget.Toast;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
 import com.example.martinjmartinez.proyectofinal.Entities.Space;
+import com.example.martinjmartinez.proyectofinal.Models.SpaceFB;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.Services.SpaceService;
@@ -116,7 +117,12 @@ public class SpaceCreateFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if (!Utils.isEditTextEmpty(name) && mSpace != null) {
-                    spaceService.createSpace(name.getText().toString(), mBuildingId, true);
+                    SpaceFB spaceFB = new SpaceFB();
+                    spaceFB.setActive(true);
+                    spaceFB.setName(name.getText().toString());
+                    spaceFB.setBuildingId(mBuildingId);
+
+                    spaceService.createSpaceCloud(spaceFB);
                     mActivity.onBackPressed();
                 } else {
                     Toast.makeText(getActivity(), "Please, name your Space.", Toast.LENGTH_SHORT).show();

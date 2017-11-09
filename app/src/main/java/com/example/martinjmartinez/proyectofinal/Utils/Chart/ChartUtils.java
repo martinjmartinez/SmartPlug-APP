@@ -326,7 +326,7 @@ public final class ChartUtils {
         }
 
         BarData data = new BarData(datasets);
-
+        Log.e("xVALS", labels.size() + "  klk");
         chart.setData(data);
         chart.getLegend().setEnabled(false);
         chart.setFitBars(true); // make the x-axis fit exactly all bars
@@ -339,7 +339,7 @@ public final class ChartUtils {
                 if (labels.size() > intValue && intValue >= 0) {
                     return labels.get(intValue);
                 }
-                return labels.get(intValue);
+                return null;
             }
 
             // we don't draw numbers, so no decimal digits needed

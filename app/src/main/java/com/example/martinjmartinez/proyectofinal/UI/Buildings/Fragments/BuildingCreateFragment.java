@@ -16,6 +16,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
+import com.example.martinjmartinez.proyectofinal.Models.BuildingFB;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
@@ -103,9 +104,10 @@ public class BuildingCreateFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if (!Utils.isEditTextEmpty(name)) {
-                    Building building = new Building();
-                    building.setName(name.getText().toString());
-                    buildingService.createBuilding(name.getText().toString(), true);
+                    BuildingFB buildingFB = new BuildingFB();
+                    buildingFB.setName(name.getText().toString());
+                    buildingFB.setActive(true);
+                    buildingService.createBuildingCloud(buildingFB);
 
                     if (buildingService.allBuildings().size() > 1) {
                         mActivity.onBackPressed();

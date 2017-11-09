@@ -168,7 +168,7 @@ public class SpaceDetailFragment extends Fragment {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 SpaceFB spaceFB = dataSnapshot.getValue(SpaceFB.class);
-                spaceService.updateSpace(spaceFB);
+                spaceService.updateOrCreate(spaceFB);
                 mSpace = spaceService.getSpaceById(spaceFB.get_id());
                 initSpaceView(mSpace);
             }

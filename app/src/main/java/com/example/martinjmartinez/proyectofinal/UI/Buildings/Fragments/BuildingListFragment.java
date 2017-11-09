@@ -57,7 +57,6 @@ public class BuildingListFragment extends Fragment {
 
         Utils.setActionBarIcon(getActivity(), true);
         initVariables(view);
-        getBuildings();
         initListeners();
 
         return view;
@@ -143,11 +142,11 @@ public class BuildingListFragment extends Fragment {
                 for (DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()) {
                     BuildingFB buildingFB = dataSnapshot1.getValue(BuildingFB.class);
 
-                    buildingService.updateBuildingName(buildingFB);
-                    if(buildingListAdapter != null) {
-                        buildingListAdapter.notifyDataSetChanged();
-                    }
+                    buildingService.updateOrCreate(buildingFB);
                 }
+
+                getBuildings();
+                buildingListAdapter.notifyDataSetChanged();
             }
 
             @Override
@@ -169,21 +168,21 @@ public class BuildingListFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
 
-        databaseReference.addValueEventListener(buildingsListener);
+        databaseReference.removeEventListener(buildingsListener);
     }
 
     private void shouldEmptyMessageShow(List<Building> buildingList) {
         if (!buildingList.isEmpty()) {
             mEmptyBuildingListLayout.setVisibility(View.GONE);
-            initSpacesList(buildingList);
+            initBuildingList(buildingList);
         } else {
-            mGridView.setVisibility(View.GONE);
             mEmptyBuildingListLayout.setVisibility(View.VISIBLE);
             buildingListAdapter = new BuildingListAdapter(getContext(), R.layout.building_list_item, buildingList);
+            mGridView.setVisibility(View.GONE);
         }
     }
 
-    void initSpacesList(List<Building> buildingsList) {
+    void initBuildingList(List<Building> buildingsList) {
         buildingListAdapter = new BuildingListAdapter(getContext(), R.layout.building_list_item, buildingsList);
         mGridView.setAdapter(buildingListAdapter);
     }

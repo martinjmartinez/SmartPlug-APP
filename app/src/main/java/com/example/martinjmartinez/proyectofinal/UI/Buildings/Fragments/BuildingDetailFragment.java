@@ -161,7 +161,8 @@ public class BuildingDetailFragment extends Fragment {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 BuildingFB buildingFB = dataSnapshot.getValue(BuildingFB.class);
-                buildingService.updateBuildingName(buildingFB);
+
+                buildingService.updateBuildingLocal(buildingFB);
                 Building building = buildingService.getBuildingById(mBuildingId);
                 initView(building);
             }

@@ -165,10 +165,10 @@ public class DeviceCreateFragment extends Fragment {
                     mDevice.setActive(true);
                     if (mSpace ==null) {
                         mDevice.setSpaceId("");
-                        deviceService.createDevice(mDevice);
+                        deviceService.createDeviceCloud(mDevice);
                     } else {
                         mDevice.setSpaceId(mSpace.get_id());
-                        deviceService.createDevice(mDevice);
+                        deviceService.createDeviceCloud(mDevice);
                     }
                     mMainActivity.onBackPressed();
                 } else {

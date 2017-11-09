@@ -152,9 +152,9 @@ public class DeviceUpdateFragment extends Fragment {
                     if (mSpace != null) {
                         DeviceFB deviceFB = new DeviceFB(mDeviceId, name.getText().toString(), mDevice.isStatus(), mSpace.get_id(), mDevice.isActive(), mSpace.getBuilding().get_id(), mDevice.getAverageConsumption(), mDevice.getPower());
                         deviceService.updateDeviceCloud(deviceFB);
-                        spaceService.updateSapacePowerAverageConsumption(mSpace.get_id());
+                        spaceService.updateSpacePowerAverageConsumption(mSpace.get_id());
                         if (lastSpace != null) {
-                            spaceService.updateSapacePowerAverageConsumption(lastSpace.get_id());
+                            spaceService.updateSpacePowerAverageConsumption(lastSpace.get_id());
                         }
                     } else {
                         DeviceFB deviceFB = new DeviceFB(mDeviceId, name.getText().toString(), mDevice.isStatus(), "",  mDevice.isActive(), mDevice.getBuilding().get_id(), mDevice.getAverageConsumption(), mDevice.getPower());
