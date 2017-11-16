@@ -18,6 +18,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
+import com.example.martinjmartinez.proyectofinal.Entities.Log;
 import com.example.martinjmartinez.proyectofinal.Entities.Space;
 import com.example.martinjmartinez.proyectofinal.Models.DeviceFB;
 import com.example.martinjmartinez.proyectofinal.R;
@@ -26,10 +27,17 @@ import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
 import com.example.martinjmartinez.proyectofinal.Services.SpaceService;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.UI.Spaces.Adapters.SpaceSpinnerAdapter;
-import com.example.martinjmartinez.proyectofinal.Utils.API;
 import com.example.martinjmartinez.proyectofinal.Utils.Constants;
+import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
+import java.util.EventListener;
 import java.util.List;
 
 import io.realm.Realm;
@@ -37,15 +45,14 @@ import io.realm.Realm;
 public class DeviceCreateFragment extends Fragment {
 
     private DeviceFB mDevice;
-    private API mAPI;
     private Activity mActivity;
-    private String mBuildingId;
+    private String mBuildingId, mDeviceId;
     private EditText name;
     private TextView displayName;
     private TextView deviceBuilding;
     private TextView deviceSpace;
     private Button saveDevice;
-    private String mSpaceId;
+    private String mSpaceId, userId;
     private Space mSpace;
     private Building mBuilding;
     private Spinner mSpaceSpinner;
@@ -54,6 +61,9 @@ public class DeviceCreateFragment extends Fragment {
     private DeviceService deviceService;
     private SpaceService spaceService;
     private BuildingService buildingService;
+    private Button pairButton;
+    private ValueEventListener singleDeviceListener;
+    private DatabaseReference databaseReference;
 
     public DeviceCreateFragment() {
     }
@@ -65,6 +75,9 @@ public class DeviceCreateFragment extends Fragment {
         Bundle bundle = this.getArguments();
         mSpaceId = bundle != null ? bundle.getString(Constants.SPACE_ID, "") : "";
         mBuildingId = bundle != null ? bundle.getString(Constants.BUILDING_ID, "") : "";
+        mDeviceId = bundle != null ? bundle.getString(Constants.DEVICE_ID, "") : "";
+        userId = mActivity.getSharedPreferences(Constants.USER_INFO, 0).getString(Constants.USER_ID, FirebaseAuth.getInstance().getCurrentUser().getUid());
+        databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/" + userId + "/Devices/" + mDeviceId);
     }
 
     @Override
@@ -111,19 +124,44 @@ public class DeviceCreateFragment extends Fragment {
     }
 
     private void iniVariables(View view) {
-        mAPI = new API();
         deviceService = new DeviceService(Realm.getDefaultInstance());
         buildingService = new BuildingService(Realm.getDefaultInstance());
         spaceService = new SpaceService(Realm.getDefaultInstance());
-        name = (EditText) view.findViewById(R.id.device_create_name);
-        displayName = (TextView) view.findViewById(R.id.device_create_display_name);
-        deviceBuilding = (TextView) view.findViewById(R.id.device_create_building);
-        deviceSpace = (TextView) view.findViewById(R.id.device_create_space);
-        saveDevice = (Button) view.findViewById(R.id.device_create_save_button);
-        mSpaceSpinner = (Spinner) view.findViewById(R.id.device_create_space_spinner);
+        name =  view.findViewById(R.id.device_create_name);
+        displayName =  view.findViewById(R.id.device_create_display_name);
+        deviceBuilding =  view.findViewById(R.id.device_create_building);
+        deviceSpace =  view.findViewById(R.id.device_create_space);
+        saveDevice =  view.findViewById(R.id.device_create_save_button);
+        mSpaceSpinner =  view.findViewById(R.id.device_create_space_spinner);
+       // pairButton = view.findViewById(R.id.pair_device);
     }
 
     private void initListeners() {
+//        pairButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                DevicePairFragment devicePairFragment = new DevicePairFragment();
+//                Bundle bundle = new Bundle();
+//                bundle.putString(Constants.DEVICE_ID, mSpaceId);
+//                devicePairFragment.setArguments(bundle);
+//                Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.DEVICE_CREATION_FRAGMENT), devicePairFragment, FragmentKeys.DEVICE_PAIR_FRAGMENT, true);
+//            }
+//        });
+
+        singleDeviceListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                mDevice = dataSnapshot.getValue(DeviceFB.class);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        };
+
+        databaseReference.addListenerForSingleValueEvent(singleDeviceListener);
+
         mSpaceSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -156,21 +194,21 @@ public class DeviceCreateFragment extends Fragment {
         saveDevice.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mDevice = new DeviceFB();
                 if (!Utils.isEditTextEmpty(name) && mDevice != null) {
                     mDevice.setName(name.getText().toString());
                     mDevice.setStatus(false);
+                    mDevice.setInConfigMode(false);
                     mDevice.setBuildingId(mBuilding.get_id());
                     mDevice.setPower(0);
                     mDevice.setActive(true);
                     if (mSpace ==null) {
                         mDevice.setSpaceId("");
-                        deviceService.createDeviceCloud(mDevice);
+                        deviceService.updateDeviceCloud(mDevice);
                     } else {
                         mDevice.setSpaceId(mSpace.get_id());
-                        deviceService.createDeviceCloud(mDevice);
+                        deviceService.updateDeviceCloud(mDevice);
                     }
-                    mMainActivity.onBackPressed();
+                    mActivity.onBackPressed();
                 } else {
                     Toast.makeText(getActivity(), "Please, fill all the fields.", Toast.LENGTH_SHORT).show();
                 }
@@ -194,6 +232,7 @@ public class DeviceCreateFragment extends Fragment {
         }
 
     }
+
 
     private void initView() {
         if (mSpace != null) {

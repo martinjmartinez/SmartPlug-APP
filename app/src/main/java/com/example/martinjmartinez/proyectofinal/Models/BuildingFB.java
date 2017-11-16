@@ -6,12 +6,15 @@ public class BuildingFB {
 
     private String name;
 
+    private String uid;
+
     private boolean isActive;
 
-    public BuildingFB(String _id, String name, boolean isActive) {
+    public BuildingFB(String _id, String name, boolean isActive, String uid) {
         this._id = _id;
         this.name = name;
         this.isActive = isActive;
+        this.uid = uid;
     }
 
     public BuildingFB() {
@@ -25,6 +28,13 @@ public class BuildingFB {
         isActive = active;
     }
 
+    public String getUid() {
+        return uid;
+    }
+
+    public void setUid(String uid) {
+        this.uid = uid;
+    }
 
     public String get_id() {
         return _id;

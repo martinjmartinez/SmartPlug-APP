@@ -1,12 +1,14 @@
 package com.example.martinjmartinez.proyectofinal.Services;
 
+import android.util.Log;
+
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
 import com.example.martinjmartinez.proyectofinal.Entities.Device;
 import com.example.martinjmartinez.proyectofinal.Entities.Historial;
-import com.example.martinjmartinez.proyectofinal.Entities.Log;
 import com.example.martinjmartinez.proyectofinal.Entities.Space;
 import com.example.martinjmartinez.proyectofinal.Models.DeviceFB;
-import com.example.martinjmartinez.proyectofinal.Models.SpaceFB;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -22,12 +24,15 @@ public class DeviceService {
     private SpaceService spaceService;
     private BuildingService buildingService;
     private DatabaseReference databaseReference;
+    private FirebaseAuth mAuth;
 
     public DeviceService(Realm realm) {
         this.realm = realm;
         spaceService = new SpaceService(realm);
         buildingService = new BuildingService(realm);
-        databaseReference = FirebaseDatabase.getInstance().getReference("Devices");
+        mAuth = FirebaseAuth.getInstance();
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/"+ currentUser.getUid() + "/Devices");
     }
 
     public List<Device> allDevices() {
@@ -48,13 +53,23 @@ public class DeviceService {
         return results;
     }
 
-    public void createDeviceCloud(DeviceFB deviceFB) {
+    public String createDeviceCloud(DeviceFB deviceFB) {
         String deviceId = databaseReference.push().getKey();
         deviceFB.set_id(deviceId);
 
-        databaseReference.child(deviceId).setValue(deviceFB);
+        databaseReference.child(deviceId).child("_id").setValue(deviceId);
+        databaseReference.child(deviceId).child("name").setValue(deviceFB.getName());
+        databaseReference.child(deviceId).child("status").setValue(deviceFB.isStatus());
+        databaseReference.child(deviceId).child("spaceId").setValue(deviceFB.getSpaceId());
+        databaseReference.child(deviceId).child("power").setValue(deviceFB.getPower());
+        databaseReference.child(deviceId).child("inConfigMode").setValue(deviceFB.isInConfigMode());
+        databaseReference.child(deviceId).child("buildingId").setValue(deviceFB.getBuildingId());
+        databaseReference.child(deviceId).child("averageConsumption").setValue(deviceFB.getAverageConsumption());
+        databaseReference.child(deviceId).child("active").setValue(deviceFB.isActive());
 
         createDeviceLocal(deviceFB);
+
+        return deviceId;
     }
 
     public void updateOrCreate(DeviceFB deviceFB){
@@ -77,6 +92,9 @@ public class DeviceService {
         device.setStatus(deviceFB.isStatus());
         device.setBuilding(building);
         device.setSpace(space);
+        device.setConnected(deviceFB.isConnected());
+        device.setInConfigMode(deviceFB.isInConfigMode());
+        device.setSsid(deviceFB.getSsid());
         device.setPower(deviceFB.getPower());
         device.setAverageConsumption(deviceFB.getAverageConsumption());
         device.setActive(deviceFB.isActive());
@@ -90,55 +108,66 @@ public class DeviceService {
         return device;
     }
 
-    public void updateDeviceLocal(DeviceFB deviceFB) {
-        String _id = deviceFB.get_id();
-        Device device = getDeviceById(_id);
-        String name = deviceFB.getName();
-        boolean isOn = deviceFB.isStatus();
-        String spaceId = deviceFB.getSpaceId();
-        String buildingId = deviceFB.getBuildingId();
-        double powerAverage = deviceFB.getAverageConsumption();
-        boolean isActive = deviceFB.isActive();
-        double power = deviceFB.getPower();
-        String lastHistoryId = deviceFB.getLastHistoryId();
-        long lastTimeUsed = deviceFB.getLastTimeUsed();
+    public DeviceFB castToDeviceFB(final Device device) {
+        DeviceFB deviceFB = new DeviceFB();
+        deviceFB.setName(device.getName());
+        deviceFB.setStatus(device.isStatus());
+        deviceFB.setConnected(device.isConnected());
+        deviceFB.setBuildingId(device.getBuilding().get_id());
+        if(device.getSpace()!= null){
+            deviceFB.setSpaceId(device.getSpace().get_id());
+        }
+        deviceFB.setAverageConsumption(device.getAverageConsumption());
+        deviceFB.setActive(device.isActive());
+        deviceFB.setInConfigMode(device.isInConfigMode());
+        deviceFB.setSsid(device.getSsid());
+        deviceFB.setPower(device.getPower());
+        deviceFB.setLastHistoryId(device.getLastHistoryId());
+        if(device.getLastTimeUsed() != null){
+            deviceFB.setLastTimeUsed(device.getLastTimeUsed().getTime());
+        }
 
-        Space space = spaceService.getSpaceById(spaceId);
-        Building building = buildingService.getBuildingById(buildingId);
+        return deviceFB;
+    }
+
+    public void updateDeviceLocal(DeviceFB deviceFB) {
+        Device device = getDeviceById(deviceFB.get_id());
+        Space space = spaceService.getSpaceById(deviceFB.getSpaceId());
+        Building building = buildingService.getBuildingById(deviceFB.getBuildingId());
 
         realm.beginTransaction();
 
-        device.setName(name);
-        device.setStatus(isOn);
+        device.setName(deviceFB.getName());
+        device.setStatus(deviceFB.isStatus());
         device.setBuilding(building);
         device.setSpace(space);
-        device.setAverageConsumption(powerAverage);
-        device.setActive(isActive);
-        device.setPower(power);
-        device.setLastHistoryId(lastHistoryId);
-        device.setLastTimeUsed(new Date(lastTimeUsed));
+        device.setConnected(deviceFB.isConnected());
+        device.setAverageConsumption(deviceFB.getAverageConsumption());
+        device.setActive(deviceFB.isActive());
+        device.setInConfigMode(deviceFB.isInConfigMode());
+        device.setSsid(deviceFB.getSsid());
+        device.setPower(deviceFB.getPower());
+        device.setLastHistoryId(deviceFB.getLastHistoryId());
+        device.setLastTimeUsed(new Date(deviceFB.getLastTimeUsed()));
 
         realm.commitTransaction();
+
+        updateDevicePowerAverageConsumption(device.get_id());
     }
 
     public void updateDeviceCloud(DeviceFB deviceFB) {
         String _id = deviceFB.get_id();
 
-        String name = deviceFB.getName();
-        boolean isOn = deviceFB.isStatus();
-        String spaceId = deviceFB.getSpaceId();
-        String buildingId = deviceFB.getBuildingId();
-        double powerAverage = deviceFB.getAverageConsumption();
-        boolean isActive = deviceFB.isActive();
-        double power = deviceFB.getPower();
-
-        databaseReference.child(_id).child("name").setValue(name);
-        databaseReference.child(_id).child("status").setValue(isOn);
-        databaseReference.child(_id).child("spaceId").setValue(spaceId);
-        databaseReference.child(_id).child("power").setValue(power);
-        databaseReference.child(_id).child("buildingId").setValue(buildingId);
-        databaseReference.child(_id).child("averageConsumption").setValue(powerAverage);
-        databaseReference.child(_id).child("active").setValue(isActive);
+        databaseReference.child(_id).child("name").setValue(deviceFB.getName());
+        databaseReference.child(_id).child("status").setValue(deviceFB.isStatus());
+        databaseReference.child(_id).child("spaceId").setValue(deviceFB.getSpaceId());
+        databaseReference.child(_id).child("power").setValue(deviceFB.getPower());
+        databaseReference.child(_id).child("inConfigMode").setValue(deviceFB.isInConfigMode());
+        databaseReference.child(_id).child("connected").setValue(deviceFB.isConnected());
+        databaseReference.child(_id).child("ssid").setValue(deviceFB.getSsid());
+        databaseReference.child(_id).child("buildingId").setValue(deviceFB.getBuildingId());
+        databaseReference.child(_id).child("averageConsumption").setValue(deviceFB.getAverageConsumption());
+        databaseReference.child(_id).child("active").setValue(deviceFB.isActive());
 
         updateDeviceLocal(deviceFB);
     }
@@ -194,12 +223,11 @@ public class DeviceService {
                         counter++;
                     }
                 }
-                if(counter !=0){
+                if(counter >0){
                     average = sum / counter;
+                    databaseReference.child(_id).child("averageConsumption").setValue(average);
                 }
             }
-
-            databaseReference.child(_id).child("averageConsumption").setValue(average);
 
             realm.beginTransaction();
 

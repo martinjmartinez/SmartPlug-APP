@@ -23,6 +23,8 @@ import com.example.martinjmartinez.proyectofinal.UI.Spaces.Fragments.SpaceListFr
 import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -47,6 +49,7 @@ public class BuildingListFragment extends Fragment {
     private DatabaseReference databaseReference;
     private BuildingListAdapter buildingListAdapter;
     private ValueEventListener buildingsListener;
+    private String userId;
 
     public BuildingListFragment() {
     }
@@ -97,10 +100,11 @@ public class BuildingListFragment extends Fragment {
     private void initVariables(View view) {
         buildingService = new BuildingService(Realm.getDefaultInstance());
         mBuildingList = new ArrayList<>();
-        mGridView = (GridView) view.findViewById(R.id.building_grid);
-        mEmptyBuildingListLayout = (LinearLayout) view.findViewById(R.id.empty_building_list_layout);
-        mAddBuildingButton = (FloatingActionButton) view.findViewById(R.id.add_building_button);
-        databaseReference = FirebaseDatabase.getInstance().getReference("Buildings");
+        mGridView = view.findViewById(R.id.building_grid);
+        mEmptyBuildingListLayout = view.findViewById(R.id.empty_building_list_layout);
+        mAddBuildingButton = view.findViewById(R.id.add_building_button);
+        userId = mActivity.getSharedPreferences(Constants.USER_INFO, 0).getString(Constants.USER_ID, FirebaseAuth.getInstance().getCurrentUser().getUid());
+        databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/"+ userId + "/Buildings");
     }
 
     private void initListeners() {

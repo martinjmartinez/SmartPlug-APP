@@ -1,6 +1,7 @@
 package com.example.martinjmartinez.proyectofinal.UI.LaunchLoader;
 
 import android.content.Intent;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,11 +17,16 @@ import com.example.martinjmartinez.proyectofinal.Services.HistorialService;
 import com.example.martinjmartinez.proyectofinal.Services.SpaceService;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 
+import com.example.martinjmartinez.proyectofinal.Utils.Constants;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+
+import java.util.Date;
 
 import io.realm.Realm;
 
@@ -33,6 +39,8 @@ public class LoaderActivity extends AppCompatActivity {
     private BuildingService buildingService;
     private SpaceService spaceService;
     private DeviceService deviceService;
+    private String userId;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +52,8 @@ public class LoaderActivity extends AppCompatActivity {
         deviceService = new DeviceService(realm);
         buildingService = new BuildingService(realm);
         spaceService = new SpaceService(realm);
+
+        userId = getSharedPreferences(Constants.USER_INFO, 0).getString(Constants.USER_ID, FirebaseAuth.getInstance().getCurrentUser().getUid());
 
         getData();
     }
@@ -63,7 +73,7 @@ public class LoaderActivity extends AppCompatActivity {
     }
 
     public void getBuildings() {
-        final DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Buildings");
+        final DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/" + userId + "/Buildings");
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -89,7 +99,7 @@ public class LoaderActivity extends AppCompatActivity {
     }
 
     public void getSpaces() {
-        final DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Spaces");
+        final DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/" + userId + "/Spaces");
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -115,7 +125,7 @@ public class LoaderActivity extends AppCompatActivity {
     }
 
     public void getDevices() {
-        final DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Devices");
+        final DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/" + userId + "/Devices");
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -141,7 +151,7 @@ public class LoaderActivity extends AppCompatActivity {
     }
 
     public void getHistorials() {
-        final DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Histories");
+        final DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/" + userId + "/Histories");
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -169,7 +179,7 @@ public class LoaderActivity extends AppCompatActivity {
 
     public void loadFinished() {
         Intent intent = new Intent(this, MainActivity.class);
-        intent.setFlags(intent.getFlags() | Intent.FLAG_ACTIVITY_NO_HISTORY);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
     }
 }

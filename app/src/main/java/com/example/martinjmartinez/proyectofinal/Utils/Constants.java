@@ -1,8 +1,5 @@
 package com.example.martinjmartinez.proyectofinal.Utils;
 
-/**
- * Created by MartinJMartinez on 7/17/2017.
- */
 
 public class Constants {
 
@@ -16,8 +13,8 @@ public class Constants {
     static public String DEVICE_ID = "DEVICE_ID";
     static public String SPACE_ID = "SPACE_ID";
 
-    static public String ON_QUERY = "/digital/2/0";
-    static public String OFF_QUERY = "/digital/2/1";
+    static public String USER_ID = "user_id";
+    static public String USER_INFO = "user_info";
 
     /**
      * Holds date formats.

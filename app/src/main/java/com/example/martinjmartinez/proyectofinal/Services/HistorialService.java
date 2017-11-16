@@ -4,6 +4,8 @@ import com.example.martinjmartinez.proyectofinal.App.SmartPLugApplication;
 import com.example.martinjmartinez.proyectofinal.Entities.Device;
 import com.example.martinjmartinez.proyectofinal.Entities.Historial;
 import com.example.martinjmartinez.proyectofinal.Models.HistorialFB;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -19,13 +21,16 @@ public class HistorialService extends SmartPLugApplication {
     public DatabaseReference historialDatabaseReference;
     private DatabaseReference deviceDatabaseReference;
     private DatabaseReference powerLogsDatabaseReference;
+    private FirebaseAuth mAuth;
 
     public HistorialService(Realm realm) {
         this.realm = realm;
         deviceService = new DeviceService(realm);
-        historialDatabaseReference = FirebaseDatabase.getInstance().getReference("Histories");
-        deviceDatabaseReference = FirebaseDatabase.getInstance().getReference("Devices");
-        powerLogsDatabaseReference = FirebaseDatabase.getInstance().getReference("powerLogs");
+        mAuth = FirebaseAuth.getInstance();
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        historialDatabaseReference = FirebaseDatabase.getInstance().getReference("Accounts/"+ currentUser.getUid() + "/Histories");
+        deviceDatabaseReference = FirebaseDatabase.getInstance().getReference("Accounts/"+ currentUser.getUid() + "/Devices");
+        powerLogsDatabaseReference = FirebaseDatabase.getInstance().getReference("Accounts/"+ currentUser.getUid() + "/powerLogs");
     }
 
     public List<Historial> allHistorial() {

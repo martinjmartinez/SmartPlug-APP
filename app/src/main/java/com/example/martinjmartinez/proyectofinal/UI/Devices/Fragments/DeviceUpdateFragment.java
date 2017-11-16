@@ -27,7 +27,6 @@ import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
 import com.example.martinjmartinez.proyectofinal.Services.SpaceService;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.UI.Spaces.Adapters.SpaceSpinnerAdapter;
-import com.example.martinjmartinez.proyectofinal.Utils.API;
 import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 
@@ -45,6 +44,7 @@ public class DeviceUpdateFragment extends Fragment {
     private TextView displayName;
     private TextView deviceBuilding;
     private TextView deviceSpace;
+    private TextView spaceWarning;
     private Button saveDevice;
     private String mDeviceId;
     private Space mSpace, lastSpace;
@@ -107,12 +107,13 @@ public class DeviceUpdateFragment extends Fragment {
         deviceService = new DeviceService(Realm.getDefaultInstance());
         buildingService = new BuildingService(Realm.getDefaultInstance());
         spaceService = new SpaceService(Realm.getDefaultInstance());
-        name = (EditText) view.findViewById(R.id.device_create_name);
-        displayName = (TextView) view.findViewById(R.id.device_create_display_name);
-        deviceBuilding = (TextView) view.findViewById(R.id.device_create_building);
-        deviceSpace = (TextView) view.findViewById(R.id.device_create_space);
-        saveDevice = (Button) view.findViewById(R.id.device_create_save_button);
-        mSpaceSpinner = (Spinner) view.findViewById(R.id.device_create_space_spinner);
+        name =  view.findViewById(R.id.device_create_name);
+        displayName =  view.findViewById(R.id.device_create_display_name);
+        deviceBuilding =  view.findViewById(R.id.device_create_building);
+        deviceSpace =  view.findViewById(R.id.device_create_space);
+        saveDevice =  view.findViewById(R.id.device_create_save_button);
+        mSpaceSpinner =  view.findViewById(R.id.device_create_space_spinner);
+        spaceWarning = view.findViewById(R.id.space_warning);
     }
 
     private void initListeners() {
@@ -151,6 +152,7 @@ public class DeviceUpdateFragment extends Fragment {
                 if (!Utils.isEditTextEmpty(name)) {
                     if (mSpace != null) {
                         DeviceFB deviceFB = new DeviceFB(mDeviceId, name.getText().toString(), mDevice.isStatus(), mSpace.get_id(), mDevice.isActive(), mSpace.getBuilding().get_id(), mDevice.getAverageConsumption(), mDevice.getPower());
+                        android.util.Log.e("UPDATE", "UPDATE  1");
                         deviceService.updateDeviceCloud(deviceFB);
                         spaceService.updateSpacePowerAverageConsumption(mSpace.get_id());
                         if (lastSpace != null) {
@@ -158,7 +160,7 @@ public class DeviceUpdateFragment extends Fragment {
                         }
                     } else {
                         DeviceFB deviceFB = new DeviceFB(mDeviceId, name.getText().toString(), mDevice.isStatus(), "",  mDevice.isActive(), mDevice.getBuilding().get_id(), mDevice.getAverageConsumption(), mDevice.getPower());
-
+                        android.util.Log.e("UPDATE", "UPDATE 1");
                         deviceService.updateDeviceCloud(deviceFB);
                     }
                     mActivity.onBackPressed();
@@ -190,10 +192,14 @@ public class DeviceUpdateFragment extends Fragment {
 
     public void setUpSpacesSpinner(List<Space> items) {
         if (items.size() != 0 && !mDevice.isStatus()) {
+            spaceWarning.setVisibility(View.GONE);
             mSpaceSpinnerAdapter = new SpaceSpinnerAdapter(getContext(), R.layout.spaces_item_spinner, items);
             mSpaceSpinner.setAdapter(mSpaceSpinnerAdapter);
             lastSpace = mDevice.getSpace();
         } else {
+            spaceWarning.setVisibility(View.VISIBLE);
+            mSpaceSpinnerAdapter = new SpaceSpinnerAdapter(getContext(), R.layout.spaces_item_spinner, items);
+            mSpaceSpinner.setAdapter(mSpaceSpinnerAdapter);
             mSpaceSpinner.setEnabled(false);
         }
 

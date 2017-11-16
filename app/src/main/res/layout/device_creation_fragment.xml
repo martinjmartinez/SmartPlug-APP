@@ -50,6 +50,17 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
+            <!--<Button-->
+                <!--android:id="@+id/pair_device"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:layout_marginEnd="16dp"-->
+                <!--android:layout_marginStart="16dp"-->
+                <!--android:layout_marginBottom="6dp"-->
+                <!--android:background="@color/color4"-->
+                <!--android:text="pair"-->
+                <!--android:textColor="@android:color/white"/>-->
+
             <android.support.v7.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -85,6 +96,17 @@
                 </LinearLayout>
             </android.support.v7.widget.CardView>
 
+            <TextView
+                android:id="@+id/space_warning"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Space can't be changed when ON"
+                android:textAlignment="center"
+                android:textSize="11sp"
+                android:textColor="@color/alert"
+                android:layout_alignParentTop="true"
+                android:visibility="gone"/>
+
             <android.support.v7.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -103,9 +125,10 @@
                     <TextView
                         android:id="@+id/titleSpace"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_height="match_parent"
                         android:layout_alignParentStart="true"
                         android:text="Space"
+                        android:gravity="center_vertical"
                         android:textAppearance="?android:attr/textAppearanceMedium" />
 
                     <TextView
@@ -120,9 +143,10 @@
                     <Spinner
                         android:id="@+id/device_create_space_spinner"
                         android:layout_width="150dp"
-                        android:layout_height="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_margin="5dp"
                         android:layout_alignParentEnd="true"
-                        android:visibility="gone"/>
+                        android:visibility="visible"/>
                 </RelativeLayout>
             </android.support.v7.widget.CardView>
 

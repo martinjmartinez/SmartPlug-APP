@@ -15,13 +15,13 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.martinjmartinez.proyectofinal.Entities.Building;
 import com.example.martinjmartinez.proyectofinal.Models.BuildingFB;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
-import com.example.martinjmartinez.proyectofinal.Utils.API;
+import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
+import com.google.firebase.auth.FirebaseAuth;
 
 import io.realm.Realm;
 
@@ -32,6 +32,7 @@ public class BuildingCreateFragment extends Fragment {
     private Button saveBuilding;
     private MainActivity mMainActivity;
     private BuildingService buildingService;
+    private String userId;
 
     public BuildingCreateFragment() {
     }
@@ -80,6 +81,7 @@ public class BuildingCreateFragment extends Fragment {
 
     private void iniVariables() {
         buildingService = new BuildingService(Realm.getDefaultInstance());
+        userId = mActivity.getSharedPreferences(Constants.USER_INFO, 0).getString(Constants.USER_ID, FirebaseAuth.getInstance().getCurrentUser().getUid());
     }
 
     private void initListeners() {
@@ -107,6 +109,7 @@ public class BuildingCreateFragment extends Fragment {
                     BuildingFB buildingFB = new BuildingFB();
                     buildingFB.setName(name.getText().toString());
                     buildingFB.setActive(true);
+                    buildingFB.setUid(userId);
                     buildingService.createBuildingCloud(buildingFB);
 
                     if (buildingService.allBuildings().size() > 1) {

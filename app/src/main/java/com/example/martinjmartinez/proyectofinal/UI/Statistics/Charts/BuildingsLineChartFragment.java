@@ -16,12 +16,15 @@ import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
 import com.example.martinjmartinez.proyectofinal.Services.HistorialService;
 import com.example.martinjmartinez.proyectofinal.Utils.Chart.ChartUtils;
+import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.data.Entry;
 
 import com.github.mikephil.charting.data.LineDataSet;
 
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
@@ -52,6 +55,7 @@ public class BuildingsLineChartFragment extends Fragment{
     static private boolean singleBuilding;
     private DatabaseReference databaseReference;
     private ValueEventListener listener;
+    private String userId;
 
     public static BuildingsLineChartFragment newInstance(String buildingId, Date startDate, Date endDate, boolean singleBuilding) {
         Bundle args = new Bundle();
@@ -75,8 +79,8 @@ public class BuildingsLineChartFragment extends Fragment{
             mEndDate = new Date(getArguments().getLong("endDate"));
             buildingId = getArguments().getString("buildingId");
             singleBuilding = getArguments().getBoolean("singleBuilding");
-
-            databaseReference = FirebaseDatabase.getInstance().getReference("Histories");
+//            userId = getArguments().getString(Constants.USER_ID);
+//            databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/"+ userId + "/Histories");
             realm = Realm.getDefaultInstance();
             buildingService = new BuildingService(realm);
             historialService = new HistorialService(realm);
@@ -88,8 +92,8 @@ public class BuildingsLineChartFragment extends Fragment{
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.item_chart_line, container, false);
 
-        chart = (LineChart) view.findViewById(R.id.chart);
-        title = (TextView) view.findViewById(R.id.chart_title_statistics);
+        chart =  view.findViewById(R.id.chart);
+        title =  view.findViewById(R.id.chart_title_statistics);
 
         chart.getDescription().setEnabled(false);
 

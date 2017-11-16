@@ -36,6 +36,21 @@
         android:layout_gravity="start"
         app:headerLayout="@layout/navigation_header">
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:clickable="true"
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/logout"
+                android:text="@string/logout"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:gravity="center"
+                android:textStyle="bold"
+                android:textColor="@android:color/black" />
+        </LinearLayout>
     </android.support.design.widget.NavigationView>
 
 

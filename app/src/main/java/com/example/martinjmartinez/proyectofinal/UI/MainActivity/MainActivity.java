@@ -1,13 +1,21 @@
 package com.example.martinjmartinez.proyectofinal.UI.MainActivity;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.Build;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -17,23 +25,30 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
 import com.example.martinjmartinez.proyectofinal.Entities.Historial;
 import com.example.martinjmartinez.proyectofinal.Models.HistorialFB;
+import com.example.martinjmartinez.proyectofinal.Models.UserFB;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
+import com.example.martinjmartinez.proyectofinal.Services.CustomFirebaseMessagingService;
 import com.example.martinjmartinez.proyectofinal.Services.HistorialService;
+import com.example.martinjmartinez.proyectofinal.Services.UserService;
 import com.example.martinjmartinez.proyectofinal.UI.Buildings.Adapters.BuildingSpinnerAdapter;
 import com.example.martinjmartinez.proyectofinal.UI.Buildings.Fragments.BuildingListFragment;
 import com.example.martinjmartinez.proyectofinal.UI.Devices.Fragments.DeviceListFragment;
 import com.example.martinjmartinez.proyectofinal.UI.Home.HomeFragment;
+import com.example.martinjmartinez.proyectofinal.UI.LoginActivity.LogInActivity;
 import com.example.martinjmartinez.proyectofinal.UI.Spaces.Fragments.SpaceListFragment;
 import com.example.martinjmartinez.proyectofinal.UI.Statistics.Charts.BuildingsLineChartFragment;
 import com.example.martinjmartinez.proyectofinal.UI.Statistics.StatisticsFragment;
 import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -62,9 +77,17 @@ public class MainActivity extends AppCompatActivity {
     private int mLastBuildingSelected;
     private boolean doubleBackToExitPressedOnce;
     private BuildingService buildingService;
+    private UserService userService;
     private DatabaseReference historiesDatabaseReference;
     private ValueEventListener historiesListener;
     private Realm realm;
+    private String userId;
+    private TextView userName;
+    private TextView userEmail;
+    private TextView logoutButton;
+    private FirebaseAuth auth;
+    private FirebaseUser user;
+    private BroadcastReceiver mMessageReceiver;
 
     public ActionBarDrawerToggle getActionBarDrawerToggle() {
         return mActionBarDrawerToggle;
@@ -92,10 +115,43 @@ public class MainActivity extends AppCompatActivity {
         mBuildingListFragment = new BuildingListFragment();
         mActivity = this;
         View headerView = mNavigationView.getHeaderView(0);
-        mSelectBuildingSpinner = (Spinner) headerView.findViewById(R.id.buildings_spinner);
+        mSelectBuildingSpinner = headerView.findViewById(R.id.buildings_spinner);
         realm = Realm.getDefaultInstance();
         historialService = new HistorialService(realm);
-        historiesDatabaseReference = FirebaseDatabase.getInstance().getReference("Histories");
+        userName = headerView.findViewById(R.id.userName);
+        userEmail = headerView.findViewById(R.id.userEmail);
+        logoutButton = findViewById(R.id.logout);
+        userService = new UserService();
+        auth = FirebaseAuth.getInstance();
+        user = auth.getCurrentUser();
+        userId = getSharedPreferences(Constants.USER_INFO, 0).getString(Constants.USER_ID, user.getUid());
+        userName.setText(user.getDisplayName());
+        userEmail.setText(user.getEmail());
+        historiesDatabaseReference = FirebaseDatabase.getInstance().getReference("Accounts/" + userId + "/Histories");
+
+        mMessageReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                // Extract data included in the Intent
+                String message = intent.getStringExtra("message");
+
+                //alert data here
+                AlertDialog.Builder builder;
+                builder = new AlertDialog.Builder(MainActivity.this, R.style.Theme_AppCompat_Light_Dialog_Alert);
+
+                builder.setTitle("Notification")
+                        .setMessage(message)
+                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                // continue with delete
+                                dialog.dismiss();
+                            }
+                        })
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .show();
+
+            }
+        };
     }
 
     public void setUpBuildingSpinner(List<Building> items) {
@@ -106,9 +162,9 @@ public class MainActivity extends AppCompatActivity {
 
     public void initDrawerMenu() {
 
-        mToolbar = (Toolbar) findViewById(R.id.nav_actionbar);
-        mNavigationView = (NavigationView) findViewById(R.id.design_navigation_view);
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mToolbar = findViewById(R.id.nav_actionbar);
+        mNavigationView = findViewById(R.id.design_navigation_view);
+        mDrawerLayout = findViewById(R.id.drawer_layout);
         mActionBarDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, mToolbar, R.string.drawer_open, R.string.drawer_close);
 
         setSupportActionBar(mToolbar);
@@ -127,7 +183,34 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        LocalBroadcastManager.getInstance(mActivity).registerReceiver(mMessageReceiver,
+                new IntentFilter("notificationDialog"));
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        LocalBroadcastManager.getInstance(mActivity).unregisterReceiver(mMessageReceiver);
+    }
+
     public void initListeners() {
+        logoutButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                UserFB userFB = new UserFB(user.getUid(), user.getDisplayName(), user.getEmail());
+                userService.deleteUserFCMToken(userFB);
+                FirebaseAuth.getInstance().signOut();
+
+                Intent intent = new Intent(MainActivity.this, LogInActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+            }
+        });
+
         mNavigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -181,7 +264,7 @@ public class MainActivity extends AppCompatActivity {
                         StatisticsFragment statisticsFragment = (StatisticsFragment) getSupportFragmentManager().findFragmentByTag(FragmentKeys.STATISTICS_FRAGMENT);
                         if (statisticsFragment != null) {
                             if (!statisticsFragment.isVisible()) {
-                               prepareStatisticsFragment(false);
+                                prepareStatisticsFragment(false);
                             }
                         } else {
                             prepareStatisticsFragment(true);
@@ -232,7 +315,7 @@ public class MainActivity extends AppCompatActivity {
                     HistorialFB historialFB = dataSnapshot1.getValue(HistorialFB.class);
 
                     if (historialFB != null) {
-                       historialService.updateOrCreate(historialFB);
+                        historialService.updateOrCreate(historialFB);
                     }
                 }
             }
@@ -311,7 +394,10 @@ public class MainActivity extends AppCompatActivity {
         fragmentTransaction.replace(R.id.frame_layout, fragment, fragment_key);
 
         if (addToStack) {
-            fragmentTransaction.addToBackStack(null);
+            fragmentTransaction.addToBackStack(fragment_key);
+        }else {
+            fragment.getFragmentManager().popBackStack();
+            fragmentTransaction.addToBackStack(fragment_key);
         }
 
         fragmentTransaction.commitAllowingStateLoss();

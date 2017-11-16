@@ -74,8 +74,8 @@ public class DeviceTimeLinechartFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.item_chart_line, container, false);
 
-        chart = (LineChart) view.findViewById(R.id.chart);
-        title = (TextView) view.findViewById(R.id.chart_title_statistics);
+        chart =  view.findViewById(R.id.chart);
+        title =  view.findViewById(R.id.chart_title_statistics);
 
         chart.getDescription().setEnabled(false);
 

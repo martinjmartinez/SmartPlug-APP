@@ -12,6 +12,8 @@ public class Building  extends RealmObject{
 
     private String name;
 
+    private String uid;
+
     private double averageConsumption;
 
     private boolean isActive;
@@ -35,6 +37,14 @@ public class Building  extends RealmObject{
 
     public void setAverageConsumption(double averageConsumption) {
         this.averageConsumption = averageConsumption;
+    }
+
+    public String getUid() {
+        return uid;
+    }
+
+    public void setUid(String uid) {
+        this.uid = uid;
     }
 
     public boolean isActive() {

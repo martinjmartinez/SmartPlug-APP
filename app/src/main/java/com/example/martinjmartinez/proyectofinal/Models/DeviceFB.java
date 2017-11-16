@@ -16,6 +16,12 @@ public class DeviceFB {
 
     private double power;
 
+    private String ssid;
+
+    private boolean inConfigMode;
+
+    private boolean connected;
+
     private String lastHistoryId;
 
     private double averageConsumption;
@@ -34,6 +40,38 @@ public class DeviceFB {
         this.buildingId = buildingId;
         this.averageConsumption = averageConsumption;
         this.power = power;
+    }
+
+    public DeviceFB(boolean status, boolean isActive, boolean inConfigMode, String buildingId, String spaceId) {
+        this.status = status;
+        this.isActive = isActive;
+        this.inConfigMode = inConfigMode;
+        this.spaceId = spaceId;
+        this.buildingId = buildingId;
+    }
+
+    public boolean isConnected() {
+        return connected;
+    }
+
+    public void setConnected(boolean connected) {
+        this.connected = connected;
+    }
+
+    public String getSsid() {
+        return ssid;
+    }
+
+    public void setSsid(String ssid) {
+        this.ssid = ssid;
+    }
+
+    public boolean isInConfigMode() {
+        return inConfigMode;
+    }
+
+    public void setInConfigMode(boolean inConfigMode) {
+        this.inConfigMode = inConfigMode;
     }
 
     public long getLastTimeUsed() {

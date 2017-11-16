@@ -14,10 +14,13 @@ import com.example.martinjmartinez.proyectofinal.Models.DeviceFB;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
 import com.example.martinjmartinez.proyectofinal.Utils.Chart.ChartUtils;
+import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -33,7 +36,7 @@ import io.realm.Realm;
 public class DevicesBarChartFragment extends Fragment {
 
     private Realm realm;
-    private String buildingId;
+    private String buildingId, userId;
     private BarChart chart;
     private TextView title;
     private DeviceService deviceService;
@@ -60,8 +63,8 @@ public class DevicesBarChartFragment extends Fragment {
             buildingId = getArguments().getString("buildingId");
             realm = Realm.getDefaultInstance();
             deviceService = new DeviceService(realm);
-            databaseReference = FirebaseDatabase.getInstance().getReference("Devices");
-
+            userId = getActivity().getSharedPreferences(Constants.USER_INFO, 0).getString(Constants.USER_ID, FirebaseAuth.getInstance().getCurrentUser().getUid());
+            databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/"+ userId + "/Devices");
         }
     }
 

@@ -24,6 +24,12 @@ public class Device extends RealmObject {
 
     private double power;
 
+    private String ssid;
+
+    private boolean inConfigMode;
+
+    private boolean connected;
+
     private String lastHistoryId;
 
     private double averageConsumption;
@@ -32,6 +38,30 @@ public class Device extends RealmObject {
 
     @LinkingObjects("device")
     private final RealmResults<Historial> historials = null;
+
+    public boolean isConnected() {
+        return connected;
+    }
+
+    public void setConnected(boolean connected) {
+        this.connected = connected;
+    }
+
+    public String getSsid() {
+        return ssid;
+    }
+
+    public void setSsid(String ssid) {
+        this.ssid = ssid;
+    }
+
+    public boolean isInConfigMode() {
+        return inConfigMode;
+    }
+
+    public void setInConfigMode(boolean inConfigMode) {
+        this.inConfigMode = inConfigMode;
+    }
 
     public String get_id() {
         return _id;

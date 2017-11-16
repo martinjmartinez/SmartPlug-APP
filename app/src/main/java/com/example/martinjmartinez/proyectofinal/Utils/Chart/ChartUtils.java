@@ -326,7 +326,7 @@ public final class ChartUtils {
         }
 
         BarData data = new BarData(datasets);
-        Log.e("xVALS", labels.size() + "  klk");
+
         chart.setData(data);
         chart.getLegend().setEnabled(false);
         chart.setFitBars(true); // make the x-axis fit exactly all bars

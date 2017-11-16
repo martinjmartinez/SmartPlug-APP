@@ -70,9 +70,12 @@ public class Utils {
         fragmentTransaction.setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left);
         fragmentTransaction.replace(R.id.frame_layout, toFrament, toFragmentKey);
         if (addToStack) {
-            fragmentTransaction.addToBackStack(null);
+            fragmentTransaction.addToBackStack(toFrament.getTag());
+        }else{
+            fromFragment.getFragmentManager().popBackStack();
+            fragmentTransaction.addToBackStack(toFrament.getTag());
         }
-        fragmentTransaction.commitAllowingStateLoss();
+        fragmentTransaction.commit();
     }
 
     static public boolean isEditTextEmpty(EditText editText) {

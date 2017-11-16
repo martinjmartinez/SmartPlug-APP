@@ -13,4 +13,21 @@
         <item name="color">@android:color/white</item>
     </style>
 
+    <style name="LogInTheme"  parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Required for sign-in flow styling -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+
+        <item name="android:windowBackground">@color/logInBackground</item>
+    </style>
+
+    <style name="progressBar"  parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Required for sign-in flow styling -->
+        <item name="colorPrimary">@color/color4</item>
+        <item name="colorPrimaryDark">@color/color1</item>
+        <item name="colorAccent">@color/color4</item>
+
+    </style>
+
 </resources>

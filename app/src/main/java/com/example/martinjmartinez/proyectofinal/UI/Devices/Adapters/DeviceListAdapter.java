@@ -47,11 +47,11 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
         ViewHolder(View view) {
             super(view);
 
-            mName = (TextView) view.findViewById(R.id.device_name);
-            mPower = (TextView) view.findViewById(R.id.device_power);
-            mStatus = (Switch) view.findViewById(R.id.device_status);
-            itemLayout = (LinearLayout) view.findViewById(R.id.device_item);
-            mAverage = (TextView) view.findViewById(R.id.device_power_average);
+            mName =  view.findViewById(R.id.device_name);
+            mPower =  view.findViewById(R.id.device_power);
+            mStatus =  view.findViewById(R.id.device_status);
+            itemLayout =  view.findViewById(R.id.device_item);
+            mAverage = view.findViewById(R.id.device_power_average);
         }
     }
 

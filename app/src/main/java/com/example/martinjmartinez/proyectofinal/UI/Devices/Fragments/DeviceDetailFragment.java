@@ -32,6 +32,8 @@ import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -46,7 +48,7 @@ public class DeviceDetailFragment extends Fragment {
 
     private Device mDevice;
     private Activity mActivity;
-    private String mDeviceId;
+    private String mDeviceId, userId;
     private TextView name;
     private TextView space;
     private TextView averagePower;
@@ -58,7 +60,7 @@ public class DeviceDetailFragment extends Fragment {
     private DeviceService deviceService;
     private HistorialService historialService;
     private Button mEditButton;
-    private Button mDeleteButton;
+    //private Button mDeleteButton;
     private LinearLayout statisticsButton;
     private DatabaseReference databaseReference;
     private CompoundButton.OnCheckedChangeListener listener;
@@ -116,17 +118,18 @@ public class DeviceDetailFragment extends Fragment {
     private void iniVariables(View view) {
         deviceService = new DeviceService(Realm.getDefaultInstance());
         historialService = new HistorialService(Realm.getDefaultInstance());
-        name = (TextView) view.findViewById(R.id.device_detail_name);
-        space = (TextView) view.findViewById(R.id.device_detail_space);
-        building = (TextView) view.findViewById(R.id.device_detail_building);
-        power = (TextView) view.findViewById(R.id.device_detail_power);
-        lastTimeUsed = (TextView) view.findViewById(R.id.device_detail_last_turn_on);
-        status = (Switch) view.findViewById(R.id.device_detail_status);
-        mEditButton = (Button) view.findViewById(R.id.device_detail_update);
-        mDeleteButton = (Button) view.findViewById(R.id.device_detail_delete);
-        averagePower = (TextView) view.findViewById(R.id.device_detail_average);
-        statisticsButton = (LinearLayout) view.findViewById(R.id.device_statistics_button);
-        databaseReference = FirebaseDatabase.getInstance().getReference("Devices");
+        name = view.findViewById(R.id.device_detail_name);
+        space = view.findViewById(R.id.device_detail_space);
+        building = view.findViewById(R.id.device_detail_building);
+        power =  view.findViewById(R.id.device_detail_power);
+        lastTimeUsed =  view.findViewById(R.id.device_detail_last_turn_on);
+        status = view.findViewById(R.id.device_detail_status);
+        mEditButton =  view.findViewById(R.id.device_detail_update);
+       // mDeleteButton = view.findViewById(R.id.device_detail_delete);
+        averagePower =  view.findViewById(R.id.device_detail_average);
+        statisticsButton =  view.findViewById(R.id.device_statistics_button);
+        userId = mActivity.getSharedPreferences(Constants.USER_INFO, 0).getString(Constants.USER_ID, FirebaseAuth.getInstance().getCurrentUser().getUid());
+        databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/"+ userId + "/Devices");
 
         listener = new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -164,32 +167,32 @@ public class DeviceDetailFragment extends Fragment {
             }
         });
 
-        mDeleteButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                AlertDialog.Builder builder = Utils.createDialog(mActivity, "Delete Device", "Do you want to delete this Device?");
-
-                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        deviceService.deleteDevice(mDeviceId);
-                        mActivity.onBackPressed();
-                    }
-                });
-
-                builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
-
-                // Create the AlertDialog
-                AlertDialog dialog = builder.create();
-                dialog.show();
-
-            }
-        });
+//        mDeleteButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                AlertDialog.Builder builder = Utils.createDialog(mActivity, "Delete Device", "Do you want to delete this Device?");
+//
+//                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+//                    @Override
+//                    public void onClick(DialogInterface dialog, int which) {
+//                        deviceService.deleteDevice(mDeviceId);
+//                        mActivity.onBackPressed();
+//                    }
+//                });
+//
+//                builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+//                    @Override
+//                    public void onClick(DialogInterface dialog, int which) {
+//                        dialog.dismiss();
+//                    }
+//                });
+//
+//                // Create the AlertDialog
+//                AlertDialog dialog = builder.create();
+//                dialog.show();
+//
+//            }
+//        });
         statisticsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

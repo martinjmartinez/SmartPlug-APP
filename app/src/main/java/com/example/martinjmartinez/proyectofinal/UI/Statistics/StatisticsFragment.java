@@ -31,6 +31,7 @@ import com.example.martinjmartinez.proyectofinal.UI.Statistics.Adapters.Statisti
 import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.example.martinjmartinez.proyectofinal.Utils.DateUtils;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -56,10 +57,9 @@ public class StatisticsFragment extends Fragment {
     private Spinner mDateSpinner;
     private TabLayout chartTabLayout;
     private TabLayout detailsTabLayout;
-    private Realm realm;
-    private List<Building> chartData;
     private ViewPager chartsViewPager;
     private ViewPager chartsInfoViewPager;
+    private String userId;
 
     public StatisticsFragment() {
     }
@@ -86,17 +86,16 @@ public class StatisticsFragment extends Fragment {
     }
 
     private void iniVariables(View view) {
-        realm = Realm.getDefaultInstance();
-        mStartDateButton = (Button) view.findViewById(R.id.start_date);
-        mEndDateButton = (Button) view.findViewById(R.id.end_date);
-        mDateSpinner = (Spinner) view.findViewById(R.id.spinnerFilters);
+        mStartDateButton =  view.findViewById(R.id.start_date);
+        mEndDateButton = view.findViewById(R.id.end_date);
+        mDateSpinner =  view.findViewById(R.id.spinnerFilters);
         mStartDate = DateUtils.getCurrentDate();
         mEndDate = DateUtils.getCurrentDate();
-        chartData = new ArrayList<>();
-        chartsViewPager = (ViewPager) view.findViewById(R.id.charts);
-        chartsInfoViewPager = (ViewPager) view.findViewById(R.id.viewpagerDetails);
-        chartTabLayout = (TabLayout) view.findViewById(R.id.tabDots);
-        detailsTabLayout = (TabLayout) view.findViewById(R.id.detailsTabDots);
+        chartsViewPager = view.findViewById(R.id.charts);
+        chartsInfoViewPager = view.findViewById(R.id.viewpagerDetails);
+        chartTabLayout = view.findViewById(R.id.tabDots);
+        detailsTabLayout = view.findViewById(R.id.detailsTabDots);
+        userId = mActivity.getSharedPreferences(Constants.USER_INFO, 0).getString(Constants.USER_ID, FirebaseAuth.getInstance().getCurrentUser().getUid());
     }
 
     private void setAdapters() {

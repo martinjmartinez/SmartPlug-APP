@@ -17,10 +17,13 @@ import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.Services.SpaceService;
 import com.example.martinjmartinez.proyectofinal.Utils.Chart.ChartUtils;
+import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -36,7 +39,7 @@ import io.realm.Realm;
 public class SpacesBarChartFragment extends Fragment {
 
     private Realm realm;
-    private String buildingId;
+    private String buildingId, userId;
     private SpaceService spaceService;
     private Building mBuilding;
     private BarChart chart;
@@ -44,6 +47,7 @@ public class SpacesBarChartFragment extends Fragment {
     private DatabaseReference databaseReference;
     private List<Space> spaces;
     private ValueEventListener spacesListener;
+    private FirebaseAuth mAuth;
 
     public static SpacesBarChartFragment newInstance(String buildingId) {
         Bundle args = new Bundle();
@@ -71,9 +75,11 @@ public class SpacesBarChartFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.item_chart_bar, container, false);
 
-        chart = (BarChart) view.findViewById(R.id.chart);
-        title = (TextView) view.findViewById(R.id.chart_title_home);
-        databaseReference = FirebaseDatabase.getInstance().getReference("Spaces");
+        chart = view.findViewById(R.id.chart);
+        title =  view.findViewById(R.id.chart_title_home);
+        mAuth = FirebaseAuth.getInstance();
+        userId = getActivity().getSharedPreferences(Constants.USER_INFO, 0).getString(Constants.USER_ID, FirebaseAuth.getInstance().getCurrentUser().getUid());
+        databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/"+ userId + "/Spaces");
         spaces = new ArrayList<>();
         chart.getDescription().setEnabled(false);
 

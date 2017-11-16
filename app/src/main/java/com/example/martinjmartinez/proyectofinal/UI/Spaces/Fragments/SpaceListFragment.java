@@ -16,6 +16,7 @@ import android.widget.LinearLayout;
 import com.example.martinjmartinez.proyectofinal.Entities.Space;
 import com.example.martinjmartinez.proyectofinal.Models.SpaceFB;
 import com.example.martinjmartinez.proyectofinal.R;
+import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.Services.SpaceService;
 import com.example.martinjmartinez.proyectofinal.UI.Devices.Fragments.DeviceListFragment;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
@@ -23,6 +24,8 @@ import com.example.martinjmartinez.proyectofinal.UI.Spaces.Adapters.SpaceListAda
 import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -48,9 +51,9 @@ public class SpaceListFragment extends Fragment {
     private DatabaseReference databaseReference;
     private SpaceListAdapter spaceListAdapter;
     private ValueEventListener spacesListener;
+    private String userId;
 
-    public SpaceListFragment() {
-    }
+    public SpaceListFragment() {}
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -111,10 +114,11 @@ public class SpaceListFragment extends Fragment {
 
     private void initVariables(View view) {
         spaceService = new SpaceService(Realm.getDefaultInstance());
-        mGridView = (GridView) view.findViewById(R.id.spaces_grid);
-        mEmptySpaceListLayout = (LinearLayout) view.findViewById(R.id.empty_space_list_layout);
-        mAddSpaceButton = (FloatingActionButton) view.findViewById(R.id.add_space_button);
-        databaseReference = FirebaseDatabase.getInstance().getReference("Spaces");
+        mGridView =  view.findViewById(R.id.spaces_grid);
+        mEmptySpaceListLayout =  view.findViewById(R.id.empty_space_list_layout);
+        mAddSpaceButton =  view.findViewById(R.id.add_space_button);
+        userId = mActivity.getSharedPreferences(Constants.USER_INFO, 0).getString(Constants.USER_ID, FirebaseAuth.getInstance().getCurrentUser().getUid());
+        databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/"+ userId + "/Spaces");
         mSpacesList = new ArrayList<>();
     }
 

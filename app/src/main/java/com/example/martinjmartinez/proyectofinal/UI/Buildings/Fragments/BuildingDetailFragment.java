@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
@@ -19,11 +20,13 @@ import com.example.martinjmartinez.proyectofinal.Entities.Space;
 import com.example.martinjmartinez.proyectofinal.Models.BuildingFB;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
+import com.example.martinjmartinez.proyectofinal.UI.Buildings.Statistics.BuildingStatisticsDetailsFragment;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
-import com.example.martinjmartinez.proyectofinal.Utils.API;
 import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -49,6 +52,8 @@ public class BuildingDetailFragment extends Fragment {
     private DatabaseReference databaseReference;
     private Context context;
     private ValueEventListener buildingListener;
+    private LinearLayout statisticsButton;
+    private String userId;
 
     public BuildingDetailFragment() {
     }
@@ -100,14 +105,16 @@ public class BuildingDetailFragment extends Fragment {
     private void iniVariables(View view) {
         buildingService = new BuildingService(Realm.getDefaultInstance());
         mBuilding = new Building();
-        mNameTextView = (TextView) view.findViewById(R.id.building_detail_name);
-        mSpacesTextView = (TextView) view.findViewById(R.id.building_detail_spaces);
-        mEditButton = (Button) view.findViewById(R.id.building_detail_update);
-        mDeleteButton = (Button) view.findViewById(R.id.building_detail_delete);
-        mPowerTextView = (TextView) view.findViewById(R.id.building_detail_power);
-        mDevicesTextView = (TextView) view.findViewById(R.id.building_detail_devices);
-        mInfoTextView = (TextView) view.findViewById(R.id.building_detail_delete_info);
-        databaseReference = FirebaseDatabase.getInstance().getReference("Buildings");
+        mNameTextView = view.findViewById(R.id.building_detail_name);
+        mSpacesTextView =  view.findViewById(R.id.building_detail_spaces);
+        mEditButton =  view.findViewById(R.id.building_detail_update);
+        mDeleteButton =  view.findViewById(R.id.building_detail_delete);
+        mPowerTextView =  view.findViewById(R.id.building_detail_average);
+        mDevicesTextView =  view.findViewById(R.id.building_detail_devices);
+        mInfoTextView =  view.findViewById(R.id.building_detail_delete_info);
+        statisticsButton =  view.findViewById(R.id.building_statistics_button);
+        userId = mActivity.getSharedPreferences(Constants.USER_INFO, 0).getString(Constants.USER_ID, FirebaseAuth.getInstance().getCurrentUser().getUid());
+        databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/"+ userId + "/Spaces");
     }
 
     private void initListeners() {
@@ -120,6 +127,20 @@ public class BuildingDetailFragment extends Fragment {
                 buildingUpdateFragment.setArguments(bundle);
                 Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.BUILDING_DETAIL_FRAGMENT),
                         buildingUpdateFragment, FragmentKeys.BUILDING_UPDATE_FRAGMENT, true);
+            }
+        });
+
+        statisticsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                BuildingStatisticsDetailsFragment buildingStatisticsDetailsFragment = new BuildingStatisticsDetailsFragment();
+                Bundle bundle = new Bundle();
+
+                bundle.putString(Constants.BUILDING_ID, mBuildingId);
+                buildingStatisticsDetailsFragment.setArguments(bundle);
+
+                Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.BUILDING_DETAIL_FRAGMENT),
+                        buildingStatisticsDetailsFragment, FragmentKeys.BUILDING_STATISTICS_FRAGMENT, true);
             }
         });
 
@@ -192,7 +213,7 @@ public class BuildingDetailFragment extends Fragment {
     private void initView(Building building) {
 
         mNameTextView.setText(building.getName());
-
+        mPowerTextView.setText(Utils.decimalFormat.format(building.getAverageConsumption()) + " W");
         if (building.getSpaces() != null) {
             mSpacesTextView.setText(building.getSpaces().size() + "");
             int devices = getBuildingDevices();

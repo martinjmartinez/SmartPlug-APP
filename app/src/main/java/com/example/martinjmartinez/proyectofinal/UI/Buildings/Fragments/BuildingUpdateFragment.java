@@ -119,7 +119,7 @@ public class BuildingUpdateFragment extends Fragment {
             public void onClick(View v) {
                 if (!Utils.isEditTextEmpty(name)) {
                     if (!name.getText().toString().equals(mBuilding.getName())) {
-                        BuildingFB buildingFB = new BuildingFB(mBuildingId, name.getText().toString(), mBuilding.isActive());
+                        BuildingFB buildingFB = new BuildingFB(mBuildingId, name.getText().toString(), mBuilding.isActive(), mBuilding.getUid());
                         buildingService.updateBuildingCloud(buildingFB);
                         mActivity.onBackPressed();
                     } else {

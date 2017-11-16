@@ -12,18 +12,24 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Device;
 import com.example.martinjmartinez.proyectofinal.Entities.Space;
 import com.example.martinjmartinez.proyectofinal.Models.SpaceFB;
 import com.example.martinjmartinez.proyectofinal.R;
+import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
 import com.example.martinjmartinez.proyectofinal.Services.SpaceService;
+import com.example.martinjmartinez.proyectofinal.UI.Devices.Statistics.DeviceStatisticsDetailsFragment;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
+import com.example.martinjmartinez.proyectofinal.UI.Spaces.Statistics.SpaceStatisticsDetailsFragment;
 import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -38,7 +44,7 @@ public class SpaceDetailFragment extends Fragment {
 
     private Space mSpace;
     private Activity mActivity;
-    private String mSpaceId;
+    private String mSpaceId, userId;
     private TextView mNameTextView;
     private TextView mDevicesTextView;
     private TextView mBuildingTextView;
@@ -49,6 +55,7 @@ public class SpaceDetailFragment extends Fragment {
     private MainActivity mMainActivity;
     private SpaceService spaceService;
     private DeviceService deviceService;
+    private LinearLayout statisticsButton;
     private DatabaseReference databaseReference;
     private Context context;
     private ValueEventListener spaceListener;
@@ -106,14 +113,16 @@ public class SpaceDetailFragment extends Fragment {
         spaceService = new SpaceService(Realm.getDefaultInstance());
         deviceService = new DeviceService(Realm.getDefaultInstance());
         mSpace = new Space();
-        mNameTextView = (TextView) view.findViewById(R.id.space_detail_name);
-        mDevicesTextView = (TextView) view.findViewById(R.id.space_detail_devices);
-        mBuildingTextView = (TextView) view.findViewById(R.id.space_detail_building);
-        mPowerTextView = (TextView) view.findViewById(R.id.space_detail_power);
-        mInfoTextView = (TextView) view.findViewById(R.id.space_detail_delete_info);
-        mEditButton = (Button) view.findViewById(R.id.space_detail_update);
-        mDeleteButton = (Button) view.findViewById(R.id.space_detail_delete);
-        databaseReference = FirebaseDatabase.getInstance().getReference("Spaces");
+        mNameTextView =  view.findViewById(R.id.space_detail_name);
+        mDevicesTextView =  view.findViewById(R.id.space_detail_devices);
+        mBuildingTextView =  view.findViewById(R.id.space_detail_building);
+        mPowerTextView =  view.findViewById(R.id.space_average_power);
+        mInfoTextView =  view.findViewById(R.id.space_detail_delete_info);
+        mEditButton =  view.findViewById(R.id.space_detail_update);
+        mDeleteButton =  view.findViewById(R.id.space_detail_delete);
+        statisticsButton =  view.findViewById(R.id.space_statistics_button);
+        userId = mActivity.getSharedPreferences(Constants.USER_INFO, 0).getString(Constants.USER_ID, FirebaseAuth.getInstance().getCurrentUser().getUid());
+        databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/"+ userId + "/Spaces");
     }
 
     private void initListeners() {
@@ -127,6 +136,20 @@ public class SpaceDetailFragment extends Fragment {
                 spaceUpdateFragment.setArguments(bundle);
                 Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.SPACE_DETAIL_FRAGMENT),
                         spaceUpdateFragment, FragmentKeys.SPACE_UPDATE_FRAGMENT, true);
+            }
+        });
+
+        statisticsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SpaceStatisticsDetailsFragment spaceStatisticsDetailsFragment = new SpaceStatisticsDetailsFragment();
+                Bundle bundle = new Bundle();
+
+                bundle.putString(Constants.SPACE_ID, mSpaceId);
+                spaceStatisticsDetailsFragment.setArguments(bundle);
+
+                Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.SPACE_DETAIL_FRAGMENT),
+                        spaceStatisticsDetailsFragment, FragmentKeys.SPACE_STATISTICS_FRAGMENT, true);
             }
         });
 

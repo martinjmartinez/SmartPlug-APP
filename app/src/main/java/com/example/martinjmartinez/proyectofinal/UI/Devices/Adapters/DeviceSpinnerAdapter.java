@@ -35,7 +35,7 @@ public class DeviceSpinnerAdapter extends ArrayAdapter<Device> {
         Device device = getItem(position);
 
         if (device != null) {
-            TextView name = (TextView) view.findViewById(R.id.device_name_spinner_item);
+            TextView name =  view.findViewById(R.id.device_name_spinner_item);
             name.setText(device.getName());
         }
         return view;

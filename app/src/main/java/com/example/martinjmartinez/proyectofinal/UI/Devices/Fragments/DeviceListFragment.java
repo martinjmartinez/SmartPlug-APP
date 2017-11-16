@@ -14,10 +14,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
-import com.example.martinjmartinez.proyectofinal.Entities.Building;
 import com.example.martinjmartinez.proyectofinal.Entities.Device;
 import com.example.martinjmartinez.proyectofinal.Entities.Space;
-import com.example.martinjmartinez.proyectofinal.Models.BuildingFB;
 import com.example.martinjmartinez.proyectofinal.Models.DeviceFB;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
@@ -25,11 +23,11 @@ import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
 import com.example.martinjmartinez.proyectofinal.Services.SpaceService;
 import com.example.martinjmartinez.proyectofinal.UI.Devices.Adapters.DeviceListAdapter;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
-import com.example.martinjmartinez.proyectofinal.Utils.API;
 import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
-import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -40,7 +38,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.realm.Realm;
-import io.realm.RealmResults;
 
 public class DeviceListFragment extends Fragment {
 
@@ -60,6 +57,7 @@ public class DeviceListFragment extends Fragment {
     private Realm realm;
     private DatabaseReference databaseReference;
     private ValueEventListener devicesListener;
+    private String userId;
 
     public DeviceListFragment() {
     }
@@ -128,22 +126,23 @@ public class DeviceListFragment extends Fragment {
         buildingService = new BuildingService(realm);
         spaceService = new SpaceService(realm);
         mDevicesList = new ArrayList<>();
-        mGridView = (RecyclerView) view.findViewById(R.id.devices_grid);
-        mAddDeviceButton = (FloatingActionButton) view.findViewById(R.id.add_device_button);
-        mEmptyDeviceListLayout = (LinearLayout) view.findViewById(R.id.empty_device_list_layout);
-        databaseReference = FirebaseDatabase.getInstance().getReference("Devices");
+        mGridView = view.findViewById(R.id.devices_grid);
+        mAddDeviceButton =  view.findViewById(R.id.add_device_button);
+        mEmptyDeviceListLayout =  view.findViewById(R.id.empty_device_list_layout);
+        userId = mActivity.getSharedPreferences(Constants.USER_INFO, 0).getString(Constants.USER_ID, FirebaseAuth.getInstance().getCurrentUser().getUid());
+        databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/"+ userId + "/Devices");
     }
 
     private void initListeners() {
         mAddDeviceButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                DeviceCreateFragment deviceCreateFragment = new DeviceCreateFragment();
+                DevicePairFragment devicePairFragment = new DevicePairFragment();
                 Bundle bundle = new Bundle();
                 bundle.putString(Constants.BUILDING_ID, mBuildingId);
                 bundle.putString(Constants.SPACE_ID, mSpaceId);
-                deviceCreateFragment.setArguments(bundle);
-                Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.DEVICE_LIST_FRAGMENT), deviceCreateFragment, FragmentKeys.DEVICE_CREATION_FRAGMENT, true);
+                devicePairFragment.setArguments(bundle);
+                Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.DEVICE_LIST_FRAGMENT), devicePairFragment, FragmentKeys.DEVICE_PAIR_FRAGMENT, true);
             }
         });
 
@@ -189,8 +188,8 @@ public class DeviceListFragment extends Fragment {
         shouldEmptyMessageShow();
     }
 
+
     private void getDevicesBySpace() {
-        Log.e("SpaceId", mSpaceId + "  dfff");
         mDevicesList = deviceService.allActiveDevicesBySpace(mSpaceId);
 
         shouldEmptyMessageShow();

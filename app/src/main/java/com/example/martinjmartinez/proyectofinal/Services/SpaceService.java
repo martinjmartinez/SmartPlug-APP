@@ -4,6 +4,8 @@ import com.example.martinjmartinez.proyectofinal.Entities.Building;
 import com.example.martinjmartinez.proyectofinal.Entities.Device;
 import com.example.martinjmartinez.proyectofinal.Entities.Space;
 import com.example.martinjmartinez.proyectofinal.Models.SpaceFB;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -16,12 +18,15 @@ import io.realm.RealmResults;
 public class SpaceService {
 
     private Realm realm;
-    private DatabaseReference databaseReference;
+    public DatabaseReference databaseReference;
     private BuildingService buildingService;
+    private FirebaseAuth mAuth;
 
     public SpaceService(Realm realm) {
         this.realm = realm;
-        databaseReference = FirebaseDatabase.getInstance().getReference("Spaces");
+        mAuth = FirebaseAuth.getInstance();
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/"+ currentUser.getUid() + "/Spaces");
         buildingService = new BuildingService(realm);
     }
 
@@ -87,21 +92,25 @@ public class SpaceService {
             for (Device device : space.getDevices()) {
                 if(device.getAverageConsumption() >0){
                     sum = device.getAverageConsumption() + sum;
+                    counter++;
                 }
             }
 
             if (counter > 0) {
-                average = sum / space.getDevices().size();
+                average = sum / counter;
+                databaseReference.child(_id).child("averageConsumption").setValue(average);
             }
+        } else {
+            databaseReference.child(_id).child("averageConsumption").setValue(average);
         }
-
-        databaseReference.child(_id).child("averageConsumption").setValue(average);
 
         realm.beginTransaction();
 
         space.setAverageConsumption(average);
 
         realm.commitTransaction();
+
+        buildingService.updateBuildingPowerAverageConsumption(space.getBuilding().get_id());
     }
 
     public void updateOrCreate(SpaceFB spaceFB){

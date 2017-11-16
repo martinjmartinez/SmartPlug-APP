@@ -25,6 +25,8 @@ import com.example.martinjmartinez.proyectofinal.Services.SpaceService;
 import com.example.martinjmartinez.proyectofinal.UI.Devices.Adapters.DeviceListAdapter;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.Utils.Constants;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -53,6 +55,7 @@ public class HomeFragment extends Fragment {
     private DatabaseReference databaseReference;
     private DeviceListAdapter deviceListAdapter;
     private ValueEventListener devicesListener;
+    private String userId;
 
     public HomeFragment() {
     }
@@ -130,10 +133,11 @@ public class HomeFragment extends Fragment {
         deviceService = new DeviceService(realm);
         historialService = new HistorialService(realm);
         buildingService = new BuildingService(realm);
-        databaseReference = FirebaseDatabase.getInstance().getReference("Devices");
-        mMostUsedDevicesRecycleView = (RecyclerView) view.findViewById(R.id.most_used_devices);
-        chartsViewPager = (ViewPager) view.findViewById(R.id.bar_chart_pager);
-        tabLayout = (TabLayout) view.findViewById(R.id.tabDots);
+        userId = mActivity.getSharedPreferences(Constants.USER_INFO, 0).getString(Constants.USER_ID, FirebaseAuth.getInstance().getCurrentUser().getUid());
+        databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/"+ userId + "/Devices");
+        mMostUsedDevicesRecycleView =  view.findViewById(R.id.most_used_devices);
+        chartsViewPager = view.findViewById(R.id.bar_chart_pager);
+        tabLayout = view.findViewById(R.id.tabDots);
     }
 
     private void setAdapters(List<Device> devicesList) {

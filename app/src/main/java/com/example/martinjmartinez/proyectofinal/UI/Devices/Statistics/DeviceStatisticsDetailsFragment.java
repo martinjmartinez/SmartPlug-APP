@@ -27,7 +27,6 @@ import com.example.martinjmartinez.proyectofinal.Models.HistorialReview;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
-import com.example.martinjmartinez.proyectofinal.Utils.API;
 import com.example.martinjmartinez.proyectofinal.Utils.Chart.ChartUtils;
 import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.example.martinjmartinez.proyectofinal.Utils.DateUtils;
@@ -46,7 +45,6 @@ import static com.example.martinjmartinez.proyectofinal.Utils.Constants.DATE_FOR
 
 public class DeviceStatisticsDetailsFragment  extends Fragment{
 
-    private API mAPI;
     private Activity mActivity;
     private MainActivity mMainActivity;
     private Realm realm;
@@ -98,7 +96,7 @@ public class DeviceStatisticsDetailsFragment  extends Fragment{
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.device_statistics_details, container, false);
+        View view = inflater.inflate(R.layout.statistics_details, container, false);
 
         iniVariables(view);
         initListeners();
@@ -168,25 +166,24 @@ public class DeviceStatisticsDetailsFragment  extends Fragment{
 
     private void iniVariables(View view) {
         realm = Realm.getDefaultInstance();
-        mAPI = new API();
 
-        mDateSpinner = (Spinner) view.findViewById(R.id.spinnerFiltersGeneral);
-        mStartDateButton = (Button) view.findViewById(R.id.start_date_general);
-        mEndDateButton = (Button) view.findViewById(R.id.end_date_general);
-        chartTabLayout = (TabLayout) view.findViewById(R.id.tabDotsGeneral);
-        chartsViewPager = (ViewPager) view.findViewById(R.id.chartsGeneral);
-        actualConsumed = (TextView) view.findViewById(R.id.actual_consumed_general);
-        averageConsumed = (TextView) view.findViewById(R.id.average_consumed_general);
-        actualPower = (TextView) view.findViewById(R.id.actual_power_general);
-        averagePower = (TextView) view.findViewById(R.id.average_power_general);
-        actualTime = (TextView) view.findViewById(R.id.actual_time_general);
-        averageTime = (TextView) view.findViewById(R.id.average_time_general);
-        maxDate = (TextView) view.findViewById(R.id.max_date_general);
-        minDate = (TextView) view.findViewById(R.id.min_date_general);
-        maxTime = (TextView) view.findViewById(R.id.max_time_general);
-        minTime = (TextView) view.findViewById(R.id.min_time_general);
-        maxPower = (TextView) view.findViewById(R.id.max_power_general);
-        minPower = (TextView) view.findViewById(R.id.min_power_general);
+        mDateSpinner =  view.findViewById(R.id.spinnerFiltersGeneral);
+        mStartDateButton =  view.findViewById(R.id.start_date_general);
+        mEndDateButton = view.findViewById(R.id.end_date_general);
+        chartTabLayout =  view.findViewById(R.id.tabDotsGeneral);
+        chartsViewPager =  view.findViewById(R.id.chartsGeneral);
+        actualConsumed =  view.findViewById(R.id.actual_consumed_general);
+        averageConsumed = view.findViewById(R.id.average_consumed_general);
+        actualPower =  view.findViewById(R.id.actual_power_general);
+        averagePower =  view.findViewById(R.id.average_power_general);
+        actualTime =  view.findViewById(R.id.actual_time_general);
+        averageTime =  view.findViewById(R.id.average_time_general);
+        maxDate =  view.findViewById(R.id.max_date_general);
+        minDate =  view.findViewById(R.id.min_date_general);
+        maxTime =  view.findViewById(R.id.max_time_general);
+        minTime =  view.findViewById(R.id.min_time_general);
+        maxPower =  view.findViewById(R.id.max_power_general);
+        minPower =  view.findViewById(R.id.min_power_general);
 
         deviceService = new DeviceService(realm);
     }

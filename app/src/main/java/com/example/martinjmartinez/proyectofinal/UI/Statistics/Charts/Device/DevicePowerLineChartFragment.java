@@ -28,10 +28,6 @@ import io.realm.Realm;
 import io.realm.RealmResults;
 import io.realm.Sort;
 
-/**
- * Created by MartinJMartinez on 10/29/2017.
- */
-
 public class DevicePowerLineChartFragment extends Fragment {
 
     private Date mStartDate;
@@ -74,8 +70,8 @@ public class DevicePowerLineChartFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.item_chart_line, container, false);
 
-        chart = (LineChart) view.findViewById(R.id.chart);
-        title = (TextView) view.findViewById(R.id.chart_title_statistics);
+        chart = view.findViewById(R.id.chart);
+        title = view.findViewById(R.id.chart_title_statistics);
 
         chart.getDescription().setEnabled(false);
 
