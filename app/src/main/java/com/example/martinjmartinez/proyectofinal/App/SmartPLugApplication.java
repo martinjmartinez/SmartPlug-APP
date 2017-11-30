@@ -3,6 +3,8 @@ package com.example.martinjmartinez.proyectofinal.App;
 import android.app.Application;
 import android.content.res.Configuration;
 
+import com.google.firebase.database.DatabaseReference;
+
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 
@@ -34,6 +36,10 @@ public class SmartPLugApplication extends Application {
     }
 
     public void initDataBase() {
+       initLocalDataBase();
+    }
+
+    public void initLocalDataBase() {
         Realm.init(this);
         RealmConfiguration realmConfiguration = new RealmConfiguration.Builder()
                 .name("SmartplugDB")

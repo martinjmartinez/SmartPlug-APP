@@ -7,7 +7,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,42 +15,24 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.martinjmartinez.proyectofinal.Entities.Building;
+import com.example.martinjmartinez.proyectofinal.Models.BuildingFB;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
-import com.example.martinjmartinez.proyectofinal.UI.Home.HomeFragment;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
-import com.example.martinjmartinez.proyectofinal.Utils.API;
-import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
-import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
+import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.IOException;
+import com.google.firebase.auth.FirebaseAuth;
 
 import io.realm.Realm;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-
-/**
- * Created by MartinJMartinez on 7/16/2017.
- */
 
 public class BuildingCreateFragment extends Fragment {
-    private API mAPI;
     private Activity mActivity;
     private EditText name;
     private TextView displayName;
     private Button saveBuilding;
     private MainActivity mMainActivity;
     private BuildingService buildingService;
+    private String userId;
 
     public BuildingCreateFragment() {
     }
@@ -100,7 +81,7 @@ public class BuildingCreateFragment extends Fragment {
 
     private void iniVariables() {
         buildingService = new BuildingService(Realm.getDefaultInstance());
-        mAPI = new API();
+        userId = mActivity.getSharedPreferences(Constants.USER_INFO, 0).getString(Constants.USER_ID, FirebaseAuth.getInstance().getCurrentUser().getUid());
     }
 
     private void initListeners() {
@@ -125,9 +106,18 @@ public class BuildingCreateFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if (!Utils.isEditTextEmpty(name)) {
-                    Building building = new Building();
-                    building.setName(name.getText().toString());
-                    createBuilding(mAPI.getClient(), building.toString());
+                    BuildingFB buildingFB = new BuildingFB();
+                    buildingFB.setName(name.getText().toString());
+                    buildingFB.setActive(true);
+                    buildingFB.setUid(userId);
+                    buildingService.createBuildingCloud(buildingFB);
+
+                    if (buildingService.allBuildings().size() > 1) {
+                        mActivity.onBackPressed();
+                    } else {
+                        mMainActivity.prepareHomeFragment(false);
+                    }
+
                 } else {
                     Toast.makeText(getActivity(), "Please, name your building.", Toast.LENGTH_SHORT).show();
                 }
@@ -138,43 +128,6 @@ public class BuildingCreateFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 mMainActivity.onBackPressed();
-            }
-        });
-    }
-
-    private void createBuilding(OkHttpClient client, String data) {
-        Log.e("QUERY", ArgumentsKeys.BUILDING_QUERY);
-        MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-        RequestBody body = RequestBody.create(JSON, data);
-        Log.e("JSON", data);
-        Request request = new Request.Builder()
-                .url(ArgumentsKeys.BUILDING_QUERY)
-                .post(body)
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.e("Error", e.getMessage());
-            }
-
-            @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                if (!response.isSuccessful()) {
-                    Log.e("ERROR", response.body().string());
-                } else {
-                    mActivity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mAPI.getBuildingFromCloud(response);
-                            if (buildingService.allBuildings().size() > 1 ) {
-                                mActivity.onBackPressed();
-                            } else {
-                                mMainActivity.prepareHomeFragment(false);
-                            }
-                        }
-                    });
-                }
             }
         });
     }

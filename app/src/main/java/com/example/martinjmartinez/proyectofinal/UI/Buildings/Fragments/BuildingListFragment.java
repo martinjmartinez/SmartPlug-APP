@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,42 +14,42 @@ import android.widget.GridView;
 import android.widget.LinearLayout;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
-import com.example.martinjmartinez.proyectofinal.Entities.Space;
+import com.example.martinjmartinez.proyectofinal.Models.BuildingFB;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.UI.Buildings.Adapters.BuildingListAdapter;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.UI.Spaces.Fragments.SpaceListFragment;
-import com.example.martinjmartinez.proyectofinal.Utils.API;
-import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
+import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import io.realm.Realm;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
-
-/**
- * Created by MartinJMartinez on 7/15/2017.
- */
 
 public class BuildingListFragment extends Fragment {
 
     private List<Building> mBuildingList;
     private GridView mGridView;
-    private API mAPI;
     private Activity mActivity;
     private FloatingActionButton mAddBuildingButton;
     private LinearLayout mEmptyBuildingListLayout;
     private MainActivity mMainActivity;
     private BuildingService buildingService;
+    private DatabaseReference databaseReference;
+    private BuildingListAdapter buildingListAdapter;
+    private ValueEventListener buildingsListener;
+    private String userId;
 
     public BuildingListFragment() {
     }
@@ -95,17 +94,17 @@ public class BuildingListFragment extends Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        getBuildings();
+
     }
 
     private void initVariables(View view) {
         buildingService = new BuildingService(Realm.getDefaultInstance());
         mBuildingList = new ArrayList<>();
-        mGridView = (GridView) view.findViewById(R.id.building_grid);
-        mAPI = new API();
-        mEmptyBuildingListLayout = (LinearLayout) view.findViewById(R.id.empty_building_list_layout);
-        mAddBuildingButton = (FloatingActionButton) view.findViewById(R.id.add_building_button);
-
+        mGridView = view.findViewById(R.id.building_grid);
+        mEmptyBuildingListLayout = view.findViewById(R.id.empty_building_list_layout);
+        mAddBuildingButton = view.findViewById(R.id.add_building_button);
+        userId = mActivity.getSharedPreferences(Constants.USER_INFO, 0).getString(Constants.USER_ID, FirebaseAuth.getInstance().getCurrentUser().getUid());
+        databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/"+ userId + "/Buildings");
     }
 
     private void initListeners() {
@@ -124,7 +123,7 @@ public class BuildingListFragment extends Fragment {
 
                     SpaceListFragment spaceListFragment = new SpaceListFragment();
                     Bundle bundle = new Bundle();
-                    bundle.putString(ArgumentsKeys.BUILDING_ID, buildingSelected.get_id());
+                    bundle.putString(Constants.BUILDING_ID, buildingSelected.get_id());
                     spaceListFragment.setArguments(bundle);
                     Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.BUILDING_LIST_FRAGMENT), spaceListFragment, FragmentKeys.SPACE_LIST_FRAGMENT, true);
 
@@ -140,26 +139,55 @@ public class BuildingListFragment extends Fragment {
                 Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.BUILDING_LIST_FRAGMENT), buildingCreateFragment, FragmentKeys.BUILDING_CREATION_FRAGMENT, addToBackStack);
             }
         });
+
+        buildingsListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()) {
+                    BuildingFB buildingFB = dataSnapshot1.getValue(BuildingFB.class);
+
+                    buildingService.updateOrCreate(buildingFB);
+                }
+
+                getBuildings();
+                buildingListAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        };
+
+        databaseReference.addValueEventListener(buildingsListener);
     }
 
     public void getBuildings() {
-        mBuildingList = buildingService.allBuildings();
+        mBuildingList = buildingService.allActiveBuildings();
 
         shouldEmptyMessageShow(mBuildingList);
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+
+        databaseReference.removeEventListener(buildingsListener);
     }
 
     private void shouldEmptyMessageShow(List<Building> buildingList) {
         if (!buildingList.isEmpty()) {
             mEmptyBuildingListLayout.setVisibility(View.GONE);
-            initSpacesList(buildingList);
+            initBuildingList(buildingList);
         } else {
-            mGridView.setVisibility(View.GONE);
             mEmptyBuildingListLayout.setVisibility(View.VISIBLE);
+            buildingListAdapter = new BuildingListAdapter(getContext(), R.layout.building_list_item, buildingList);
+            mGridView.setVisibility(View.GONE);
         }
     }
 
-    void initSpacesList(List<Building> buildingsList) {
-        BuildingListAdapter buildingListAdapter = new BuildingListAdapter(getContext(), R.layout.building_list_item, buildingsList);
+    void initBuildingList(List<Building> buildingsList) {
+        buildingListAdapter = new BuildingListAdapter(getContext(), R.layout.building_list_item, buildingsList);
         mGridView.setAdapter(buildingListAdapter);
     }
 }

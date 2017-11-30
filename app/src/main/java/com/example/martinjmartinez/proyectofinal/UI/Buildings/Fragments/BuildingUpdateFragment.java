@@ -7,7 +7,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,32 +16,18 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
+import com.example.martinjmartinez.proyectofinal.Models.BuildingFB;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
-import com.example.martinjmartinez.proyectofinal.Utils.API;
-import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
+import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 
-import java.io.IOException;
-
 import io.realm.Realm;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-
-/**
- * Created by MartinJMartinez on 7/17/2017.
- */
 
 public class BuildingUpdateFragment extends Fragment {
 
     private Building mBuilding;
-    private API mAPI;
     private Activity mActivity;
     private String mBuildingId;
     private EditText name;
@@ -60,7 +45,7 @@ public class BuildingUpdateFragment extends Fragment {
 
         Bundle bundle = this.getArguments();
         if (bundle != null) {
-            mBuildingId = bundle.getString(ArgumentsKeys.BUILDING_ID, "");
+            mBuildingId = bundle.getString(Constants.BUILDING_ID, "");
         } else {
             mBuildingId = "";
         }
@@ -71,7 +56,7 @@ public class BuildingUpdateFragment extends Fragment {
         View view = inflater.inflate(R.layout.building_creation_fragment, container, false);
 
         iniVariables(view);
-        getBuilding(mAPI.getClient());
+        getBuilding();
         initListeners();
 
         return view;
@@ -106,7 +91,6 @@ public class BuildingUpdateFragment extends Fragment {
     private void iniVariables(View view) {
         buildingService = new BuildingService(Realm.getDefaultInstance());
         mBuilding = new Building();
-        mAPI = new API();
         name = (EditText) view.findViewById(R.id.building_create_name);
         displayName = (TextView) view.findViewById(R.id.building_create_display_name);
         updateBuilding = (Button) view.findViewById(R.id.building_create_save_button);
@@ -135,11 +119,9 @@ public class BuildingUpdateFragment extends Fragment {
             public void onClick(View v) {
                 if (!Utils.isEditTextEmpty(name)) {
                     if (!name.getText().toString().equals(mBuilding.getName())) {
-                        buildingService.updateBuildingName(mBuildingId, name.getText().toString());
-
-                        Building building = buildingService.getBuildingById(mBuildingId);
-
-                        updateBuilding(mAPI.getClient(), building.toString());
+                        BuildingFB buildingFB = new BuildingFB(mBuildingId, name.getText().toString(), mBuilding.isActive(), mBuilding.getUid());
+                        buildingService.updateBuildingCloud(buildingFB);
+                        mActivity.onBackPressed();
                     } else {
                         Toast.makeText(getActivity(), "Please, update something.", Toast.LENGTH_SHORT).show();
                     }
@@ -157,41 +139,9 @@ public class BuildingUpdateFragment extends Fragment {
         });
     }
 
-    private void getBuilding(OkHttpClient client) {
+    private void getBuilding() {
         mBuilding = buildingService.getBuildingById(mBuildingId);
         initView(mBuilding);
-    }
-
-    private void updateBuilding(OkHttpClient client, String data) {
-        MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-        RequestBody body = RequestBody.create(JSON, data);
-        Log.e("JSON", data);
-        Request request = new Request.Builder()
-                .url(ArgumentsKeys.BUILDING_QUERY + "/" + mBuildingId)
-                .patch(body)
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.e("Error", e.getMessage());
-            }
-
-            @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                if (!response.isSuccessful()) {
-                    Log.e("ERROR", response.body().string());
-                } else {
-                    Log.e("RESPONSE", response.body().string());
-                    mActivity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mActivity.onBackPressed();
-                        }
-                    });
-                }
-            }
-        });
     }
 
     private void initView(Building building) {

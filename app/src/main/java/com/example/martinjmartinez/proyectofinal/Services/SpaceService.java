@@ -1,13 +1,16 @@
 package com.example.martinjmartinez.proyectofinal.Services;
 
-import android.util.Log;
-
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
 import com.example.martinjmartinez.proyectofinal.Entities.Device;
-import com.example.martinjmartinez.proyectofinal.Entities.Historial;
 import com.example.martinjmartinez.proyectofinal.Entities.Space;
+import com.example.martinjmartinez.proyectofinal.Models.SpaceFB;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.List;
+
 import io.realm.Realm;
 import io.realm.RealmResults;
 
@@ -15,9 +18,16 @@ import io.realm.RealmResults;
 public class SpaceService {
 
     private Realm realm;
+    public DatabaseReference databaseReference;
+    private BuildingService buildingService;
+    private FirebaseAuth mAuth;
 
-    public SpaceService (Realm realm) {
+    public SpaceService(Realm realm) {
         this.realm = realm;
+        mAuth = FirebaseAuth.getInstance();
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/"+ currentUser.getUid() + "/Spaces");
+        buildingService = new BuildingService(realm);
     }
 
     public List<Space> allSpaces() {
@@ -26,25 +36,33 @@ public class SpaceService {
         return results;
     }
 
-    public void createSpace(String _id, String name, String buildingId) {
-        Building building = realm.where(Building.class).equalTo("_id", buildingId).findFirst();
+    public List<Space> allActiveSpacesByBuilding(String buildingId) {
+        RealmResults<Space> results = realm.where(Space.class).equalTo("building._id", buildingId).equalTo("isActive", true).findAll();
+
+        return results;
+    }
+
+    public void createSpaceCloud(SpaceFB spaceFB) {
+        String spaceId = databaseReference.push().getKey();
+
+        spaceFB.set_id(spaceId);
+        databaseReference.child(spaceId).setValue(spaceFB);
+
+        createSpaceLocal(spaceFB);
+    }
+
+    public void createSpaceLocal(SpaceFB spaceFB) {
+        Building building = buildingService.getBuildingById(spaceFB.getBuildingId());
 
         realm.beginTransaction();
 
-        Space space = realm.createObject(Space.class, _id);
+        Space space = realm.createObject(Space.class, spaceFB.get_id());
 
-        space.setName(name);
+        space.setName(spaceFB.getName());
         space.setBuilding(building);
+        space.setActive(spaceFB.isActive());
 
         realm.commitTransaction();
-    }
-
-    public void updateOrCreateSpace(String _id, String name, String buildingId) {
-        if(getSpaceById(_id) != null) {
-            updateSpace(_id, name, buildingId);
-        } else {
-            createSpace(_id, name, buildingId);
-        }
     }
 
     public Space getSpaceById(String _id) {
@@ -55,6 +73,7 @@ public class SpaceService {
 
     public void updateSpaceName(String _id, String name) {
         Space space = getSpaceById(_id);
+        databaseReference.child(_id).child("name").setValue(name);
 
         realm.beginTransaction();
 
@@ -63,54 +82,73 @@ public class SpaceService {
         realm.commitTransaction();
     }
 
-    public void updateSapacePowerAverageConsumption(String _id) {
+    public void updateSpacePowerAverageConsumption(String _id) {
         Space space = getSpaceById(_id);
         double sum = 0;
+        double average = 0;
+        int counter = 0;
 
-        if (space.getDevices() != null) {
+        if (!space.getDevices().isEmpty()) {
             for (Device device : space.getDevices()) {
-                sum = device.getAverageConsumption() + sum;
+                if(device.getAverageConsumption() >0){
+                    sum = device.getAverageConsumption() + sum;
+                    counter++;
+                }
             }
-        }
 
-        double average = sum/space.getDevices().size();
+            if (counter > 0) {
+                average = sum / counter;
+                databaseReference.child(_id).child("averageConsumption").setValue(average);
+            }
+        } else {
+            databaseReference.child(_id).child("averageConsumption").setValue(average);
+        }
 
         realm.beginTransaction();
 
         space.setAverageConsumption(average);
 
         realm.commitTransaction();
+
+        buildingService.updateBuildingPowerAverageConsumption(space.getBuilding().get_id());
     }
 
-    public void updateSpacePower(String _id, double power) {
-        Space space = getSpaceById(_id);
+    public void updateOrCreate(SpaceFB spaceFB){
+        Space space = getSpaceById(spaceFB.get_id());
+        if(space != null){
+            updateSpaceLocal(spaceFB);
+        } else {
+            createSpaceLocal(spaceFB);
+        }
+    }
+
+    public void updateSpaceCloud(Space space) {
+        databaseReference.child(space.get_id()).child("name").setValue(space.getName());
+        databaseReference.child(space.get_id()).child("buildingId").setValue(space.getBuilding().get_id());
+        databaseReference.child(space.get_id()).child("averageConsumption").setValue(space.getAverageConsumption());
+    }
+
+    public void updateSpaceLocal(SpaceFB spaceFB) {
+        Space space = getSpaceById(spaceFB.get_id());
+        Building building = buildingService.getBuildingById(spaceFB.getBuildingId());
 
         realm.beginTransaction();
 
-        space.setPower(power);
+        space.setName(space.getName());
+        space.setBuilding(building);
+        space.setActive(space.isActive());
+        space.setAverageConsumption(spaceFB.getAverageConsumption());
 
         realm.commitTransaction();
     }
-
-    public void updateSpace(String _id, String name, String buildingId) {
-        Space space = getSpaceById(_id);
-        Building building = realm.where(Building.class).equalTo("_id", buildingId).findFirst();
-
-        realm.beginTransaction();
-
-        space.setBuilding(building);
-        space.setBuilding(building);
-
-        realm.commitTransaction();
-    }
-
 
     public void deleteSpace(String _id) {
         Space space = getSpaceById(_id);
+        databaseReference.child(_id).child("active").setValue(false);
 
         realm.beginTransaction();
 
-        space.deleteFromRealm();
+        space.setActive(false);
 
         realm.commitTransaction();
     }

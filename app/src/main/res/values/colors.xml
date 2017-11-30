@@ -6,9 +6,11 @@
     <color name="background">#FAFAFA </color>
     <color name="cardBackground">#FFFFFF </color>
     <color name="alert"> #F44336 </color>
+    <color name="logInBackground"> #2eb2ff </color>
     <color name="disabled"> #757575 </color>
     <color name="color1"> #EC7D10 </color>
     <color name="color2"> #C200FB </color>
     <color name="color3"> #00CC66 </color>
+    <color name="color4">#ffbd4a</color>
 
 </resources>

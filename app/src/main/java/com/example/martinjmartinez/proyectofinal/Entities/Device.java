@@ -1,5 +1,7 @@
 package com.example.martinjmartinez.proyectofinal.Entities;
 
+import java.util.Date;
+
 import io.realm.RealmObject;
 import io.realm.RealmResults;
 import io.realm.annotations.LinkingObjects;
@@ -14,47 +16,75 @@ public class Device extends RealmObject {
 
     private boolean status;
 
-    private String ip_address;
-
     private Space space;
+
+    private boolean isActive;
 
     private Building building;
 
     private double power;
 
+    private String ssid;
+
+    private double monthlyLimit;
+
+    private boolean autoTurnOff;
+
+    private boolean inConfigMode;
+
+    private boolean connected;
+
     private String lastHistoryId;
 
     private double averageConsumption;
 
+    private Date lastTimeUsed;
+
     @LinkingObjects("device")
     private final RealmResults<Historial> historials = null;
 
-    public String getLastHistoryId() {
-        return lastHistoryId;
+    public double getMonthlyLimit() {
+        return monthlyLimit;
     }
 
-    public void setLastHistoryId(String lastHistoryId) {
-        this.lastHistoryId = lastHistoryId;
+    public boolean isAutoTurnOff() {
+        return autoTurnOff;
     }
 
-    public double getPower() {
-        return power;
+    public void setAutoTurnOff(boolean autoTurnOff) {
+        this.autoTurnOff = autoTurnOff;
     }
 
-    public void setPower(double power) {
-        this.power = power;
+    public void setMonthlyLimit(double monthlyLimit) {
+        this.monthlyLimit = monthlyLimit;
+    }
+
+    public boolean isConnected() {
+        return connected;
+    }
+
+    public void setConnected(boolean connected) {
+        this.connected = connected;
+    }
+
+    public String getSsid() {
+        return ssid;
+    }
+
+    public void setSsid(String ssid) {
+        this.ssid = ssid;
+    }
+
+    public boolean isInConfigMode() {
+        return inConfigMode;
+    }
+
+    public void setInConfigMode(boolean inConfigMode) {
+        this.inConfigMode = inConfigMode;
     }
 
     public String get_id() {
         return _id;
-    }
-
-    public double getAverageConsumption() {
-        return averageConsumption;
-    }
-
-    public void setAverageConsumption(double averageConsumption) {
-        this.averageConsumption = averageConsumption;
     }
 
     public void set_id(String _id) {
@@ -77,12 +107,12 @@ public class Device extends RealmObject {
         this.status = status;
     }
 
-    public String getIp_address() {
-        return ip_address;
+    public Date getLastTimeUsed() {
+        return lastTimeUsed;
     }
 
-    public void setIp_address(String ip_address) {
-        this.ip_address = ip_address;
+    public void setLastTimeUsed(Date lastTimeUsed) {
+        this.lastTimeUsed = lastTimeUsed;
     }
 
     public Space getSpace() {
@@ -101,31 +131,39 @@ public class Device extends RealmObject {
         this.building = building;
     }
 
+    public double getPower() {
+        return power;
+    }
+
+    public void setPower(double power) {
+        this.power = power;
+    }
+
+    public String getLastHistoryId() {
+        return lastHistoryId;
+    }
+
+    public void setLastHistoryId(String lastHistoryId) {
+        this.lastHistoryId = lastHistoryId;
+    }
+
+    public double getAverageConsumption() {
+        return averageConsumption;
+    }
+
+    public void setAverageConsumption(double averageConsumption) {
+        this.averageConsumption = averageConsumption;
+    }
+
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public void setActive(boolean active) {
+        isActive = active;
+    }
+
     public RealmResults<Historial> getHistorials() {
         return historials;
-    }
-
-    public String statusToString() {
-        return "{" +
-                "\"status\":" + status +
-                '}';
-    }
-
-    public String averageToString() {
-        return "{" +
-                "\"powerAverage\":" + averageConsumption +
-                '}';
-    }
-
-    public String deviceToString() {
-        String id = space == null ? "" : ",\"space\":\"" + space.get_id() + "\"";
-
-        return "{" +
-                "\"name\":\"" + name + "\"," +
-                "\"ip_address\":\"" + ip_address + "\"," +
-                "\"status\":" + status + "," +
-                "\"building\":\"" + building.get_id() + "\"" +
-                  id +
-                '}';
     }
 }

@@ -12,7 +12,11 @@ public class Building  extends RealmObject{
 
     private String name;
 
+    private String uid;
+
     private double averageConsumption;
+
+    private boolean isActive;
 
     @LinkingObjects("building")
     private final RealmResults<Space> spaces = null;
@@ -20,6 +24,8 @@ public class Building  extends RealmObject{
     @LinkingObjects("building")
     private final RealmResults<Device> devices = null;
 
+    @LinkingObjects("building")
+    private final RealmResults<Historial> historials = null;
 
     public RealmResults<Device> getDevices() {
         return devices;
@@ -31,6 +37,26 @@ public class Building  extends RealmObject{
 
     public void setAverageConsumption(double averageConsumption) {
         this.averageConsumption = averageConsumption;
+    }
+
+    public String getUid() {
+        return uid;
+    }
+
+    public void setUid(String uid) {
+        this.uid = uid;
+    }
+
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public void setActive(boolean active) {
+        isActive = active;
+    }
+
+    public RealmResults<Historial> getHistorials() {
+        return historials;
     }
 
     public String get_id() {
@@ -56,5 +82,9 @@ public class Building  extends RealmObject{
     @Override
     public String toString() {
         return "{\"name\":\"" + getName()+"\"}";
+    }
+
+    public String toIsActiveString() {
+        return "{\"isActive\":\"" + isActive()+"\"}";
     }
 }

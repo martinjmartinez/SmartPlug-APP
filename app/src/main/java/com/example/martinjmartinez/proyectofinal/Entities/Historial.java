@@ -1,10 +1,10 @@
 package com.example.martinjmartinez.proyectofinal.Entities;
 
-
 import java.util.Date;
 
-import io.realm.RealmList;
 import io.realm.RealmObject;
+import io.realm.RealmResults;
+import io.realm.annotations.LinkingObjects;
 import io.realm.annotations.PrimaryKey;
 
 public class Historial extends RealmObject {
@@ -14,17 +14,41 @@ public class Historial extends RealmObject {
 
     private Device device;
 
+    private Space space;
+
+    private Building building;
+
     private Date startDate;
 
     private Date endDate;
 
-    private double totalHours;
+    private double deviceLimit;
 
-    private RealmList<Log> powerLog;
+    private Date lastLogDate;
+
+    private double totalTimeInSeconds;
 
     private double powerAverage;
 
+    private double powerConsumed;
+
     public Historial() {}
+
+    public double getDeviceLimit() {
+        return deviceLimit;
+    }
+
+    public void setDeviceLimit(double deviceLimit) {
+        this.deviceLimit = deviceLimit;
+    }
+
+    public Date getLastLogDate() {
+        return lastLogDate;
+    }
+
+    public void setLastLogDate(Date lastLogDate) {
+        this.lastLogDate = lastLogDate;
+    }
 
     public String get_id() {
         return _id;
@@ -42,20 +66,12 @@ public class Historial extends RealmObject {
         this.device = device;
     }
 
-    public double getTotalHours() {
-        return totalHours;
+    public double getTotalTimeInSeconds() {
+        return totalTimeInSeconds;
     }
 
-    public void setTotalHours(double totalHours) {
-        this.totalHours = totalHours;
-    }
-
-    public RealmList<Log> getPowerLog() {
-        return powerLog;
-    }
-
-    public void setPowerLog(RealmList<Log> powerLog) {
-        this.powerLog = powerLog;
+    public void setTotalTimeInSeconds(double totalTimeInSeconds) {
+        this.totalTimeInSeconds = totalTimeInSeconds;
     }
 
     public double getPowerAverage() {
@@ -64,6 +80,22 @@ public class Historial extends RealmObject {
 
     public void setPowerAverage(double powerAverage) {
         this.powerAverage = powerAverage;
+    }
+
+    public Space getSpace() {
+        return space;
+    }
+
+    public void setSpace(Space space) {
+        this.space = space;
+    }
+
+    public Building getBuilding() {
+        return building;
+    }
+
+    public void setBuilding(Building building) {
+        this.building = building;
     }
 
     public Date getStartDate() {
@@ -80,5 +112,13 @@ public class Historial extends RealmObject {
 
     public void setEndDate(Date endDate) {
         this.endDate = endDate;
+    }
+
+    public double getPowerConsumed() {
+        return powerConsumed;
+    }
+
+    public void setPowerConsumed(double powerConsumed) {
+        this.powerConsumed = powerConsumed;
     }
 }

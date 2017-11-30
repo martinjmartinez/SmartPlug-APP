@@ -3,77 +3,85 @@ package com.example.martinjmartinez.proyectofinal.UI.Devices.Fragments;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.res.ColorStateList;
 import android.os.Bundle;
-import android.os.Handler;
+
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
+
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Device;
-import com.example.martinjmartinez.proyectofinal.Entities.Historial;
+import com.example.martinjmartinez.proyectofinal.Models.DeviceFB;
+import com.example.martinjmartinez.proyectofinal.Models.HistorialFB;
+import com.example.martinjmartinez.proyectofinal.Models.MonthConsumed;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
 import com.example.martinjmartinez.proyectofinal.Services.HistorialService;
+import com.example.martinjmartinez.proyectofinal.Services.LimitService;
+import com.example.martinjmartinez.proyectofinal.UI.Devices.Statistics.DeviceStatisticsDetailsFragment;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
-import com.example.martinjmartinez.proyectofinal.UI.Spaces.Fragments.SpaceUpdateFragment;
-import com.example.martinjmartinez.proyectofinal.Utils.API;
-import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
+
+import com.example.martinjmartinez.proyectofinal.Utils.Constants;
+import com.example.martinjmartinez.proyectofinal.Utils.DateUtils;
 import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
-import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import io.realm.Realm;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-
-/**
- * Created by MartinJMartinez on 7/14/2017.
- */
 
 public class DeviceDetailFragment extends Fragment {
 
     private Device mDevice;
-    private API mAPI;
     private Activity mActivity;
-    private String mDeviceId;
+    private String mDeviceId, userId;
     private TextView name;
-    private TextView ip_address;
     private TextView space;
     private TextView averagePower;
     private TextView building;
     private TextView lastTimeUsed;
+    private TextView monthlyLimit;
     private Switch status;
+    private ProgressBar limitProgress;
+    private TextView limitPercentage;
+    private TextView actualLimit;
+    private Switch autoTurnOff;
     private TextView power;
     private MainActivity mMainActivity;
-    private Handler updatePowerHandler;
-    private Runnable updatePowerRunnableDetails;
     private DeviceService deviceService;
     private HistorialService historialService;
     private Button mEditButton;
     private Button mDeleteButton;
+    private LinearLayout statisticsButton;
+    private DatabaseReference databaseReference;
+    private DatabaseReference limitReference;
+    private LimitService limitService;
+    private CompoundButton.OnCheckedChangeListener listener;
+    private CompoundButton.OnCheckedChangeListener autoTurnOffListener;
+    private ValueEventListener deviceListener;
+    private ValueEventListener limitListener;
 
-    public DeviceDetailFragment() {
-    }
+    public DeviceDetailFragment() {}
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -81,10 +89,8 @@ public class DeviceDetailFragment extends Fragment {
 
         Bundle bundle = this.getArguments();
         if (bundle != null) {
-            mDeviceId = bundle.getString(ArgumentsKeys.DEVICE_ID, "");
+            mDeviceId = bundle.getString(Constants.DEVICE_ID, "");
         }
-
-        mAPI = new API();
     }
 
     @Override
@@ -92,7 +98,6 @@ public class DeviceDetailFragment extends Fragment {
         View view = inflater.inflate(R.layout.device_fragment, container, false);
 
         iniVariables(view);
-        getDevice();
         initListeners();
 
         return view;
@@ -127,16 +132,60 @@ public class DeviceDetailFragment extends Fragment {
     private void iniVariables(View view) {
         deviceService = new DeviceService(Realm.getDefaultInstance());
         historialService = new HistorialService(Realm.getDefaultInstance());
-        name = (TextView) view.findViewById(R.id.device_detail_name);
-        ip_address = (TextView) view.findViewById(R.id.device_detail_ip);
-        space = (TextView) view.findViewById(R.id.device_detail_space);
-        building = (TextView) view.findViewById(R.id.device_detail_building);
-        power = (TextView) view.findViewById(R.id.device_detail_power);
-        lastTimeUsed = (TextView) view.findViewById(R.id.device_detail_last_turn_on);
-        status = (Switch) view.findViewById(R.id.device_detail_status);
-        mEditButton = (Button) view.findViewById(R.id.device_detail_update);
-        mDeleteButton = (Button) view.findViewById(R.id.device_detail_delete);
-        averagePower = (TextView) view.findViewById(R.id.device_detail_average);
+        limitService = new LimitService(Realm.getDefaultInstance());
+        name = view.findViewById(R.id.device_detail_name);
+        space = view.findViewById(R.id.device_detail_space);
+        building = view.findViewById(R.id.device_detail_building);
+        power =  view.findViewById(R.id.device_detail_power);
+        lastTimeUsed =  view.findViewById(R.id.device_detail_last_turn_on);
+        limitProgress = view.findViewById(R.id.device_limit_progressbas);
+        limitPercentage = view.findViewById(R.id.device_detail_limit_percentage);
+        actualLimit = view.findViewById(R.id.device_actual_limit);
+        status = view.findViewById(R.id.device_detail_status);
+        mEditButton =  view.findViewById(R.id.device_detail_update);
+        autoTurnOff = view.findViewById(R.id.device_detail_limit_autoOff);
+        mDeleteButton = view.findViewById(R.id.device_detail_delete);
+        monthlyLimit = view.findViewById(R.id.device_detail_limit);
+        averagePower =  view.findViewById(R.id.device_detail_average);
+        statisticsButton =  view.findViewById(R.id.device_statistics_button);
+        userId = mActivity.getSharedPreferences(Constants.USER_INFO, 0).getString(Constants.USER_ID, FirebaseAuth.getInstance().getCurrentUser().getUid());
+        databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/"+ userId + "/Devices");
+        limitReference = FirebaseDatabase.getInstance().getReference("Accounts/"+ userId + "/MonthlyConsumed");
+
+        listener = new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    deviceService.updateDeviceStatus(mDeviceId, true);
+                    String historyid = historialService.startHistorial(new Date(), mDeviceId);
+                    deviceService.updateDeviceLastHistoryId(mDeviceId, historyid);
+
+                } else {
+                    deviceService.updateDeviceStatus(mDeviceId, false);
+                    HistorialFB historialFB = historialService.castToHistorialFB(historialService.getHistorialById(mDevice.getLastHistoryId()), new Date());
+                    Log.e("DeviceDetailAdapter", "getHistoryLogs");
+                    historialService.closeHistory(historialFB);
+                    deviceService.updateDevicePower(mDevice.get_id(), 0);
+                    power.setText("OFF");
+                    averagePower.setText(Utils.decimalFormat.format(mDevice.getAverageConsumption()) + " W");
+                }
+
+            }
+        };
+
+        autoTurnOffListener = new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                if (isChecked) {
+                    deviceService.updateDeviceAutoTurnOff(mDeviceId, true);
+                } else {
+                    deviceService.updateDeviceAutoTurnOff(mDeviceId, false);
+                }
+            }
+        };
+
+        mDevice = deviceService.getDeviceById(mDeviceId);
+        initDeviceView(mDevice);
     }
 
     private void initListeners() {
@@ -146,7 +195,7 @@ public class DeviceDetailFragment extends Fragment {
                 DeviceUpdateFragment deviceUpdateFragment = new DeviceUpdateFragment();
                 Bundle bundle = new Bundle();
 
-                bundle.putString(ArgumentsKeys.DEVICE_ID, mDeviceId);
+                bundle.putString(Constants.DEVICE_ID, mDeviceId);
                 deviceUpdateFragment.setArguments(bundle);
 
                 Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.DEVICE_DETAIL_FRAGMENT),
@@ -162,7 +211,8 @@ public class DeviceDetailFragment extends Fragment {
                 builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        deleteSpace(mAPI.getClient());
+                        deviceService.deleteDevice(mDeviceId);
+                        mActivity.onBackPressed();
                     }
                 });
 
@@ -179,23 +229,21 @@ public class DeviceDetailFragment extends Fragment {
 
             }
         });
-
-        status.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        statisticsButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    refreshPower();
-                    changeStatus(new API().getClient(), ArgumentsKeys.ON_QUERY);
-                } else {
-                    if (updatePowerHandler != null) {
-                        power.setText("0 W");
-                        updatePowerHandler.removeCallbacksAndMessages(null);
-                    }
-                    changeStatus(new API().getClient(), ArgumentsKeys.OFF_QUERY);
-                }
+            public void onClick(View v) {
+                DeviceStatisticsDetailsFragment deviceStatisticsDetailsFragment = new DeviceStatisticsDetailsFragment();
+                Bundle bundle = new Bundle();
 
+                bundle.putString(Constants.DEVICE_ID, mDeviceId);
+                deviceStatisticsDetailsFragment.setArguments(bundle);
+
+                Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.DEVICE_DETAIL_FRAGMENT),
+                        deviceStatisticsDetailsFragment, FragmentKeys.DEVICE_STATISTICS_FRAGMENT, true);
             }
         });
+
+
 
         mMainActivity.toggleDrawerIcon(false, R.drawable.ic_action_back, new View.OnClickListener() {
             @Override
@@ -203,326 +251,108 @@ public class DeviceDetailFragment extends Fragment {
                 mMainActivity.onBackPressed();
             }
         });
-    }
 
-    private void deleteSpace(OkHttpClient client) {
-        Log.e("QUERY", ArgumentsKeys.DEVICE_QUERY);
-        Request request = new Request.Builder()
-                .url(ArgumentsKeys.DEVICE_QUERY + "/" + mDeviceId)
-                .delete()
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
+        deviceListener = new ValueEventListener() {
             @Override
-            public void onFailure(Call call, IOException e) {
-                Log.e("Error", e.getMessage());
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                DeviceFB deviceFB = dataSnapshot.getValue(DeviceFB.class);
+                deviceService.updateDeviceLocal(deviceFB);
+                mDevice = deviceService.getDeviceById(mDeviceId);
+                limitReference.child(mDeviceId).addValueEventListener(limitListener);
+                limitService.updateAutoTurnOff(deviceFB);
+                initDeviceView(mDevice);
             }
 
             @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                if (!response.isSuccessful()) {
-                    Log.e("ERROR", response.body().string());
-                } else {
-                    mActivity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            deviceService.deleteDevice(mDeviceId);
-                            mActivity.onBackPressed();
-                        }
-                    });
-                }
-            }
-        });
-    }
+            public void onCancelled(DatabaseError databaseError) {
 
-    public void changeStatus(final OkHttpClient client, final String action) {
-        Log.e("changeStatus", "http://" + mDevice.getIp_address() + action);
-        Request requestAction = new Request.Builder()
-                .url("http://" + mDevice.getIp_address() + action)
-                .build();
-
-        client.newCall(requestAction).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                call.cancel();
-            }
-
-            @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                if (!response.isSuccessful()) {
-                    throw new IOException("Unexpected code at changeStatus" + response);
-                } else {
-                    mActivity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            updateStatus(new API().getClient(), action);
-                        }
-                    });
-                }
-            }
-        });
-    }
-
-    public void updateStatus(final OkHttpClient client, final String action) {
-        MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-        Device d = new Device();
-        d.setStatus(action.equals(ArgumentsKeys.ON_QUERY) ? true : false);
-        RequestBody body = RequestBody.create(JSON, d.statusToString());
-        Log.e("updateStatus", ArgumentsKeys.DEVICE_QUERY + "/" + mDevice.get_id());
-        Log.e("JSON", d.statusToString());
-
-        final Request requestUpdate = new Request.Builder()
-                .url(ArgumentsKeys.DEVICE_QUERY + "/" + mDevice.get_id())
-                .patch(body)
-                .build();
-
-        client.newCall(requestUpdate).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                call.cancel();
-            }
-
-            @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                if (!response.isSuccessful()) {
-                    throw new IOException("Unexpected code at updateStatus" + response);
-                } else {
-                    mActivity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            deviceService.updateDeviceStatus(mDeviceId, action.equals(ArgumentsKeys.ON_QUERY) ? true : false);
-                            if (action.equals(ArgumentsKeys.ON_QUERY)) {
-                                createHistory(mAPI.getClient(), mDevice);
-                            } else {
-                                closeHistory(mAPI.getClient(), mDevice);
-                            }
-                        }
-                    });
-                }
-            }
-        });
-    }
-
-
-    public void sendHistoryIdToArduino(final OkHttpClient client, String historyId, Device device) {
-        Log.e("sendHistoryIdToArduino", "http://" + device.getIp_address() + "/historyId?params=" + historyId);
-        Request requestAction = new Request.Builder()
-                .url("http://" + device.getIp_address() + "/historyId?params=" + historyId)
-                .build();
-
-        client.newCall(requestAction).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                call.cancel();
-            }
-
-            @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                if (!response.isSuccessful()) {
-                    throw new IOException("sendHistoryIdToArduino" + response);
-                } else {
-                    Log.e("sendHistoryIdToArduino", "id sent to arduino");
-                }
-            }
-        });
-    }
-
-    private void createHistory(OkHttpClient client, final Device device) {
-        Log.e("createHistory", ArgumentsKeys.HISTORY_QUERY + "/device/" + device.get_id());
-
-        String data = "{ \"startDate\": \"" + new Date().getTime() + "\"}";
-        MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-        RequestBody body = RequestBody.create(JSON, data);
-        Log.e("JSON", data);
-        Request request = new Request.Builder()
-                .url(ArgumentsKeys.HISTORY_QUERY + "/device/" + device.get_id())
-                .post(body)
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.e("Error", e.getMessage());
-            }
-
-            @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                if (!response.isSuccessful()) {
-                    Log.e("createHistory", response.body().string());
-                } else {
-                    try {
-                        final JSONObject historyData = new JSONObject(response.body().string());
-                        final String historyid = historyData.getString("_id");
-
-                        mActivity.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                mAPI.getHistorialFromCloud(historyData);
-                                deviceService.updateDeviceLastHistoryId(mDeviceId, historyid);
-                                sendHistoryIdToArduino(mAPI.getClient(), historyid, device);
-                            }
-                        });
-
-
-                    } catch (JSONException e) {
-                        Log.e("createHistory", e.getMessage());
-                    }
-                }
-            }
-        });
-    }
-
-    private void closeHistory(OkHttpClient client, final Device device) {
-        Log.e("closeHistory", ArgumentsKeys.HISTORY_QUERY + "/" + device.getLastHistoryId());
-        String data = "{ \"endDate\": \"" + new Date().getTime() + "\"}";
-        MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-        RequestBody body = RequestBody.create(JSON, data);
-        Log.e("JSON", data);
-        Request request = new Request.Builder()
-                .url(ArgumentsKeys.HISTORY_QUERY + "/" + device.getLastHistoryId())
-                .patch(body)
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.e("Error at closeHistory", e.getMessage());
-            }
-
-            @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                if (!response.isSuccessful()) {
-                    Log.e("closeHistory", response.body().string());
-                } else {
-                    try {
-                    final JSONObject jsonObject = new JSONObject(response.body().string());
-                    mActivity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                                mAPI.getHistorialFromCloudEnd(jsonObject, mDeviceId);
-                                lastTimeUsed.setText(Utils.formatDate(mDevice.getHistorials().last().getEndDate()));
-                                updateDevice(mAPI.getClient(), device);
-                        }
-                    });
-
-                    } catch (JSONException |IOException e) {
-                        Log.e("closeHistory", e.getMessage());
-                    }
-                }
-            }
-        });
-    }
-
-    private void updateDevice(OkHttpClient client, Device device) {
-
-        Log.e("updateDevice", ArgumentsKeys.DEVICE_QUERY);
-        MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-        RequestBody body = RequestBody.create(JSON, device.averageToString());
-        Log.e("JSON", device.averageToString());
-        Request request = new Request.Builder()
-                .url(ArgumentsKeys.DEVICE_QUERY + "/" + device.get_id())
-                .patch(body)
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.e("Error", e.getMessage());
-            }
-
-            @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                if (!response.isSuccessful()) {
-                    Log.e("updateDevice", response.body().string());
-                } else {
-                    Log.e("updateDevice", response.body().string());
-                }
-            }
-        });
-    }
-
-    private void getDevice() {
-        mDevice = deviceService.getDeviceById(mDeviceId);
-        Log.e("DEVICE", mDevice.get_id() + "");
-        initDeviceView(mDevice);
-    }
-
-    private void getDeviceInfo(OkHttpClient client) {
-        Log.e("getArduinoInfoDetails", mDevice.getIp_address());
-        Request request = new Request.Builder()
-                .url("http://" + mDevice.getIp_address() + "?format=json")
-                .addHeader("Connection", "close")
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException ex) {
-                Log.e("Error at getArduinoInfo", "No se puso conectar al dispositivo", ex);
-            }
-
-            @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                if (!response.isSuccessful()) {
-                    throw new IOException("Unexpected code at getArduinoInfo" + response);
-                } else {
-                    final String[] data = mAPI.getArduinoInfo(response);
-
-                    mActivity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (data[0] != null) {
-                                final double power = Double.parseDouble(data[0]);
-                                deviceService.updateDevicePower(mDevice.get_id(), power);
-                                final boolean status = data[1].equals("1");
-                                deviceService.updateDeviceStatus(mDevice.get_id(), status);
-                            }
-                        }
-                    });
-                }
-            }
-        });
-    }
-
-    private void refreshPower() {
-        updatePowerHandler = new Handler();
-        updatePowerRunnableDetails = new Runnable() {
-            @Override
-            public void run() {
-                getDeviceInfo(mAPI.getClient());
-                power.setText(Utils.decimalFormat.format(mDevice.getPower()) + " W");
-                status.setChecked(mDevice.isStatus());
-                updatePowerHandler.postDelayed(this, 7000);
             }
         };
-        updatePowerHandler.postDelayed(updatePowerRunnableDetails, 7000);
+        databaseReference.child(mDeviceId).addValueEventListener(deviceListener);
+        limitListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                boolean hasLimit = false;
+                for(DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()) {
+                    String monthId = DateUtils.getMonthAndYear(DateUtils.getCurrentDate());
+                    if(isAdded()) {
+                        if (dataSnapshot1.getKey().equals(monthId)) {
+                            hasLimit = true;
+                            MonthConsumed monthConsumed = dataSnapshot1.getValue(MonthConsumed.class);
+                            if (monthConsumed.getLimit() == 0){
+                                monthlyLimit.setText("Not set");
+                            } else {
+                                limitProgress.setMax(Double.valueOf(monthConsumed.getLimit()).intValue());
+                                limitProgress.setProgress(Double.valueOf(monthConsumed.getTotalConsumed()).intValue());
+                                monthlyLimit.setText(monthConsumed.getLimit() + " W/h");
+                                actualLimit.setText(Utils.decimalFormat.format(monthConsumed.getTotalConsumed()));
+                                double percentage = (monthConsumed.getTotalConsumed() / monthConsumed.getLimit()) * 100;
+                                if(percentage >= 100){
+                                    autoTurnOff.setEnabled(false);
+                                    limitProgress.setProgressTintList(ColorStateList.valueOf(getResources().getColor(R.color.alert)));
+                                }else {
+                                    if (percentage < 100 && percentage >= 75) {
+                                        limitProgress.setProgressTintList(ColorStateList.valueOf(getResources().getColor(R.color.color4)));
+                                    }
+                                    autoTurnOff.setEnabled(true);
+                                }
+
+                                limitPercentage.setText(Utils.decimalFormat.format(percentage) + "%");
+                            }
+
+                            deviceService.updateDeviceLimit(mDevice.get_id(), monthConsumed.getLimit());
+                        }
+                    }
+                }
+
+                if(!hasLimit) {
+                    monthlyLimit.setText("Not set");
+                }
+
+                limitReference.removeEventListener(this);
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        };
+
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        if (updatePowerHandler != null) {
-            updatePowerHandler.removeCallbacksAndMessages(null);
-        }
+
+        databaseReference.child(mDeviceId).removeEventListener(deviceListener);
     }
 
     private void initDeviceView(Device device) {
         name.setText(device.getName());
-        ip_address.setText(device.getIp_address());
-        averagePower.setText(Utils.decimalFormat.format(device.getAverageConsumption()) + " W");
+        status.setOnCheckedChangeListener(null);
         status.setChecked(device.isStatus());
-        if(mDevice.isStatus()){
-            lastTimeUsed.setText(Utils.formatDate(mDevice.getHistorials().get(mDevice.getHistorials().size()-2).getEndDate()));
-        }else {
-            lastTimeUsed.setText(Utils.formatDate(mDevice.getHistorials().last().getEndDate()));
+        status.setOnCheckedChangeListener(listener);
+        autoTurnOff.setOnCheckedChangeListener(null);
+        autoTurnOff.setChecked(device.isAutoTurnOff());
+        autoTurnOff.setOnCheckedChangeListener(autoTurnOffListener);
+        averagePower.setText(Utils.decimalFormat.format(device.getAverageConsumption()) + " W");
+
+
+        if (mDevice.getLastTimeUsed().getTime() != 0) {
+            lastTimeUsed.setText(Utils.formatDefaultDate(mDevice.getLastTimeUsed()));
+        } else {
+            lastTimeUsed.setText("Never Used");
         }
 
-        space.setText(device.getSpace() == null ? "" : device.getSpace().getName());
+        space.setText(device.getSpace() == null ? "----" : device.getSpace().getName());
 
         building.setText(device.getBuilding().getName());
 
         if (device.isStatus()) {
             power.setText(Utils.decimalFormat.format(mDevice.getPower()) + " W");
-            refreshPower();
+        } else {
+            power.setText("OFF");
         }
     }
 }

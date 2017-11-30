@@ -8,47 +8,43 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.example.martinjmartinez.proyectofinal.Entities.Device;
 import com.example.martinjmartinez.proyectofinal.Entities.Space;
+import com.example.martinjmartinez.proyectofinal.Models.SpaceFB;
 import com.example.martinjmartinez.proyectofinal.R;
+import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
+import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
 import com.example.martinjmartinez.proyectofinal.Services.SpaceService;
+import com.example.martinjmartinez.proyectofinal.UI.Devices.Statistics.DeviceStatisticsDetailsFragment;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
-import com.example.martinjmartinez.proyectofinal.Utils.API;
-import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
+import com.example.martinjmartinez.proyectofinal.UI.Spaces.Statistics.SpaceStatisticsDetailsFragment;
+import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.IOException;
+import java.util.List;
 
 import io.realm.Realm;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-
-/**
- * Created by MartinJMartinez on 7/15/2017.
- */
 
 public class SpaceDetailFragment extends Fragment {
 
     private Space mSpace;
-    private API mAPI;
     private Activity mActivity;
-    private String mSpaceId;
+    private String mSpaceId, userId;
     private TextView mNameTextView;
     private TextView mDevicesTextView;
     private TextView mBuildingTextView;
@@ -58,7 +54,11 @@ public class SpaceDetailFragment extends Fragment {
     private Button mDeleteButton;
     private MainActivity mMainActivity;
     private SpaceService spaceService;
-
+    private DeviceService deviceService;
+    private LinearLayout statisticsButton;
+    private DatabaseReference databaseReference;
+    private Context context;
+    private ValueEventListener spaceListener;
 
     public SpaceDetailFragment() {
     }
@@ -68,7 +68,8 @@ public class SpaceDetailFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         Bundle bundle = this.getArguments();
-        mSpaceId = bundle != null ? bundle.getString(ArgumentsKeys.SPACE_ID, "") : "";
+        mSpaceId = bundle != null ? bundle.getString(Constants.SPACE_ID, "") : "";
+        context = getContext();
     }
 
     @Override
@@ -76,8 +77,8 @@ public class SpaceDetailFragment extends Fragment {
         View view = inflater.inflate(R.layout.space_fragment, container, false);
 
         iniVariables(view);
-        getSpace();
         initListeners();
+        getSpace();
 
         return view;
     }
@@ -110,15 +111,18 @@ public class SpaceDetailFragment extends Fragment {
 
     private void iniVariables(View view) {
         spaceService = new SpaceService(Realm.getDefaultInstance());
+        deviceService = new DeviceService(Realm.getDefaultInstance());
         mSpace = new Space();
-        mAPI = new API();
-        mNameTextView = (TextView) view.findViewById(R.id.space_detail_name);
-        mDevicesTextView = (TextView) view.findViewById(R.id.space_detail_devices);
-        mBuildingTextView = (TextView) view.findViewById(R.id.space_detail_building);
-        mPowerTextView = (TextView) view.findViewById(R.id.space_detail_power);
-        mInfoTextView = (TextView) view.findViewById(R.id.space_detail_delete_info);
-        mEditButton = (Button) view.findViewById(R.id.space_detail_update);
-        mDeleteButton = (Button) view.findViewById(R.id.space_detail_delete);
+        mNameTextView =  view.findViewById(R.id.space_detail_name);
+        mDevicesTextView =  view.findViewById(R.id.space_detail_devices);
+        mBuildingTextView =  view.findViewById(R.id.space_detail_building);
+        mPowerTextView =  view.findViewById(R.id.space_average_power);
+        mInfoTextView =  view.findViewById(R.id.space_detail_delete_info);
+        mEditButton =  view.findViewById(R.id.space_detail_update);
+        mDeleteButton =  view.findViewById(R.id.space_detail_delete);
+        statisticsButton =  view.findViewById(R.id.space_statistics_button);
+        userId = mActivity.getSharedPreferences(Constants.USER_INFO, 0).getString(Constants.USER_ID, FirebaseAuth.getInstance().getCurrentUser().getUid());
+        databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/"+ userId + "/Spaces");
     }
 
     private void initListeners() {
@@ -128,10 +132,24 @@ public class SpaceDetailFragment extends Fragment {
                 SpaceUpdateFragment spaceUpdateFragment = new SpaceUpdateFragment();
                 Bundle bundle = new Bundle();
 
-                bundle.putString(ArgumentsKeys.SPACE_ID, mSpaceId);
+                bundle.putString(Constants.SPACE_ID, mSpaceId);
                 spaceUpdateFragment.setArguments(bundle);
                 Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.SPACE_DETAIL_FRAGMENT),
                         spaceUpdateFragment, FragmentKeys.SPACE_UPDATE_FRAGMENT, true);
+            }
+        });
+
+        statisticsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SpaceStatisticsDetailsFragment spaceStatisticsDetailsFragment = new SpaceStatisticsDetailsFragment();
+                Bundle bundle = new Bundle();
+
+                bundle.putString(Constants.SPACE_ID, mSpaceId);
+                spaceStatisticsDetailsFragment.setArguments(bundle);
+
+                Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.SPACE_DETAIL_FRAGMENT),
+                        spaceStatisticsDetailsFragment, FragmentKeys.SPACE_STATISTICS_FRAGMENT, true);
             }
         });
 
@@ -143,7 +161,8 @@ public class SpaceDetailFragment extends Fragment {
                 builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        deleteSpace(mAPI.getClient());
+                        spaceService.deleteSpace(mSpaceId);
+                        mActivity.onBackPressed();
                     }
                 });
 
@@ -167,36 +186,30 @@ public class SpaceDetailFragment extends Fragment {
                 mMainActivity.onBackPressed();
             }
         });
+
+        spaceListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                SpaceFB spaceFB = dataSnapshot.getValue(SpaceFB.class);
+                spaceService.updateOrCreate(spaceFB);
+                mSpace = spaceService.getSpaceById(spaceFB.get_id());
+                initSpaceView(mSpace);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        };
+
+        databaseReference.child(mSpaceId).addValueEventListener(spaceListener);
     }
 
-    private void deleteSpace(OkHttpClient client) {
-        Log.e("QUERY", ArgumentsKeys.SPACE_QUERY);
-        Request request = new Request.Builder()
-                .url(ArgumentsKeys.SPACE_QUERY + "/" + mSpaceId)
-                .delete()
-                .build();
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
 
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.e("Error", e.getMessage());
-            }
-
-            @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                if (!response.isSuccessful()) {
-                    Log.e("ERROR", response.body().string());
-                } else {
-                    mActivity.runOnUiThread(new Runnable( ) {
-                        @Override
-                        public void run() {
-                            spaceService.deleteSpace(mSpaceId);
-                            mActivity.onBackPressed();
-                        }
-                    });
-                }
-            }
-        });
+        databaseReference.child(mSpaceId).removeEventListener(spaceListener);
     }
 
     private void getSpace() {
@@ -206,23 +219,23 @@ public class SpaceDetailFragment extends Fragment {
 
     private void initSpaceView(Space space) {
         mNameTextView.setText(space.getName());
-
-        if (space.getDevices() != null) {
-            mDevicesTextView.setText(space.getDevices().size() + "");
-            if (!space.getDevices().isEmpty()) {
+        List<Device> deviceList = deviceService.allActiveDevicesBySpace(space.get_id());
+        if (deviceList!= null) {
+            mDevicesTextView.setText(deviceList.size() + "");
+            if (!deviceList.isEmpty()) {
                 mDeleteButton.setClickable(false);
                 mInfoTextView.setVisibility(View.VISIBLE);
-                mDeleteButton.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.disabled));
+                mDeleteButton.setBackgroundColor(ContextCompat.getColor(context, R.color.disabled));
             } else {
                 mDeleteButton.setClickable(true);
                 mInfoTextView.setVisibility(View.GONE);
-                mDeleteButton.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.alert));
+                mDeleteButton.setBackgroundColor(ContextCompat.getColor(context, R.color.alert));
             }
 
             if (space.getBuilding() != null) {
                 mBuildingTextView.setText(space.getBuilding().getName());
             }
         }
-        //mPowerTextView.setText();
+        mPowerTextView.setText(Utils.decimalFormat.format(space.getAverageConsumption()) + "W");
     }
 }

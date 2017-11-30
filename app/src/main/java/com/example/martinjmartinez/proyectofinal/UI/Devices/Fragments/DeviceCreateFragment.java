@@ -7,7 +7,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,52 +18,54 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
-import com.example.martinjmartinez.proyectofinal.Entities.Device;
+import com.example.martinjmartinez.proyectofinal.Entities.Log;
 import com.example.martinjmartinez.proyectofinal.Entities.Space;
+import com.example.martinjmartinez.proyectofinal.Models.DeviceFB;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
+import com.example.martinjmartinez.proyectofinal.Services.LimitService;
 import com.example.martinjmartinez.proyectofinal.Services.SpaceService;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.UI.Spaces.Adapters.SpaceSpinnerAdapter;
-import com.example.martinjmartinez.proyectofinal.Utils.API;
-import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
+import com.example.martinjmartinez.proyectofinal.Utils.Constants;
+import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
-
-import java.io.IOException;
+import java.util.EventListener;
 import java.util.List;
 
 import io.realm.Realm;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 
 public class DeviceCreateFragment extends Fragment {
 
-    private Device mDevice;
-    private API mAPI;
+    private DeviceFB mDevice;
     private Activity mActivity;
-    private String mBuildingId;
+    private String mBuildingId, mDeviceId;
     private EditText name;
-    private EditText ipAddress;
     private TextView displayName;
     private TextView deviceBuilding;
     private TextView deviceSpace;
     private Button saveDevice;
-    private String mSpaceId, mDeviceId;
+    private String mSpaceId, userId;
     private Space mSpace;
     private Building mBuilding;
+    private EditText monthlyLimit;
     private Spinner mSpaceSpinner;
     private SpaceSpinnerAdapter mSpaceSpinnerAdapter;
     private MainActivity mMainActivity;
     private DeviceService deviceService;
+    private LimitService limitService;
     private SpaceService spaceService;
     private BuildingService buildingService;
+    private ValueEventListener singleDeviceListener;
+    private DatabaseReference databaseReference;
 
     public DeviceCreateFragment() {
     }
@@ -74,8 +75,11 @@ public class DeviceCreateFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         Bundle bundle = this.getArguments();
-        mSpaceId = bundle != null ? bundle.getString(ArgumentsKeys.SPACE_ID, "") : "";
-        mBuildingId = bundle != null ? bundle.getString(ArgumentsKeys.BUILDING_ID, "") : "";
+        mSpaceId = bundle != null ? bundle.getString(Constants.SPACE_ID, "") : "";
+        mBuildingId = bundle != null ? bundle.getString(Constants.BUILDING_ID, "") : "";
+        mDeviceId = bundle != null ? bundle.getString(Constants.DEVICE_ID, "") : "";
+        userId = mActivity.getSharedPreferences(Constants.USER_INFO, 0).getString(Constants.USER_ID, FirebaseAuth.getInstance().getCurrentUser().getUid());
+        databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/" + userId + "/Devices/" + mDeviceId);
     }
 
     @Override
@@ -122,20 +126,34 @@ public class DeviceCreateFragment extends Fragment {
     }
 
     private void iniVariables(View view) {
-        mAPI = new API();
         deviceService = new DeviceService(Realm.getDefaultInstance());
         buildingService = new BuildingService(Realm.getDefaultInstance());
         spaceService = new SpaceService(Realm.getDefaultInstance());
-        name = (EditText) view.findViewById(R.id.device_create_name);
-        ipAddress = (EditText) view.findViewById(R.id.device_create_ip);
-        displayName = (TextView) view.findViewById(R.id.device_create_display_name);
-        deviceBuilding = (TextView) view.findViewById(R.id.device_create_building);
-        deviceSpace = (TextView) view.findViewById(R.id.device_create_space);
-        saveDevice = (Button) view.findViewById(R.id.device_create_save_button);
-        mSpaceSpinner = (Spinner) view.findViewById(R.id.device_create_space_spinner);
+        limitService = new LimitService(Realm.getDefaultInstance());
+        name =  view.findViewById(R.id.device_create_name);
+        displayName =  view.findViewById(R.id.device_create_display_name);
+        deviceBuilding =  view.findViewById(R.id.device_create_building);
+        monthlyLimit = view.findViewById(R.id.device_create_limit);
+        deviceSpace =  view.findViewById(R.id.device_create_space);
+        saveDevice =  view.findViewById(R.id.device_create_save_button);
+        mSpaceSpinner =  view.findViewById(R.id.device_create_space_spinner);
     }
 
     private void initListeners() {
+        singleDeviceListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                mDevice = dataSnapshot.getValue(DeviceFB.class);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        };
+
+        databaseReference.addListenerForSingleValueEvent(singleDeviceListener);
+
         mSpaceSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -168,16 +186,24 @@ public class DeviceCreateFragment extends Fragment {
         saveDevice.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mDevice = new Device();
-                if (!Utils.isEditTextEmpty(name) && mDevice != null && !Utils.isEditTextEmpty(ipAddress)) {
+                if (!Utils.isEditTextEmpty(name) && mDevice != null) {
                     mDevice.setName(name.getText().toString());
-                    mDevice.setIp_address(ipAddress.getText().toString());
                     mDevice.setStatus(false);
-                    mDevice.setBuilding(mBuilding);
-                    Log.e("BUILDING", mBuilding.get_id());
-                    mDevice.setSpace(mSpace);
-                    Log.e("SPACE", mSpace.get_id());
-                    createDevice(mAPI.getClient(), mDevice.deviceToString());
+                    mDevice.setInConfigMode(false);
+                    mDevice.setBuildingId(mBuilding.get_id());
+                    mDevice.setMonthlyLimit(Double.parseDouble(monthlyLimit.getText().toString()));
+                    mDevice.setPower(0);
+                    mDevice.setActive(true);
+                    if (mSpace ==null) {
+                        mDevice.setSpaceId("");
+                        deviceService.updateDeviceCloud(mDevice);
+                        limitService.updateOrCreate(mDevice);
+                    } else {
+                        mDevice.setSpaceId(mSpace.get_id());
+                        deviceService.updateDeviceCloud(mDevice);
+                        limitService.updateOrCreate(mDevice);
+                    }
+                    mActivity.onBackPressed();
                 } else {
                     Toast.makeText(getActivity(), "Please, fill all the fields.", Toast.LENGTH_SHORT).show();
                 }
@@ -192,40 +218,6 @@ public class DeviceCreateFragment extends Fragment {
         });
     }
 
-    private void createDevice(OkHttpClient client, String data) {
-        Log.e("QUERY", ArgumentsKeys.DEVICE_QUERY);
-        MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-        RequestBody body = RequestBody.create(JSON, data);
-        Log.e("JSON", data);
-        Request request = new Request.Builder()
-                .url(ArgumentsKeys.DEVICE_QUERY)
-                .post(body)
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.e("Error", e.getMessage());
-            }
-
-            @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                if (!response.isSuccessful()) {
-                    Log.e("ERROR1", response.body().string());
-                } else {
-                    mActivity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mAPI.getDeviceFromCloud(response, mSpace.get_id(), mBuilding.get_id());
-                            mMainActivity.onBackPressed();
-                        }
-                    });
-                }
-            }
-        });
-    }
-
-
     public void setUpSpacesSpinner(List<Space> items) {
         if (items.size() != 0) {
             mSpaceSpinnerAdapter = new SpaceSpinnerAdapter(getContext(), R.layout.spaces_item_spinner, items);
@@ -235,6 +227,7 @@ public class DeviceCreateFragment extends Fragment {
         }
 
     }
+
 
     private void initView() {
         if (mSpace != null) {
@@ -246,7 +239,7 @@ public class DeviceCreateFragment extends Fragment {
         } else {
             mSpaceSpinner.setVisibility(View.VISIBLE);
             deviceSpace.setVisibility(View.GONE);
-            setUpSpacesSpinner(mBuilding.getSpaces());
+            setUpSpacesSpinner(spaceService.allActiveSpacesByBuilding(mBuilding.get_id()));
             deviceBuilding.setText(mBuilding.getName());
         }
     }

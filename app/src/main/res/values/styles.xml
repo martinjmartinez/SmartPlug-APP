@@ -13,4 +13,33 @@
         <item name="color">@android:color/white</item>
     </style>
 
+    <style name="LogInTheme"  parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Required for sign-in flow styling -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+
+        <item name="android:windowBackground">@color/logInBackground</item>
+    </style>
+
+    <style name="progressBar"  parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Required for sign-in flow styling -->
+        <item name="colorPrimary">@color/color4</item>
+        <item name="colorPrimaryDark">@color/color1</item>
+        <item name="colorAccent">@color/color4</item>
+    </style>
+
+    <style name="StyledTilEditTextTheme">
+        <item name="android:imeOptions">actionNext</item>
+        <item name="android:singleLine">true</item>
+        <item name="colorControlNormal">@android:color/white</item>
+        <item name="colorControlActivated">@android:color/white</item>
+        <item name="android:textColorPrimary">@android:color/white</item>
+    </style>
+
+    <style name="StyledTilEditText">
+        <item name="android:theme">@style/StyledTilEditTextTheme</item>
+        <item name="android:paddingTop">4dp</item>
+    </style>
+
 </resources>

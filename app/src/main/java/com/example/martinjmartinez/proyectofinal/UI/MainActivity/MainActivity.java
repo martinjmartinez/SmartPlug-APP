@@ -1,13 +1,21 @@
 package com.example.martinjmartinez.proyectofinal.UI.MainActivity;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.Build;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -17,50 +25,71 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
+import com.example.martinjmartinez.proyectofinal.Entities.Historial;
+import com.example.martinjmartinez.proyectofinal.Models.HistorialFB;
+import com.example.martinjmartinez.proyectofinal.Models.UserFB;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
+import com.example.martinjmartinez.proyectofinal.Services.CustomFirebaseMessagingService;
+import com.example.martinjmartinez.proyectofinal.Services.HistorialService;
+import com.example.martinjmartinez.proyectofinal.Services.UserService;
 import com.example.martinjmartinez.proyectofinal.UI.Buildings.Adapters.BuildingSpinnerAdapter;
-import com.example.martinjmartinez.proyectofinal.UI.Buildings.Fragments.BuildingCreateFragment;
 import com.example.martinjmartinez.proyectofinal.UI.Buildings.Fragments.BuildingListFragment;
+import com.example.martinjmartinez.proyectofinal.UI.Devices.Fragments.DeviceDetailFragment;
 import com.example.martinjmartinez.proyectofinal.UI.Devices.Fragments.DeviceListFragment;
 import com.example.martinjmartinez.proyectofinal.UI.Home.HomeFragment;
+import com.example.martinjmartinez.proyectofinal.UI.LoginActivity.LogInActivity;
 import com.example.martinjmartinez.proyectofinal.UI.Spaces.Fragments.SpaceListFragment;
-import com.example.martinjmartinez.proyectofinal.Utils.API;
-import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
+import com.example.martinjmartinez.proyectofinal.UI.Statistics.Charts.BuildingsLineChartFragment;
+import com.example.martinjmartinez.proyectofinal.UI.Statistics.StatisticsFragment;
+import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
+import com.example.martinjmartinez.proyectofinal.Utils.Utils;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
-import java.io.IOException;
 import java.util.List;
 
 import io.realm.Realm;
-import io.realm.RealmConfiguration;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 
 
 public class MainActivity extends AppCompatActivity {
 
-    private DeviceListFragment mDeviceListFragment;
     private Toolbar mToolbar;
     private DrawerLayout mDrawerLayout;
     private NavigationView mNavigationView;
     private ActionBarDrawerToggle mActionBarDrawerToggle;
     private BuildingListFragment mBuildingListFragment;
     private Spinner mSelectBuildingSpinner;
+    private HistorialService historialService;
     private BuildingSpinnerAdapter mBuildingSpinnerAdapter;
-    private API mAPI;
     private List<Building> mBuildingList;
     private Building mSelectedBuilding;
     private Activity mActivity;
     private int mLastBuildingSelected;
     private boolean doubleBackToExitPressedOnce;
     private BuildingService buildingService;
+    private UserService userService;
+    private DatabaseReference historiesDatabaseReference;
+    private ChildEventListener historiesListener;
+    private Realm realm;
+    private String userId;
+    private TextView userName;
+    private TextView userEmail;
+    private TextView logoutButton;
+    private FirebaseAuth auth;
+    private FirebaseUser user;
+    private BroadcastReceiver mMessageReceiver;
 
     public ActionBarDrawerToggle getActionBarDrawerToggle() {
         return mActionBarDrawerToggle;
@@ -81,17 +110,95 @@ public class MainActivity extends AppCompatActivity {
 
         getBuildings(false);
 
+        Intent startingIntent = getIntent();
+        if (startingIntent != null) {
+            String deviceId = startingIntent.getStringExtra("deviceId"); // Retrieve the id
+            if (deviceId != null) {
+                openDeviceInfoFragment(deviceId);
+            }
+        }
     }
 
+    public void openDeviceInfoFragment(String deviceId) {
+        DeviceDetailFragment deviceDetailFragment = (DeviceDetailFragment) getSupportFragmentManager().findFragmentByTag(FragmentKeys.DEVICE_DETAIL_FRAGMENT);
+        if (deviceDetailFragment != null) {
+            if (!deviceDetailFragment.isVisible()) {
+                Bundle bundle = new Bundle();
+
+                if (mSelectedBuilding == null) {
+                    mSelectedBuilding = mBuildingList.get(0);
+                }
+                bundle.putString(Constants.DEVICE_ID, deviceId);
+                deviceDetailFragment.setArguments(bundle);
+
+                loadContentFragment(deviceDetailFragment, FragmentKeys.DEVICE_DETAIL_FRAGMENT, true);
+            }
+        } else {
+            DeviceDetailFragment newDeviceDetailFragment = new DeviceDetailFragment();
+            Bundle bundle = new Bundle();
+
+            if (mSelectedBuilding == null) {
+                mSelectedBuilding = mBuildingList.get(0);
+            }
+            bundle.putString(Constants.DEVICE_ID, deviceId);
+            newDeviceDetailFragment.setArguments(bundle);
+
+            loadContentFragment(newDeviceDetailFragment, FragmentKeys.DEVICE_DETAIL_FRAGMENT, true);
+        }
+    }
 
     public void initVariables() {
         buildingService = new BuildingService(Realm.getDefaultInstance());
-        mDeviceListFragment = new DeviceListFragment();
         mBuildingListFragment = new BuildingListFragment();
-        mAPI = new API();
         mActivity = this;
         View headerView = mNavigationView.getHeaderView(0);
-        mSelectBuildingSpinner = (Spinner) headerView.findViewById(R.id.buildings_spinner);
+        mSelectBuildingSpinner = headerView.findViewById(R.id.buildings_spinner);
+        realm = Realm.getDefaultInstance();
+        historialService = new HistorialService(realm);
+        userName = headerView.findViewById(R.id.userName);
+        userEmail = headerView.findViewById(R.id.userEmail);
+        logoutButton = findViewById(R.id.logout);
+        userService = new UserService();
+        auth = FirebaseAuth.getInstance();
+        user = auth.getCurrentUser();
+        userId = getSharedPreferences(Constants.USER_INFO, 0).getString(Constants.USER_ID, user.getUid());
+        userName.setText(user.getDisplayName());
+        userEmail.setText(user.getEmail());
+        historiesDatabaseReference = FirebaseDatabase.getInstance().getReference("Accounts/" + userId + "/Histories");
+
+        mMessageReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                // Extract data included in the Intent
+                String message = intent.getStringExtra("message");
+                String title = intent.getStringExtra("title");
+                String tag = intent.getStringExtra("tag");
+                final String deviceId = intent.getStringExtra("deviceId");
+
+                //alert data here
+                AlertDialog.Builder builder;
+                builder = new AlertDialog.Builder(MainActivity.this, R.style.Theme_AppCompat_Light_Dialog_Alert);
+
+                builder.setTitle(title)
+                        .setMessage(message)
+                        .setPositiveButton(R.string.Keep_going, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        })
+                        .setNegativeButton(R.string.Change_settings, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                // continue with delete
+
+                                openDeviceInfoFragment(deviceId);
+                                dialog.dismiss();
+                            }
+                        })
+                        .setIcon(R.drawable.ic_alert)
+                        .show();
+
+            }
+        };
     }
 
     public void setUpBuildingSpinner(List<Building> items) {
@@ -102,9 +209,9 @@ public class MainActivity extends AppCompatActivity {
 
     public void initDrawerMenu() {
 
-        mToolbar = (Toolbar) findViewById(R.id.nav_actionbar);
-        mNavigationView = (NavigationView) findViewById(R.id.design_navigation_view);
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mToolbar = findViewById(R.id.nav_actionbar);
+        mNavigationView = findViewById(R.id.design_navigation_view);
+        mDrawerLayout = findViewById(R.id.drawer_layout);
         mActionBarDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, mToolbar, R.string.drawer_open, R.string.drawer_close);
 
         setSupportActionBar(mToolbar);
@@ -123,7 +230,34 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        LocalBroadcastManager.getInstance(mActivity).registerReceiver(mMessageReceiver,
+                new IntentFilter("notificationDialog"));
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        LocalBroadcastManager.getInstance(mActivity).unregisterReceiver(mMessageReceiver);
+    }
+
     public void initListeners() {
+        logoutButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                UserFB userFB = new UserFB(user.getUid(), user.getDisplayName(), user.getEmail());
+                userService.deleteUserFCMToken(userFB);
+                FirebaseAuth.getInstance().signOut();
+
+                Intent intent = new Intent(MainActivity.this, LogInActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+            }
+        });
+
         mNavigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -174,17 +308,16 @@ public class MainActivity extends AppCompatActivity {
                         break;
 
                     case (R.id.nav_statistics):
-                        //TODO create statistics fragment
-//                        BuildingListFragment buildingListFragment = (BuildingListFragment) getSupportFragmentManager().findFragmentByTag(FragmentKeys.BUILDING_LIST_FRAGMENT);
-//                        if (buildingListFragment != null) {
-//                            if (!buildingListFragment.isVisible()) {
-//                                loadContentFragment(buildingListFragment, FragmentKeys.BUILDING_LIST_FRAGMENT, false);
-//                            }
-//                        } else {
-//                            loadContentFragment(mBuildingListFragment, FragmentKeys.BUILDING_LIST_FRAGMENT, true);
-//                        }
-//
-//                        mDrawerLayout.closeDrawer(Gravity.START);
+                        StatisticsFragment statisticsFragment = (StatisticsFragment) getSupportFragmentManager().findFragmentByTag(FragmentKeys.STATISTICS_FRAGMENT);
+                        if (statisticsFragment != null) {
+                            if (!statisticsFragment.isVisible()) {
+                                prepareStatisticsFragment(false);
+                            }
+                        } else {
+                            prepareStatisticsFragment(true);
+                        }
+
+                        mDrawerLayout.closeDrawer(Gravity.START);
                         break;
                 }
                 return false;
@@ -220,13 +353,62 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+
+        historiesListener = new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                HistorialFB historialFB = dataSnapshot.getValue(HistorialFB.class);
+
+                if (historialFB != null) {
+                    historialService.updateOrCreate(historialFB);
+                }
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                HistorialFB historialFB = dataSnapshot.getValue(HistorialFB.class);
+
+                if (historialFB != null) {
+                    historialService.updateOrCreate(historialFB);
+                }
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        };
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.e("MainActivity", "Historial Listener set");
+        historiesDatabaseReference.addChildEventListener(historiesListener);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.e("MainActivity", "Historial Listener remove");
+        historiesDatabaseReference.removeEventListener(historiesListener);
     }
 
     public void prepareSpaceListFragment() {
         SpaceListFragment spaceListFragment = new SpaceListFragment();
         Bundle bundle = new Bundle();
 
-        bundle.putString(ArgumentsKeys.BUILDING_ID, mSelectedBuilding.get_id());
+        bundle.putString(Constants.BUILDING_ID, mSelectedBuilding.get_id());
         spaceListFragment.setArguments(bundle);
 
         loadContentFragment(spaceListFragment, FragmentKeys.SPACE_LIST_FRAGMENT, true);
@@ -239,17 +421,30 @@ public class MainActivity extends AppCompatActivity {
         if (mSelectedBuilding == null) {
             mSelectedBuilding = mBuildingList.get(0);
         }
-        bundle.putString(ArgumentsKeys.BUILDING_ID, mSelectedBuilding.get_id());
+        bundle.putString(Constants.BUILDING_ID, mSelectedBuilding.get_id());
         homeFragment.setArguments(bundle);
 
         loadContentFragment(homeFragment, FragmentKeys.HOME_FRAGMENT, addToBackStack);
+    }
+
+    public void prepareStatisticsFragment(boolean addToBackStack) {
+        StatisticsFragment statisticsFragment = new StatisticsFragment();
+        Bundle bundle = new Bundle();
+
+        if (mSelectedBuilding == null) {
+            mSelectedBuilding = mBuildingList.get(0);
+        }
+        bundle.putString(Constants.BUILDING_ID, mSelectedBuilding.get_id());
+        statisticsFragment.setArguments(bundle);
+
+        loadContentFragment(statisticsFragment, FragmentKeys.STATISTICS_FRAGMENT, addToBackStack);
     }
 
     public void prepareDeviceFragment(boolean addToBackStack) {
         DeviceListFragment deviceListFragment = new DeviceListFragment();
         Bundle bundle = new Bundle();
 
-        bundle.putString(ArgumentsKeys.BUILDING_ID, mSelectedBuilding.get_id());
+        bundle.putString(Constants.BUILDING_ID, mSelectedBuilding.get_id());
         deviceListFragment.setArguments(bundle);
 
         loadContentFragment(deviceListFragment, FragmentKeys.DEVICE_LIST_FRAGMENT, addToBackStack);
@@ -261,14 +456,17 @@ public class MainActivity extends AppCompatActivity {
         fragmentTransaction.replace(R.id.frame_layout, fragment, fragment_key);
 
         if (addToStack) {
-            fragmentTransaction.addToBackStack(null);
+            fragmentTransaction.addToBackStack(fragment_key);
+        } else {
+            fragment.getFragmentManager().popBackStack();
+            fragmentTransaction.addToBackStack(fragment_key);
         }
 
         fragmentTransaction.commitAllowingStateLoss();
     }
 
     public void getBuildings(final boolean refreshSpinner) {
-        mBuildingList = buildingService.allBuildings();
+        mBuildingList = buildingService.allActiveBuildings();
 
         if (!mBuildingList.isEmpty()) {
             if (refreshSpinner) {
@@ -297,8 +495,9 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
+        if (getSupportFragmentManager().getBackStackEntryCount() == 1) {
             if (doubleBackToExitPressedOnce) {
+                super.onBackPressed();
                 super.onBackPressed();
                 return;
             }

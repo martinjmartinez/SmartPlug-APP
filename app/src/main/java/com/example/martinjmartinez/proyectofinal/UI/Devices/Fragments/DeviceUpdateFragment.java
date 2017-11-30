@@ -2,11 +2,14 @@ package com.example.martinjmartinez.proyectofinal.UI.Devices.Fragments;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.TextWatcher;
+
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,55 +21,45 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.martinjmartinez.proyectofinal.Entities.Building;
 import com.example.martinjmartinez.proyectofinal.Entities.Device;
 import com.example.martinjmartinez.proyectofinal.Entities.Space;
+import com.example.martinjmartinez.proyectofinal.Models.DeviceFB;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
+import com.example.martinjmartinez.proyectofinal.Services.LimitService;
 import com.example.martinjmartinez.proyectofinal.Services.SpaceService;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.UI.Spaces.Adapters.SpaceSpinnerAdapter;
-import com.example.martinjmartinez.proyectofinal.Utils.API;
-import com.example.martinjmartinez.proyectofinal.Utils.ArgumentsKeys;
+import com.example.martinjmartinez.proyectofinal.Utils.Constants;
+import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 
-import java.io.IOException;
 import java.util.List;
 
 import io.realm.Realm;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 
-/**
- * Created by MartinJMartinez on 10/12/2017.
- */
 
 public class DeviceUpdateFragment extends Fragment {
 
     private Device mDevice;
-    private API mAPI;
     private Activity mActivity;
-    private String mBuildingId;
     private EditText name;
-    private EditText ipAddress;
+    private EditText monthlyLimit;
     private TextView displayName;
     private TextView deviceBuilding;
     private TextView deviceSpace;
+    private TextView spaceWarning;
     private Button saveDevice;
-    private String mSpaceId, mDeviceId;
-    private Space mSpace;
-    private Building mBuilding;
+    private String mDeviceId;
+    private Space mSpace, lastSpace;
+    private Button pairButton;
     private Spinner mSpaceSpinner;
     private SpaceSpinnerAdapter mSpaceSpinnerAdapter;
     private MainActivity mMainActivity;
     private DeviceService deviceService;
     private SpaceService spaceService;
+    private LimitService limitService;
     private BuildingService buildingService;
 
     public DeviceUpdateFragment() {
@@ -78,7 +71,7 @@ public class DeviceUpdateFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         Bundle bundle = this.getArguments();
-        mDeviceId = bundle != null ? bundle.getString(ArgumentsKeys.DEVICE_ID, "") : "";
+        mDeviceId = bundle != null ? bundle.getString(Constants.DEVICE_ID, "") : "";
     }
 
     @Override
@@ -119,18 +112,57 @@ public class DeviceUpdateFragment extends Fragment {
     private void iniVariables(View view) {
         deviceService = new DeviceService(Realm.getDefaultInstance());
         buildingService = new BuildingService(Realm.getDefaultInstance());
+        limitService = new LimitService(Realm.getDefaultInstance());
         spaceService = new SpaceService(Realm.getDefaultInstance());
-        mAPI = new API();
-        name = (EditText) view.findViewById(R.id.device_create_name);
-        ipAddress = (EditText) view.findViewById(R.id.device_create_ip);
-        displayName = (TextView) view.findViewById(R.id.device_create_display_name);
-        deviceBuilding = (TextView) view.findViewById(R.id.device_create_building);
-        deviceSpace = (TextView) view.findViewById(R.id.device_create_space);
-        saveDevice = (Button) view.findViewById(R.id.device_create_save_button);
-        mSpaceSpinner = (Spinner) view.findViewById(R.id.device_create_space_spinner);
+        name = view.findViewById(R.id.device_create_name);
+        monthlyLimit = view.findViewById(R.id.device_create_limit);
+        displayName = view.findViewById(R.id.device_create_display_name);
+        deviceBuilding = view.findViewById(R.id.device_create_building);
+        deviceSpace = view.findViewById(R.id.device_create_space);
+        saveDevice = view.findViewById(R.id.device_create_save_button);
+        mSpaceSpinner = view.findViewById(R.id.device_create_space_spinner);
+        spaceWarning = view.findViewById(R.id.space_warning);
+        pairButton = view.findViewById(R.id.pair_device);
+        pairButton.setVisibility(View.VISIBLE);
     }
 
     private void initListeners() {
+        pairButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                AlertDialog.Builder builder = Utils.createDialog(mActivity, "Change network", "Do you want to connect to another wifi network?");
+
+                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        DeviceFB deviceFB = deviceService.castToDeviceFB(mDevice);
+                        deviceFB.setConnected(false);
+                        if(!deviceFB.isReset()) {
+                            deviceFB.setReset(true);
+                        }
+                        deviceService.updateDeviceCloud(deviceFB);
+                        DevicePairFragment devicePairFragment = new DevicePairFragment();
+                        Bundle bundle = new Bundle();
+                        bundle.putString(Constants.DEVICE_ID, mDeviceId);
+                        bundle.putBoolean(Constants.IS_NEW_DEVICE, false);
+                        devicePairFragment.setArguments(bundle);
+                        Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.DEVICE_UPDATE_FRAGMENT), devicePairFragment, FragmentKeys.DEVICE_PAIR_FRAGMENT, true);
+                    }
+                });
+
+                builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+
+                // Create the AlertDialog
+                AlertDialog dialog = builder.create();
+                dialog.show();
+            }
+        });
+
         mSpaceSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -139,7 +171,7 @@ public class DeviceUpdateFragment extends Fragment {
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-                mSpace = mDevice.getBuilding().getSpaces().get(0);
+                mSpace = mDevice.getSpace();
             }
         });
 
@@ -164,9 +196,28 @@ public class DeviceUpdateFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if (!Utils.isEditTextEmpty(name)) {
-                    deviceService.updateDevice(mDeviceId, name.getText().toString(), mDevice.isStatus(), ipAddress.getText().toString(), mSpace.get_id(), mSpace.getBuilding().get_id(), mDevice.getAverageConsumption());
-                    Device newDevice = deviceService.getDeviceById(mDeviceId);
-                    updateDevice(mAPI.getClient(), newDevice.deviceToString());
+                    if (mSpace != null) {
+                        DeviceFB deviceFB = deviceService.castToDeviceFB(mDevice);
+                        deviceFB.setSpaceId(mSpace.get_id());
+                        deviceFB.setName(name.getText().toString());
+                        deviceFB.setMonthlyLimit(Utils.isEditTextEmpty(monthlyLimit) ? 0 : Double.parseDouble(monthlyLimit.getText().toString()));
+                        Log.e("limit", deviceFB.getMonthlyLimit() + "ppp");
+                        limitService.updateOrCreate(deviceFB);
+                        deviceService.updateDeviceCloud(deviceFB);
+                        spaceService.updateSpacePowerAverageConsumption(mSpace.get_id());
+                        if (lastSpace != null) {
+                            spaceService.updateSpacePowerAverageConsumption(lastSpace.get_id());
+                        }
+                    } else {
+                        DeviceFB deviceFB = deviceService.castToDeviceFB(mDevice);
+                        deviceFB.setSpaceId("");
+                        deviceFB.setMonthlyLimit(Utils.isEditTextEmpty(monthlyLimit) ? 0 : Double.parseDouble(monthlyLimit.getText().toString()));
+                        deviceFB.setName(name.getText().toString());
+                        Log.e("limit", deviceFB.getMonthlyLimit() + "pppp");
+                        limitService.updateOrCreate(deviceFB);
+                        deviceService.updateDeviceCloud(deviceFB);
+                    }
+                    mActivity.onBackPressed();
                 } else {
                     Toast.makeText(getActivity(), "Please, name your device.", Toast.LENGTH_SHORT).show();
                 }
@@ -181,56 +232,31 @@ public class DeviceUpdateFragment extends Fragment {
         });
     }
 
-    private void updateDevice(OkHttpClient client, String data) {
-        Log.e("QUERY", ArgumentsKeys.DEVICE_QUERY);
-        MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-        RequestBody body = RequestBody.create(JSON, data);
-        Log.e("JSON", data);
-        Request request = new Request.Builder()
-                .url(ArgumentsKeys.DEVICE_QUERY + "/" + mDeviceId)
-                .patch(body)
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.e("Error", e.getMessage());
-            }
-
-            @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                if (!response.isSuccessful()) {
-                    Log.e("ERROR12", response.body().string());
-                } else {
-                    Log.e("RESPONSE12", response.body().string());
-                    mActivity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mActivity.onBackPressed();
-                        }
-                    });
-                }
-            }
-        });
-    }
-
     private void getDevice() {
         mDevice = deviceService.getDeviceById(mDeviceId);
 
         name.setText(mDevice.getName());
-        ipAddress.setText(mDevice.getIp_address());
         displayName.setText(mDevice.getName());
         deviceBuilding.setText(mDevice.getBuilding().getName());
         mSpaceSpinner.setVisibility(View.VISIBLE);
         deviceSpace.setVisibility(View.GONE);
-        setUpSpacesSpinner(mDevice.getBuilding().getSpaces());
+        monthlyLimit.setText(String.valueOf(mDevice.getMonthlyLimit()));
+
+        setUpSpacesSpinner(spaceService.allActiveSpacesByBuilding(mDevice.getBuilding().get_id()));
     }
 
     public void setUpSpacesSpinner(List<Space> items) {
-        if (items.size() != 0) {
+        if (items.size() != 0 && !mDevice.isStatus()) {
+            spaceWarning.setVisibility(View.GONE);
             mSpaceSpinnerAdapter = new SpaceSpinnerAdapter(getContext(), R.layout.spaces_item_spinner, items);
             mSpaceSpinner.setAdapter(mSpaceSpinnerAdapter);
+            lastSpace = mDevice.getSpace();
         } else {
+            if(mDevice.isStatus()){
+                spaceWarning.setVisibility(View.VISIBLE);
+            }
+            mSpaceSpinnerAdapter = new SpaceSpinnerAdapter(getContext(), R.layout.spaces_item_spinner, items);
+            mSpaceSpinner.setAdapter(mSpaceSpinnerAdapter);
             mSpaceSpinner.setEnabled(false);
         }
 
