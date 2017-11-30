@@ -36,6 +36,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.iid.FirebaseInstanceId;
 
 
@@ -60,13 +61,14 @@ public class LogInActivity extends AppCompatActivity implements GoogleApiClient.
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login_activity);
-
+        Log.e("LOGINACTIVITY", "ENTROOO");
         initVariables();
         initListenners();
         settings = getSharedPreferences(Constants.USER_INFO, 0);
     }
 
     public void initVariables() {
+
         signInButton = findViewById(R.id.normal_sign_in_buttom);
         emailField = findViewById(R.id.email_field);
         passwordField = findViewById(R.id.password_field);

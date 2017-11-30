@@ -26,6 +26,10 @@ public class Device extends RealmObject {
 
     private String ssid;
 
+    private double monthlyLimit;
+
+    private boolean autoTurnOff;
+
     private boolean inConfigMode;
 
     private boolean connected;
@@ -38,6 +42,22 @@ public class Device extends RealmObject {
 
     @LinkingObjects("device")
     private final RealmResults<Historial> historials = null;
+
+    public double getMonthlyLimit() {
+        return monthlyLimit;
+    }
+
+    public boolean isAutoTurnOff() {
+        return autoTurnOff;
+    }
+
+    public void setAutoTurnOff(boolean autoTurnOff) {
+        this.autoTurnOff = autoTurnOff;
+    }
+
+    public void setMonthlyLimit(double monthlyLimit) {
+        this.monthlyLimit = monthlyLimit;
+    }
 
     public boolean isConnected() {
         return connected;

@@ -14,6 +14,8 @@ import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
+import android.support.design.widget.TextInputEditText;
+import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -27,6 +29,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Device;
 import com.example.martinjmartinez.proyectofinal.Models.DeviceFB;
@@ -66,9 +69,10 @@ public class DevicePairFragment extends Fragment {
     private Realm realm;
     private WifiManager mainWifi;
     private WifiReceiver receiverWifi;
-    private String wifitoConnect;
+    private String deviceSSID;
     private ListView wifiListView;
     private boolean connecting = false;
+    private boolean isNewDevice = false;
     private WifiConnection newConnection;
     private WifiConnection actualConnection;
     private WifiListAdapter wifiListAdapter;
@@ -85,7 +89,10 @@ public class DevicePairFragment extends Fragment {
     private DatabaseReference databaseReference;
     private FirebaseAuth auth;
     private String currentUserId;
-    private EditText wifiPassword;
+    private Handler handler;
+    private Handler handler2;
+    private TextInputEditText wifiPassword;
+    private TextInputLayout etPasswordLayout;
     private ValueEventListener deviceListener;
 
     public DevicePairFragment() {
@@ -99,6 +106,7 @@ public class DevicePairFragment extends Fragment {
         mDeviceId = bundle != null ? bundle.getString(Constants.DEVICE_ID, "") : "";
         mBuildingId = bundle != null ? bundle.getString(Constants.BUILDING_ID, "") : "";
         mSpaceId = bundle != null ? bundle.getString(Constants.SPACE_ID, "") : "";
+        isNewDevice = bundle != null ? bundle.getBoolean(Constants.IS_NEW_DEVICE, false) : false;
     }
 
     @Override
@@ -117,7 +125,6 @@ public class DevicePairFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-
 
         mActivity = getActivity();
         mMainActivity = (MainActivity) mActivity;
@@ -158,6 +165,7 @@ public class DevicePairFragment extends Fragment {
         pairButton = view.findViewById(R.id.pair_to_device_buttom);
         progressBar = view.findViewById(R.id.loading_wifi_list);
         wifiListView = view.findViewById(R.id.wifiListView);
+        etPasswordLayout = view.findViewById(R.id.etPasswordLayout);
 
         realm = Realm.getDefaultInstance();
         deviceService = new DeviceService(realm);
@@ -176,19 +184,15 @@ public class DevicePairFragment extends Fragment {
     }
 
     private void initView() {
-        if (mDeviceId.isEmpty()) {
-            setLoadingState(true);
-            listStatusTextView.setText(R.string.searching_devices);
-            pairButton.setEnabled(false);
-            pairButton.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.disabled));
-        } else if (actualConnection.getSSID().contains(mDevice.getSsid())) {
-
-        }
+        setLoadingState(true);
+        listStatusTextView.setText(R.string.searching_devices);
+        pairButton.setEnabled(false);
+        pairButton.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.disabled));
     }
 
     private void isWifiOn() {
         mActivity.registerReceiver(receiverWifi, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
-        if (mainWifi.isWifiEnabled() == false) {
+        if (!mainWifi.isWifiEnabled()) {
             mainWifi.setWifiEnabled(true);
         }
 
@@ -197,7 +201,12 @@ public class DevicePairFragment extends Fragment {
 
     private void setSetUpView() {
         setLoadingState(false);
+        wifiNameTextView.setVisibility(View.VISIBLE);
+        actionTextView.setVisibility(View.VISIBLE);
+        listStatusTextView.setVisibility(View.VISIBLE);
+        wifiListView.setVisibility(View.VISIBLE);
         actionTextView.setText(R.string.pair_to);
+        pairButton.setVisibility(View.VISIBLE);
         listStatusTextView.setText(R.string.devices_found);
         wifiListView.setEmptyView(emtyList);
     }
@@ -212,14 +221,12 @@ public class DevicePairFragment extends Fragment {
 
             @Override
             public void run() {
-                // TODO Auto-generated method stub
                 int permissionCheck = ContextCompat.checkSelfPermission(mMainActivity,
                         android.Manifest.permission.ACCESS_COARSE_LOCATION);
 
                 if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
                     ActivityCompat.requestPermissions(mMainActivity,
-                            new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION, android.Manifest.permission.ACCESS_FINE_LOCATION},
-                            0);
+                            new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION, android.Manifest.permission.ACCESS_FINE_LOCATION}, 0);
                 }
 
                 mainWifi = (WifiManager) mActivity.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
@@ -249,19 +256,26 @@ public class DevicePairFragment extends Fragment {
 
                     if (deviceFB.get_id().equals(mDeviceId)) {
                         mDeviceFB = deviceFB;
-                        Log.e("CONECTED", mDeviceFB.isConnected() + "   gg");
                         if (mDeviceFB.isConnected()) {
+                            mActivity.unregisterReceiver(receiverWifi);
+                            deviceService.updateDeviceLocal(deviceFB);
                             connecting = false;
-                            DeviceCreateFragment deviceCreateFragment = new DeviceCreateFragment();
                             Bundle bundle = new Bundle();
+
                             bundle.putString(Constants.BUILDING_ID, mBuildingId);
                             bundle.putString(Constants.SPACE_ID, mSpaceId);
                             bundle.putString(Constants.DEVICE_ID, mDeviceId);
-                            deviceCreateFragment.setArguments(bundle);
 
-                            Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.DEVICE_PAIR_FRAGMENT), deviceCreateFragment, FragmentKeys.DEVICE_CREATION_FRAGMENT, false);
+                            handler.removeCallbacksAndMessages(null);
+
+                            if (isNewDevice) {
+                                DeviceCreateFragment deviceCreateFragment = new DeviceCreateFragment();
+                                deviceCreateFragment.setArguments(bundle);
+                                Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.DEVICE_PAIR_FRAGMENT), deviceCreateFragment, FragmentKeys.DEVICE_CREATION_FRAGMENT, false);
+                            } else {
+                                mActivity.onBackPressed();
+                            }
                         }
-
                     }
                 }
             }
@@ -286,8 +300,10 @@ public class DevicePairFragment extends Fragment {
                 wifiNameTextView.setText(newConnection.getSSID());
                 if (newConnection.getType().equals("WPA") || newConnection.getType().equals("WEP")) {
                     wifiPassword.setVisibility(View.VISIBLE);
+                    etPasswordLayout.setVisibility(View.VISIBLE);
                 } else {
                     wifiPassword.setVisibility(View.GONE);
+                    etPasswordLayout.setVisibility(View.GONE);
                 }
 
                 pairButton.setEnabled(true);
@@ -301,8 +317,12 @@ public class DevicePairFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 if (newConnection != null) {
+                    if (!isNewDevice) {
+                        deviceService.updateDeviceReset(mDeviceId, false);
+                    }
                     setLoadingState(true);
                     pairButton.setEnabled(false);
+                    actionTextView.setText("");
                     pairButton.setBackgroundColor(ContextCompat.getColor(context, R.color.disabled));
                     connectToDevice();
                 }
@@ -314,11 +334,16 @@ public class DevicePairFragment extends Fragment {
             public void onClick(View view) {
                 if (newConnection != null) {
                     if (!wifiPassword.getText().toString().isEmpty()) {
-                        //TODO add toast
-                        wifitoConnect = newConnection.getSSID();
-                        DeviceFB deviceFB = new DeviceFB(false, false, true, mBuildingId, mSpaceId);
-                        mDeviceId = deviceService.createDeviceCloud(deviceFB);
+                        if (isNewDevice) {
+                            DeviceFB deviceFB = new DeviceFB(false, false, true, mBuildingId, mSpaceId, deviceSSID, false);
+                            mDeviceId = deviceService.createDeviceCloud(deviceFB);
+                        }else {
+                            deviceService.updateDeviceReset(mDeviceId, false);
+                        }
+
                         sendCredentialsToArduino(new OkHttpClient(), newConnection.getSSID(), wifiPassword.getText().toString());
+                    } else {
+                        Toast.makeText(mActivity.getApplicationContext(), "Please, enter the password", Toast.LENGTH_SHORT).show();
                     }
                 }
             }
@@ -333,12 +358,25 @@ public class DevicePairFragment extends Fragment {
         client.newCall(requestAction).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
+                mActivity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(mActivity.getApplicationContext(), "Couldn't connect to the device, Reset it and try again", Toast.LENGTH_LONG).show();
+                    }
+                });
+
                 call.cancel();
             }
 
             @Override
             public void onResponse(Call call, final Response response) throws IOException {
                 if (!response.isSuccessful()) {
+                    mActivity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(mActivity.getApplicationContext(), "Something went wrong, please try again", Toast.LENGTH_LONG).show();
+                        }
+                    });
                     throw new IOException("sendHistoryIdToArduino" + response);
                 } else {
                     Log.e("sendCredentials", "id sent to arduino");
@@ -352,7 +390,30 @@ public class DevicePairFragment extends Fragment {
                             connectButton.setVisibility(View.GONE);
                             wifiNameTextView.setVisibility(View.GONE);
                             actionTextView.setVisibility(View.GONE);
-                            mActivity.unregisterReceiver(receiverWifi);
+                            wifiListView.setVisibility(View.GONE);
+                            wifiPassword.setVisibility(View.GONE);
+                            etPasswordLayout.setVisibility(View.GONE);
+
+                            handler = new Handler();
+                            handler.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if (mainWifi.getConnectionInfo().getSSID().contains(deviceSSID)) {
+                                        Toast.makeText(mActivity.getApplicationContext(), "Couldn't connect device to wifi", Toast.LENGTH_LONG).show();
+                                        connecting = false;
+                                    } else {
+                                        if (deviceSSID == null) {
+                                            deviceSSID = mainWifi.getConnectionInfo().getSSID();
+                                        }
+                                        for (WifiConnection wifiConnection : connections) {
+                                            if (wifiConnection.getSSID().contains(deviceSSID)) {
+                                                Toast.makeText(mActivity.getApplicationContext(), "Couldn't connect device to wifi", Toast.LENGTH_LONG).show();
+                                                connecting = false;
+                                            }
+                                        }
+                                    }
+                                }
+                            }, 30000);
                         }
                     });
                 }
@@ -363,6 +424,7 @@ public class DevicePairFragment extends Fragment {
 
     private void connectToDevice() {
         WifiConfiguration conf = new WifiConfiguration();
+        deviceSSID = newConnection.getSSID();
         conf.SSID = "\"" + newConnection.getSSID() + "\"";
 
         conf.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
@@ -388,7 +450,15 @@ public class DevicePairFragment extends Fragment {
     }
 
     private void setWifiSetUp() {
+        wifiListView.setVisibility(View.VISIBLE);
+        actionTextView.setVisibility(View.VISIBLE);
+        listStatusTextView.setVisibility(View.VISIBLE);
+        connectButton.setVisibility(View.VISIBLE);
+
+
         pairButton.setVisibility(View.GONE);
+        wifiListView.setVisibility(View.VISIBLE);
+        wifiNameTextView.setVisibility(View.VISIBLE);
         actionTextView.setText(R.string.connect_to);
         listStatusTextView.setText("Networks found");
         connectButton.setVisibility(View.VISIBLE);
@@ -410,23 +480,42 @@ public class DevicePairFragment extends Fragment {
                         connections.add(new WifiConnection(wifiList.get(i).SSID, wifiList.get(i).level, wifiList.get(i).capabilities));
                     }
                 } else {
-                    if (wifiList.get(i).SSID.contains("SmartPlug-")) {
-                        connections.add(new WifiConnection(wifiList.get(i).SSID, wifiList.get(i).level, wifiList.get(i).capabilities));
+                    if (isNewDevice) {
+                        if (wifiList.get(i).SSID.contains("SmartPlug-")) {
+                            connections.add(new WifiConnection(wifiList.get(i).SSID, wifiList.get(i).level, wifiList.get(i).capabilities));
+                        }
+                    } else {
+                        if (wifiList.get(i).SSID.contains(mDevice.getSsid())) {
+                            connections.add(new WifiConnection(wifiList.get(i).SSID, wifiList.get(i).level, wifiList.get(i).capabilities));
+                        }
                     }
+
                 }
             }
 
             if (netInfo != null && netInfo.getType() == ConnectivityManager.TYPE_WIFI) {
-                setLoadingState(false);
                 if (!connecting) {
                     if (currentSSID.contains("SmartPlug")) {
                         setWifiSetUp();
                     } else {
-                        setSetUpView();
+                        if (!isNewDevice && wifiList.isEmpty()) {
+                            handler2 = new Handler();
+                            handler2.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    setSetUpView();
+                                    handler2.removeCallbacksAndMessages(null);
+                                }
+                            }, 20000);
+                        } else {
+                            setSetUpView();
+                        }
                     }
                     wifiListAdapter.notifyDataSetChanged();
                 }
-            } else {
+            } else
+
+            {
                 listStatusTextView.setText(R.string.searching_wifi);
                 setLoadingState(true);
             }

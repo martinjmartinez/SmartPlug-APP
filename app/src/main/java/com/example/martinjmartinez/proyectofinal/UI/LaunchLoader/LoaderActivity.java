@@ -39,8 +39,8 @@ public class LoaderActivity extends AppCompatActivity {
     private BuildingService buildingService;
     private SpaceService spaceService;
     private DeviceService deviceService;
-    private String userId;
-
+    private FirebaseAuth mAuth;
+    private FirebaseUser currentUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,9 +52,9 @@ public class LoaderActivity extends AppCompatActivity {
         deviceService = new DeviceService(realm);
         buildingService = new BuildingService(realm);
         spaceService = new SpaceService(realm);
-
-        userId = getSharedPreferences(Constants.USER_INFO, 0).getString(Constants.USER_ID, FirebaseAuth.getInstance().getCurrentUser().getUid());
-
+        mAuth = FirebaseAuth.getInstance();
+        currentUser = mAuth.getCurrentUser();
+        Log.e("LOADERACTIVITY", "ENTROOO");
         getData();
     }
 
@@ -69,11 +69,13 @@ public class LoaderActivity extends AppCompatActivity {
     }
 
     public void getData() {
+        Log.e("getData", "ENTRO");
         getBuildings();
     }
 
     public void getBuildings() {
-        final DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/" + userId + "/Buildings");
+        Log.e("getBuildings", "ENTRO");
+        final DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/" + currentUser.getUid() + "/Buildings");
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -84,6 +86,7 @@ public class LoaderActivity extends AppCompatActivity {
                         buildingService.updateOrCreate(buildingFB);
 
                     } else {
+                        Log.e("LoaderActivity", "Buildings Listener 2");
                         databaseReference.removeEventListener(this);
                     }
                 }
@@ -99,7 +102,7 @@ public class LoaderActivity extends AppCompatActivity {
     }
 
     public void getSpaces() {
-        final DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/" + userId + "/Spaces");
+        final DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/" + currentUser.getUid() + "/Spaces");
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -125,7 +128,7 @@ public class LoaderActivity extends AppCompatActivity {
     }
 
     public void getDevices() {
-        final DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/" + userId + "/Devices");
+        final DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/" + currentUser.getUid() + "/Devices");
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -151,7 +154,7 @@ public class LoaderActivity extends AppCompatActivity {
     }
 
     public void getHistorials() {
-        final DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/" + userId + "/Histories");
+        final DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/" + currentUser.getUid() + "/Histories");
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -166,6 +169,7 @@ public class LoaderActivity extends AppCompatActivity {
                         databaseReference.removeEventListener(this);
                     }
                 }
+                historialService.createFeakData();
                 databaseReference.removeEventListener(this);
                 loadFinished();
             }
@@ -178,6 +182,7 @@ public class LoaderActivity extends AppCompatActivity {
     }
 
     public void loadFinished() {
+        Log.e("loadFinished", "ENTROO");
         Intent intent = new Intent(this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);

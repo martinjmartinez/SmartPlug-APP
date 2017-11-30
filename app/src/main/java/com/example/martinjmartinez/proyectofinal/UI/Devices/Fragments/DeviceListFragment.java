@@ -141,6 +141,8 @@ public class DeviceListFragment extends Fragment {
                 Bundle bundle = new Bundle();
                 bundle.putString(Constants.BUILDING_ID, mBuildingId);
                 bundle.putString(Constants.SPACE_ID, mSpaceId);
+                bundle.putBoolean(Constants.IS_NEW_DEVICE, true);
+
                 devicePairFragment.setArguments(bundle);
                 Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.DEVICE_LIST_FRAGMENT), devicePairFragment, FragmentKeys.DEVICE_PAIR_FRAGMENT, true);
             }

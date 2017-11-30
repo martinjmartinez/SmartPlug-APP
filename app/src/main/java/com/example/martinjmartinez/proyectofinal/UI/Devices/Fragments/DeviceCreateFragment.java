@@ -24,6 +24,7 @@ import com.example.martinjmartinez.proyectofinal.Models.DeviceFB;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
+import com.example.martinjmartinez.proyectofinal.Services.LimitService;
 import com.example.martinjmartinez.proyectofinal.Services.SpaceService;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.UI.Spaces.Adapters.SpaceSpinnerAdapter;
@@ -55,13 +56,14 @@ public class DeviceCreateFragment extends Fragment {
     private String mSpaceId, userId;
     private Space mSpace;
     private Building mBuilding;
+    private EditText monthlyLimit;
     private Spinner mSpaceSpinner;
     private SpaceSpinnerAdapter mSpaceSpinnerAdapter;
     private MainActivity mMainActivity;
     private DeviceService deviceService;
+    private LimitService limitService;
     private SpaceService spaceService;
     private BuildingService buildingService;
-    private Button pairButton;
     private ValueEventListener singleDeviceListener;
     private DatabaseReference databaseReference;
 
@@ -127,27 +129,17 @@ public class DeviceCreateFragment extends Fragment {
         deviceService = new DeviceService(Realm.getDefaultInstance());
         buildingService = new BuildingService(Realm.getDefaultInstance());
         spaceService = new SpaceService(Realm.getDefaultInstance());
+        limitService = new LimitService(Realm.getDefaultInstance());
         name =  view.findViewById(R.id.device_create_name);
         displayName =  view.findViewById(R.id.device_create_display_name);
         deviceBuilding =  view.findViewById(R.id.device_create_building);
+        monthlyLimit = view.findViewById(R.id.device_create_limit);
         deviceSpace =  view.findViewById(R.id.device_create_space);
         saveDevice =  view.findViewById(R.id.device_create_save_button);
         mSpaceSpinner =  view.findViewById(R.id.device_create_space_spinner);
-       // pairButton = view.findViewById(R.id.pair_device);
     }
 
     private void initListeners() {
-//        pairButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                DevicePairFragment devicePairFragment = new DevicePairFragment();
-//                Bundle bundle = new Bundle();
-//                bundle.putString(Constants.DEVICE_ID, mSpaceId);
-//                devicePairFragment.setArguments(bundle);
-//                Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.DEVICE_CREATION_FRAGMENT), devicePairFragment, FragmentKeys.DEVICE_PAIR_FRAGMENT, true);
-//            }
-//        });
-
         singleDeviceListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -199,14 +191,17 @@ public class DeviceCreateFragment extends Fragment {
                     mDevice.setStatus(false);
                     mDevice.setInConfigMode(false);
                     mDevice.setBuildingId(mBuilding.get_id());
+                    mDevice.setMonthlyLimit(Double.parseDouble(monthlyLimit.getText().toString()));
                     mDevice.setPower(0);
                     mDevice.setActive(true);
                     if (mSpace ==null) {
                         mDevice.setSpaceId("");
                         deviceService.updateDeviceCloud(mDevice);
+                        limitService.updateOrCreate(mDevice);
                     } else {
                         mDevice.setSpaceId(mSpace.get_id());
                         deviceService.updateDeviceCloud(mDevice);
+                        limitService.updateOrCreate(mDevice);
                     }
                     mActivity.onBackPressed();
                 } else {

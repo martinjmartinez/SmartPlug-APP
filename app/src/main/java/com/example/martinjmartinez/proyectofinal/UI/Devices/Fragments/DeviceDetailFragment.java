@@ -3,6 +3,7 @@ package com.example.martinjmartinez.proyectofinal.UI.Devices.Fragments;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.res.ColorStateList;
 import android.os.Bundle;
 
 import android.support.annotation.Nullable;
@@ -16,19 +17,24 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Device;
 import com.example.martinjmartinez.proyectofinal.Models.DeviceFB;
 import com.example.martinjmartinez.proyectofinal.Models.HistorialFB;
+import com.example.martinjmartinez.proyectofinal.Models.MonthConsumed;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
 import com.example.martinjmartinez.proyectofinal.Services.HistorialService;
+import com.example.martinjmartinez.proyectofinal.Services.LimitService;
 import com.example.martinjmartinez.proyectofinal.UI.Devices.Statistics.DeviceStatisticsDetailsFragment;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 
 import com.example.martinjmartinez.proyectofinal.Utils.Constants;
+import com.example.martinjmartinez.proyectofinal.Utils.DateUtils;
 import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 
@@ -54,20 +60,28 @@ public class DeviceDetailFragment extends Fragment {
     private TextView averagePower;
     private TextView building;
     private TextView lastTimeUsed;
+    private TextView monthlyLimit;
     private Switch status;
+    private ProgressBar limitProgress;
+    private TextView limitPercentage;
+    private TextView actualLimit;
+    private Switch autoTurnOff;
     private TextView power;
     private MainActivity mMainActivity;
     private DeviceService deviceService;
     private HistorialService historialService;
     private Button mEditButton;
-    //private Button mDeleteButton;
+    private Button mDeleteButton;
     private LinearLayout statisticsButton;
     private DatabaseReference databaseReference;
+    private DatabaseReference limitReference;
+    private LimitService limitService;
     private CompoundButton.OnCheckedChangeListener listener;
+    private CompoundButton.OnCheckedChangeListener autoTurnOffListener;
     private ValueEventListener deviceListener;
+    private ValueEventListener limitListener;
 
-    public DeviceDetailFragment() {
-    }
+    public DeviceDetailFragment() {}
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -118,18 +132,25 @@ public class DeviceDetailFragment extends Fragment {
     private void iniVariables(View view) {
         deviceService = new DeviceService(Realm.getDefaultInstance());
         historialService = new HistorialService(Realm.getDefaultInstance());
+        limitService = new LimitService(Realm.getDefaultInstance());
         name = view.findViewById(R.id.device_detail_name);
         space = view.findViewById(R.id.device_detail_space);
         building = view.findViewById(R.id.device_detail_building);
         power =  view.findViewById(R.id.device_detail_power);
         lastTimeUsed =  view.findViewById(R.id.device_detail_last_turn_on);
+        limitProgress = view.findViewById(R.id.device_limit_progressbas);
+        limitPercentage = view.findViewById(R.id.device_detail_limit_percentage);
+        actualLimit = view.findViewById(R.id.device_actual_limit);
         status = view.findViewById(R.id.device_detail_status);
         mEditButton =  view.findViewById(R.id.device_detail_update);
-       // mDeleteButton = view.findViewById(R.id.device_detail_delete);
+        autoTurnOff = view.findViewById(R.id.device_detail_limit_autoOff);
+        mDeleteButton = view.findViewById(R.id.device_detail_delete);
+        monthlyLimit = view.findViewById(R.id.device_detail_limit);
         averagePower =  view.findViewById(R.id.device_detail_average);
         statisticsButton =  view.findViewById(R.id.device_statistics_button);
         userId = mActivity.getSharedPreferences(Constants.USER_INFO, 0).getString(Constants.USER_ID, FirebaseAuth.getInstance().getCurrentUser().getUid());
         databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/"+ userId + "/Devices");
+        limitReference = FirebaseDatabase.getInstance().getReference("Accounts/"+ userId + "/MonthlyConsumed");
 
         listener = new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -145,11 +166,26 @@ public class DeviceDetailFragment extends Fragment {
                     Log.e("DeviceDetailAdapter", "getHistoryLogs");
                     historialService.closeHistory(historialFB);
                     deviceService.updateDevicePower(mDevice.get_id(), 0);
+                    power.setText("OFF");
                     averagePower.setText(Utils.decimalFormat.format(mDevice.getAverageConsumption()) + " W");
                 }
 
             }
         };
+
+        autoTurnOffListener = new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                if (isChecked) {
+                    deviceService.updateDeviceAutoTurnOff(mDeviceId, true);
+                } else {
+                    deviceService.updateDeviceAutoTurnOff(mDeviceId, false);
+                }
+            }
+        };
+
+        mDevice = deviceService.getDeviceById(mDeviceId);
+        initDeviceView(mDevice);
     }
 
     private void initListeners() {
@@ -167,32 +203,32 @@ public class DeviceDetailFragment extends Fragment {
             }
         });
 
-//        mDeleteButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                AlertDialog.Builder builder = Utils.createDialog(mActivity, "Delete Device", "Do you want to delete this Device?");
-//
-//                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-//                    @Override
-//                    public void onClick(DialogInterface dialog, int which) {
-//                        deviceService.deleteDevice(mDeviceId);
-//                        mActivity.onBackPressed();
-//                    }
-//                });
-//
-//                builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
-//                    @Override
-//                    public void onClick(DialogInterface dialog, int which) {
-//                        dialog.dismiss();
-//                    }
-//                });
-//
-//                // Create the AlertDialog
-//                AlertDialog dialog = builder.create();
-//                dialog.show();
-//
-//            }
-//        });
+        mDeleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialog.Builder builder = Utils.createDialog(mActivity, "Delete Device", "Do you want to delete this Device?");
+
+                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        deviceService.deleteDevice(mDeviceId);
+                        mActivity.onBackPressed();
+                    }
+                });
+
+                builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+
+                // Create the AlertDialog
+                AlertDialog dialog = builder.create();
+                dialog.show();
+
+            }
+        });
         statisticsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -222,6 +258,8 @@ public class DeviceDetailFragment extends Fragment {
                 DeviceFB deviceFB = dataSnapshot.getValue(DeviceFB.class);
                 deviceService.updateDeviceLocal(deviceFB);
                 mDevice = deviceService.getDeviceById(mDeviceId);
+                limitReference.child(mDeviceId).addValueEventListener(limitListener);
+                limitService.updateAutoTurnOff(deviceFB);
                 initDeviceView(mDevice);
             }
 
@@ -231,6 +269,56 @@ public class DeviceDetailFragment extends Fragment {
             }
         };
         databaseReference.child(mDeviceId).addValueEventListener(deviceListener);
+        limitListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                boolean hasLimit = false;
+                for(DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()) {
+                    String monthId = DateUtils.getMonthAndYear(DateUtils.getCurrentDate());
+                    if(isAdded()) {
+                        if (dataSnapshot1.getKey().equals(monthId)) {
+                            hasLimit = true;
+                            MonthConsumed monthConsumed = dataSnapshot1.getValue(MonthConsumed.class);
+                            if (monthConsumed.getLimit() == 0){
+                                monthlyLimit.setText("Not set");
+                            } else {
+                                limitProgress.setMax(Double.valueOf(monthConsumed.getLimit()).intValue());
+                                limitProgress.setProgress(Double.valueOf(monthConsumed.getTotalConsumed()).intValue());
+                                monthlyLimit.setText(monthConsumed.getLimit() + " W/h");
+                                actualLimit.setText(Utils.decimalFormat.format(monthConsumed.getTotalConsumed()));
+                                double percentage = (monthConsumed.getTotalConsumed() / monthConsumed.getLimit()) * 100;
+                                if(percentage >= 100){
+                                    autoTurnOff.setEnabled(false);
+                                    limitProgress.setProgressTintList(ColorStateList.valueOf(getResources().getColor(R.color.alert)));
+                                }else {
+                                    if (percentage < 100 && percentage >= 75) {
+                                        limitProgress.setProgressTintList(ColorStateList.valueOf(getResources().getColor(R.color.color4)));
+                                    }
+                                    autoTurnOff.setEnabled(true);
+                                }
+
+                                limitPercentage.setText(Utils.decimalFormat.format(percentage) + "%");
+                            }
+
+                            deviceService.updateDeviceLimit(mDevice.get_id(), monthConsumed.getLimit());
+                        }
+                    }
+                }
+
+                if(!hasLimit) {
+                    monthlyLimit.setText("Not set");
+                }
+
+                limitReference.removeEventListener(this);
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        };
+
     }
 
     @Override
@@ -245,7 +333,11 @@ public class DeviceDetailFragment extends Fragment {
         status.setOnCheckedChangeListener(null);
         status.setChecked(device.isStatus());
         status.setOnCheckedChangeListener(listener);
+        autoTurnOff.setOnCheckedChangeListener(null);
+        autoTurnOff.setChecked(device.isAutoTurnOff());
+        autoTurnOff.setOnCheckedChangeListener(autoTurnOffListener);
         averagePower.setText(Utils.decimalFormat.format(device.getAverageConsumption()) + " W");
+
 
         if (mDevice.getLastTimeUsed().getTime() != 0) {
             lastTimeUsed.setText(Utils.formatDefaultDate(mDevice.getLastTimeUsed()));
@@ -253,12 +345,14 @@ public class DeviceDetailFragment extends Fragment {
             lastTimeUsed.setText("Never Used");
         }
 
-        space.setText(device.getSpace() == null ? "" : device.getSpace().getName());
+        space.setText(device.getSpace() == null ? "----" : device.getSpace().getName());
 
         building.setText(device.getBuilding().getName());
 
         if (device.isStatus()) {
             power.setText(Utils.decimalFormat.format(mDevice.getPower()) + " W");
+        } else {
+            power.setText("OFF");
         }
     }
 }

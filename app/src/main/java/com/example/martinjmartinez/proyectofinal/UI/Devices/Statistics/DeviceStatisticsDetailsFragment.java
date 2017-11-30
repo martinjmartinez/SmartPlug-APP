@@ -85,7 +85,6 @@ public class DeviceStatisticsDetailsFragment  extends Fragment{
     public void onResume() {
         super.onResume();
 
-        //todo add name of the building
         mMainActivity.getSupportActionBar().setTitle(mDevice.getName() + "'s " + "Stats");
     }
 

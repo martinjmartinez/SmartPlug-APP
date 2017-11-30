@@ -99,6 +99,7 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
                     Log.e("DeviceListAdapter", "getHistoryLogs");
                     historialService.closeHistory(historialFB);
                     holder.mAverage.setText(Utils.decimalFormat.format(device.getAverageConsumption()) + " W");
+                    holder.mPower.setText("0 W");
                 }
             }
         };

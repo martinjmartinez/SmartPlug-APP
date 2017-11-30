@@ -87,7 +87,6 @@ public class SpaceStatisticsDetailsFragment extends Fragment{
     public void onResume() {
         super.onResume();
 
-        //todo add name of the building
         mMainActivity.getSupportActionBar().setTitle(mSpace.getName() + "'s " + "Stats");
     }
 

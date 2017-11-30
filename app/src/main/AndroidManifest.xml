@@ -21,6 +21,11 @@
             android:configChanges="orientation|keyboardHidden"
             android:windowSoftInputMode="stateHidden"
             android:screenOrientation="portrait">
+
+            <intent-filter>
+                <action android:name=".MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
         </activity>
 
         <activity

@@ -3,15 +3,10 @@ package com.example.martinjmartinez.proyectofinal.Utils;
 
 public class Constants {
 
-    static public String BUILDING_QUERY = "https://smartplug-api.herokuapp.com/buildings";
-    static public String SPACE_QUERY = "https://smartplug-api.herokuapp.com/spaces";
-    static public String DEVICE_QUERY = "https://smartplug-api.herokuapp.com/devices";
-    static public String HISTORY_QUERY = "https://smartplug-api.herokuapp.com/histories";
-
-    static public String QUERY = "QUERY";
     static public String BUILDING_ID = "BUILDING_ID";
     static public String DEVICE_ID = "DEVICE_ID";
     static public String SPACE_ID = "SPACE_ID";
+    static public String IS_NEW_DEVICE = "IS_NEW_DEVICE";
 
     static public String USER_ID = "user_id";
     static public String USER_INFO = "user_info";

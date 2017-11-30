@@ -85,8 +85,6 @@ public class BuildingStatisticsDetailsFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-
-        //todo add name of the building
         mMainActivity.getSupportActionBar().setTitle(mBuilding.getName() + "'s " + "Stats");
     }
 

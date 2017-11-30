@@ -22,18 +22,25 @@ public class Historial extends RealmObject {
 
     private Date endDate;
 
+    private double deviceLimit;
+
     private Date lastLogDate;
 
     private double totalTimeInSeconds;
-
-    @LinkingObjects("historial")
-    private final RealmResults<Log> logs = null;
 
     private double powerAverage;
 
     private double powerConsumed;
 
     public Historial() {}
+
+    public double getDeviceLimit() {
+        return deviceLimit;
+    }
+
+    public void setDeviceLimit(double deviceLimit) {
+        this.deviceLimit = deviceLimit;
+    }
 
     public Date getLastLogDate() {
         return lastLogDate;

@@ -79,8 +79,6 @@ public class BuildingsLineChartFragment extends Fragment{
             mEndDate = new Date(getArguments().getLong("endDate"));
             buildingId = getArguments().getString("buildingId");
             singleBuilding = getArguments().getBoolean("singleBuilding");
-//            userId = getArguments().getString(Constants.USER_ID);
-//            databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/"+ userId + "/Histories");
             realm = Realm.getDefaultInstance();
             buildingService = new BuildingService(realm);
             historialService = new HistorialService(realm);
@@ -106,7 +104,7 @@ public class BuildingsLineChartFragment extends Fragment{
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        title.setText("Buildings");
+        title.setText("Building");
     }
 
     static public Map<String, Integer> getDates(List<Building> buildings, Map<String, Integer> dates) {

@@ -16,6 +16,8 @@ public class HistorialFB {
 
     private int numberOfLogs;
 
+    private double deviceLimit;
+
     private long lastLogDate;
 
     private double sumOfLogs;
@@ -38,12 +40,26 @@ public class HistorialFB {
 
     }
 
-    public HistorialFB(String _id, long startDate, String deviceId, String buildingId, String spaceId) {
+    public HistorialFB(String _id, long startDate, String deviceId, String buildingId, String spaceId, double deviceLimit) {
         this._id = _id;
         this.deviceId = deviceId;
         this.startDate = startDate;
         this.buildingId = buildingId;
         this.spaceId = spaceId;
+        this.deviceLimit = deviceLimit;
+    }
+
+    public HistorialFB(String id, String deviceId, String spaceId, String buildingId, long startDate, long endDate, long lastLogDate, double totalTimeInSeconds, double powerAverage, double powerConsumed) {
+        this._id = id;
+        this.deviceId = deviceId;
+        this.spaceId = spaceId;
+        this.buildingId = buildingId;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.lastLogDate = lastLogDate;
+        this.totalTimeInSeconds = totalTimeInSeconds;
+        this.powerAverage = powerAverage;
+        this.powerConsumed = powerConsumed;
     }
 
     public String get_id() {
@@ -60,6 +76,14 @@ public class HistorialFB {
 
     public void setTotalTimeInSeconds(double totalTimeInSeconds) {
         this.totalTimeInSeconds = totalTimeInSeconds;
+    }
+
+    public double getDeviceLimit() {
+        return deviceLimit;
+    }
+
+    public void setDeviceLimit(double deviceLimit) {
+        this.deviceLimit = deviceLimit;
     }
 
     public int getNumberOfLogs() {

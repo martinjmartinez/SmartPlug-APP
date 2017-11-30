@@ -4,9 +4,13 @@ package com.example.martinjmartinez.proyectofinal.Utils;
 import android.support.v4.util.ArrayMap;
 import android.util.Log;
 
+import com.example.martinjmartinez.proyectofinal.Entities.Device;
+
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -74,6 +78,14 @@ public final class DateUtils {
         }
 
         return outputFormat.format(date);
+    }
+
+    public static String getMonthAndYear(Date date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        String id = Integer.toString(calendar.get(Calendar.MONTH)) + Integer.toString(calendar.get(Calendar.YEAR));
+
+        return id;
     }
 
     public static String timeFormatter(long seconds){

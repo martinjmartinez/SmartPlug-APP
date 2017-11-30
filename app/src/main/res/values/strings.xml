@@ -23,4 +23,8 @@
     <string name="waiting_for_connection">Waiting for connection...</string>
     <string name="searching_wifi">Searching for wifi networks...</string>
     <string name="device_is_connectiong">Device is connecting</string>
+    <string name="last_time_used">Last time Used:</string>
+    <string name="monthly_limit">Monthly Limit:</string>
+    <string name="Keep_going">Keep going!</string>
+    <string name="Change_settings">Change settings</string>
 </resources>

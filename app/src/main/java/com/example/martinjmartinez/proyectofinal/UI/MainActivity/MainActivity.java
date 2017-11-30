@@ -39,6 +39,7 @@ import com.example.martinjmartinez.proyectofinal.Services.HistorialService;
 import com.example.martinjmartinez.proyectofinal.Services.UserService;
 import com.example.martinjmartinez.proyectofinal.UI.Buildings.Adapters.BuildingSpinnerAdapter;
 import com.example.martinjmartinez.proyectofinal.UI.Buildings.Fragments.BuildingListFragment;
+import com.example.martinjmartinez.proyectofinal.UI.Devices.Fragments.DeviceDetailFragment;
 import com.example.martinjmartinez.proyectofinal.UI.Devices.Fragments.DeviceListFragment;
 import com.example.martinjmartinez.proyectofinal.UI.Home.HomeFragment;
 import com.example.martinjmartinez.proyectofinal.UI.LoginActivity.LogInActivity;
@@ -47,6 +48,7 @@ import com.example.martinjmartinez.proyectofinal.UI.Statistics.Charts.BuildingsL
 import com.example.martinjmartinez.proyectofinal.UI.Statistics.StatisticsFragment;
 import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
+import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
@@ -79,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
     private BuildingService buildingService;
     private UserService userService;
     private DatabaseReference historiesDatabaseReference;
-    private ValueEventListener historiesListener;
+    private ChildEventListener historiesListener;
     private Realm realm;
     private String userId;
     private TextView userName;
@@ -108,6 +110,41 @@ public class MainActivity extends AppCompatActivity {
 
         getBuildings(false);
 
+        Intent startingIntent = getIntent();
+        if (startingIntent != null) {
+            String deviceId = startingIntent.getStringExtra("deviceId"); // Retrieve the id
+            if (deviceId != null) {
+                openDeviceInfoFragment(deviceId);
+            }
+        }
+    }
+
+    public void openDeviceInfoFragment(String deviceId) {
+        DeviceDetailFragment deviceDetailFragment = (DeviceDetailFragment) getSupportFragmentManager().findFragmentByTag(FragmentKeys.DEVICE_DETAIL_FRAGMENT);
+        if (deviceDetailFragment != null) {
+            if (!deviceDetailFragment.isVisible()) {
+                Bundle bundle = new Bundle();
+
+                if (mSelectedBuilding == null) {
+                    mSelectedBuilding = mBuildingList.get(0);
+                }
+                bundle.putString(Constants.DEVICE_ID, deviceId);
+                deviceDetailFragment.setArguments(bundle);
+
+                loadContentFragment(deviceDetailFragment, FragmentKeys.DEVICE_DETAIL_FRAGMENT, true);
+            }
+        } else {
+            DeviceDetailFragment newDeviceDetailFragment = new DeviceDetailFragment();
+            Bundle bundle = new Bundle();
+
+            if (mSelectedBuilding == null) {
+                mSelectedBuilding = mBuildingList.get(0);
+            }
+            bundle.putString(Constants.DEVICE_ID, deviceId);
+            newDeviceDetailFragment.setArguments(bundle);
+
+            loadContentFragment(newDeviceDetailFragment, FragmentKeys.DEVICE_DETAIL_FRAGMENT, true);
+        }
     }
 
     public void initVariables() {
@@ -134,20 +171,30 @@ public class MainActivity extends AppCompatActivity {
             public void onReceive(Context context, Intent intent) {
                 // Extract data included in the Intent
                 String message = intent.getStringExtra("message");
+                String title = intent.getStringExtra("title");
+                String tag = intent.getStringExtra("tag");
+                final String deviceId = intent.getStringExtra("deviceId");
 
                 //alert data here
                 AlertDialog.Builder builder;
                 builder = new AlertDialog.Builder(MainActivity.this, R.style.Theme_AppCompat_Light_Dialog_Alert);
 
-                builder.setTitle("Notification")
+                builder.setTitle(title)
                         .setMessage(message)
-                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                        .setPositiveButton(R.string.Keep_going, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
-                                // continue with delete
                                 dialog.dismiss();
                             }
                         })
-                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .setNegativeButton(R.string.Change_settings, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                // continue with delete
+
+                                openDeviceInfoFragment(deviceId);
+                                dialog.dismiss();
+                            }
+                        })
+                        .setIcon(R.drawable.ic_alert)
                         .show();
 
             }
@@ -307,17 +354,33 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        historiesListener = new ValueEventListener() {
+        historiesListener = new ChildEventListener() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                for (DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()) {
-                    Log.e("MainActivity", "Historial Listener");
-                    HistorialFB historialFB = dataSnapshot1.getValue(HistorialFB.class);
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                HistorialFB historialFB = dataSnapshot.getValue(HistorialFB.class);
 
-                    if (historialFB != null) {
-                        historialService.updateOrCreate(historialFB);
-                    }
+                if (historialFB != null) {
+                    historialService.updateOrCreate(historialFB);
                 }
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                HistorialFB historialFB = dataSnapshot.getValue(HistorialFB.class);
+
+                if (historialFB != null) {
+                    historialService.updateOrCreate(historialFB);
+                }
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
             }
 
             @Override
@@ -325,14 +388,13 @@ public class MainActivity extends AppCompatActivity {
 
             }
         };
-
     }
 
     @Override
     protected void onStart() {
         super.onStart();
         Log.e("MainActivity", "Historial Listener set");
-        historiesDatabaseReference.addValueEventListener(historiesListener);
+        historiesDatabaseReference.addChildEventListener(historiesListener);
     }
 
     @Override
@@ -395,7 +457,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (addToStack) {
             fragmentTransaction.addToBackStack(fragment_key);
-        }else {
+        } else {
             fragment.getFragmentManager().popBackStack();
             fragmentTransaction.addToBackStack(fragment_key);
         }
@@ -433,8 +495,9 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
+        if (getSupportFragmentManager().getBackStackEntryCount() == 1) {
             if (doubleBackToExitPressedOnce) {
+                super.onBackPressed();
                 super.onBackPressed();
                 return;
             }

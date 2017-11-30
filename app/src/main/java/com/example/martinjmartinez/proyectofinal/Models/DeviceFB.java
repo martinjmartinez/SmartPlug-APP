@@ -16,7 +16,13 @@ public class DeviceFB {
 
     private double power;
 
+    private double monthlyLimit;
+
     private String ssid;
+
+    private boolean reset;
+
+    private boolean autoTurnOff;
 
     private boolean inConfigMode;
 
@@ -42,12 +48,38 @@ public class DeviceFB {
         this.power = power;
     }
 
-    public DeviceFB(boolean status, boolean isActive, boolean inConfigMode, String buildingId, String spaceId) {
+    public DeviceFB(boolean status, boolean isActive, boolean inConfigMode, String buildingId, String spaceId, String ssid, boolean reset) {
         this.status = status;
         this.isActive = isActive;
         this.inConfigMode = inConfigMode;
         this.spaceId = spaceId;
         this.buildingId = buildingId;
+        this.ssid = ssid;
+        this.reset = reset;
+    }
+
+    public boolean isReset() {
+        return reset;
+    }
+
+    public double getMonthlyLimit() {
+        return monthlyLimit;
+    }
+
+    public boolean isAutoTurnOff() {
+        return autoTurnOff;
+    }
+
+    public void setAutoTurnOff(boolean autoTurnOff) {
+        this.autoTurnOff = autoTurnOff;
+    }
+
+    public void setMonthlyLimit(double monthlyLimit) {
+        this.monthlyLimit = monthlyLimit;
+    }
+
+    public void setReset(boolean reset) {
+        this.reset = reset;
     }
 
     public boolean isConnected() {
