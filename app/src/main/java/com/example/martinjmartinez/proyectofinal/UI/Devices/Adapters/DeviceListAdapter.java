@@ -111,7 +111,9 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
         holder.mStatus.setOnCheckedChangeListener(listener);
 
         if (holder.mStatus.isChecked()) {
-            holder.mPower.setText(Utils.decimalFormat.format(device.getPower()) + " W");
+            if(device.getPower()>0) {
+                holder.mPower.setText(Utils.decimalFormat.format(device.getPower()) + " W");
+            }
         }
 
         holder.itemLayout.setOnClickListener(new View.OnClickListener() {

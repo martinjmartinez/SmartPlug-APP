@@ -1,7 +1,5 @@
 package com.example.martinjmartinez.proyectofinal.Services;
 
-import android.util.Log;
-
 import com.example.martinjmartinez.proyectofinal.App.SmartPLugApplication;
 import com.example.martinjmartinez.proyectofinal.Entities.Device;
 import com.example.martinjmartinez.proyectofinal.Entities.Historial;
@@ -19,8 +17,6 @@ import java.util.Random;
 
 import io.realm.Realm;
 import io.realm.RealmResults;
-
-import static com.example.martinjmartinez.proyectofinal.Utils.Utils.firstDayOfPreviousMonth;
 
 public class HistorialService extends SmartPLugApplication {
     private Realm realm;
@@ -58,7 +54,7 @@ public class HistorialService extends SmartPLugApplication {
         }
 
         historialDatabaseReference.child(historialId).setValue(historialFB);
-        limitService.updateOrCreate(historialFB);
+        limitService.updateOrCreateCloud(historialFB);
         createHistoryLocal(historialFB);
         return historialId;
     }

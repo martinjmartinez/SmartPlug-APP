@@ -6,14 +6,17 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.example.martinjmartinez.proyectofinal.Entities.Settings;
 import com.example.martinjmartinez.proyectofinal.Models.BuildingFB;
 import com.example.martinjmartinez.proyectofinal.Models.DeviceFB;
 import com.example.martinjmartinez.proyectofinal.Models.HistorialFB;
+import com.example.martinjmartinez.proyectofinal.Models.SettingsFB;
 import com.example.martinjmartinez.proyectofinal.Models.SpaceFB;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
 import com.example.martinjmartinez.proyectofinal.Services.HistorialService;
+import com.example.martinjmartinez.proyectofinal.Services.SettingsService;
 import com.example.martinjmartinez.proyectofinal.Services.SpaceService;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 
@@ -37,6 +40,7 @@ public class LoaderActivity extends AppCompatActivity {
     private Realm realm;
     private HistorialService historialService;
     private BuildingService buildingService;
+    private SettingsService settingsService;
     private SpaceService spaceService;
     private DeviceService deviceService;
     private FirebaseAuth mAuth;
@@ -49,6 +53,7 @@ public class LoaderActivity extends AppCompatActivity {
 
         realm = Realm.getDefaultInstance();
         historialService = new HistorialService(realm);
+        settingsService = new SettingsService(realm);
         deviceService = new DeviceService(realm);
         buildingService = new BuildingService(realm);
         spaceService = new SpaceService(realm);
@@ -169,7 +174,34 @@ public class LoaderActivity extends AppCompatActivity {
                         databaseReference.removeEventListener(this);
                     }
                 }
-                historialService.createFeakData();
+                // historialService.createFeakData();
+                databaseReference.removeEventListener(this);
+               getSettings();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    public void getSettings() {
+        final DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Users/" + currentUser.getUid() + "/Settings");
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                SettingsFB settingsFB = dataSnapshot.getValue(SettingsFB.class);
+                if (settingsFB != null) {
+                    Log.e("LoaderActivity", "Historial Listener");
+                    settingsService.updateDeviceLocal(settingsFB);
+
+                } else {
+                    loadFinished();
+                    databaseReference.removeEventListener(this);
+                }
+
                 databaseReference.removeEventListener(this);
                 loadFinished();
             }

@@ -9,8 +9,6 @@ import com.example.martinjmartinez.proyectofinal.Entities.Device;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -80,16 +78,74 @@ public final class DateUtils {
         return outputFormat.format(date);
     }
 
+    public static Long fromStringToMillis(String dateString){
+        DateFormat inputFormat = new SimpleDateFormat("MMM d, yyyy");
+        Date date = new Date();
+        try {
+            date = inputFormat.parse(dateString);
+        }catch (ParseException ex) {
+            Log.e("ParseEx", ex.getMessage());
+        }
+
+        return date.getTime();
+    }
+
     public static String getMonthAndYear(Date date) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
-        String id = Integer.toString(calendar.get(Calendar.MONTH)) + Integer.toString(calendar.get(Calendar.YEAR));
+        String monthString = getMonth(calendar.get(Calendar.MONTH));
+        String id = monthString + "_" + Integer.toString(calendar.get(Calendar.YEAR));
 
         return id;
     }
 
-    public static String timeFormatter(long seconds){
-        String elapsedTime = android.text.format.DateUtils.formatElapsedTime(seconds);
+    public static String getMonth(Integer monthInt) {
+        String month = "";
+
+        switch(monthInt) {
+            case 0:
+                month = "Jan";
+                break;
+            case 1:
+                month = "Feb";
+                break;
+            case 2:
+                month = "Mar";
+                break;
+            case 3:
+                month = "Apr";
+                break;
+            case 4:
+                month = "May";
+                break;
+            case 5:
+                month = "Jun";
+                break;
+            case 6:
+                month = "Jul";
+                break;
+            case 7:
+                month = "Aug";
+                break;
+            case 8:
+                month = "Sep";
+                break;
+            case 9:
+                month = "Oct";
+                break;
+            case 10:
+                month = "Nov";
+                break;
+            case 11:
+                month = "Dec";
+                break;
+        }
+
+        return month;
+    }
+
+    public static String timeFormatter(double seconds){
+        String elapsedTime = android.text.format.DateUtils.formatElapsedTime((long)seconds);
 
         if (elapsedTime.length() == 5) {
             if (elapsedTime.startsWith("00:")) {

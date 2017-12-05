@@ -43,6 +43,7 @@ import com.example.martinjmartinez.proyectofinal.UI.Devices.Fragments.DeviceDeta
 import com.example.martinjmartinez.proyectofinal.UI.Devices.Fragments.DeviceListFragment;
 import com.example.martinjmartinez.proyectofinal.UI.Home.HomeFragment;
 import com.example.martinjmartinez.proyectofinal.UI.LoginActivity.LogInActivity;
+import com.example.martinjmartinez.proyectofinal.UI.Settings.SettingsFragment;
 import com.example.martinjmartinez.proyectofinal.UI.Spaces.Fragments.SpaceListFragment;
 import com.example.martinjmartinez.proyectofinal.UI.Statistics.Charts.BuildingsLineChartFragment;
 import com.example.martinjmartinez.proyectofinal.UI.Statistics.StatisticsFragment;
@@ -319,6 +320,19 @@ public class MainActivity extends AppCompatActivity {
 
                         mDrawerLayout.closeDrawer(Gravity.START);
                         break;
+
+                    case (R.id.nav_settings):
+                        SettingsFragment settingsFragment= (SettingsFragment) getSupportFragmentManager().findFragmentByTag(FragmentKeys.SETTINGS_FRAGMENT);
+                        if (settingsFragment != null) {
+                            if (!settingsFragment.isVisible()) {
+                                prepareSettingsFragment(false);
+                            }
+                        } else {
+                            prepareSettingsFragment(true);
+                        }
+
+                        mDrawerLayout.closeDrawer(Gravity.START);
+                        break;
                 }
                 return false;
             }
@@ -438,6 +452,19 @@ public class MainActivity extends AppCompatActivity {
         statisticsFragment.setArguments(bundle);
 
         loadContentFragment(statisticsFragment, FragmentKeys.STATISTICS_FRAGMENT, addToBackStack);
+    }
+
+    public void prepareSettingsFragment(boolean addToBackStack) {
+        SettingsFragment settingsFragment = new SettingsFragment();
+        Bundle bundle = new Bundle();
+
+        if (mSelectedBuilding == null) {
+            mSelectedBuilding = mBuildingList.get(0);
+        }
+        bundle.putString(Constants.BUILDING_ID, mSelectedBuilding.get_id());
+        settingsFragment.setArguments(bundle);
+
+        loadContentFragment(settingsFragment, FragmentKeys.SETTINGS_FRAGMENT, addToBackStack);
     }
 
     public void prepareDeviceFragment(boolean addToBackStack) {

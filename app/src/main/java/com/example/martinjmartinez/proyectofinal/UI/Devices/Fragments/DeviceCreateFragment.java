@@ -18,7 +18,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
-import com.example.martinjmartinez.proyectofinal.Entities.Log;
 import com.example.martinjmartinez.proyectofinal.Entities.Space;
 import com.example.martinjmartinez.proyectofinal.Models.DeviceFB;
 import com.example.martinjmartinez.proyectofinal.R;
@@ -29,7 +28,6 @@ import com.example.martinjmartinez.proyectofinal.Services.SpaceService;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.UI.Spaces.Adapters.SpaceSpinnerAdapter;
 import com.example.martinjmartinez.proyectofinal.Utils.Constants;
-import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -38,7 +36,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.util.EventListener;
 import java.util.List;
 
 import io.realm.Realm;
@@ -197,11 +194,11 @@ public class DeviceCreateFragment extends Fragment {
                     if (mSpace ==null) {
                         mDevice.setSpaceId("");
                         deviceService.updateDeviceCloud(mDevice);
-                        limitService.updateOrCreate(mDevice);
+                        limitService.updateOrCreateCloud(mDevice);
                     } else {
                         mDevice.setSpaceId(mSpace.get_id());
                         deviceService.updateDeviceCloud(mDevice);
-                        limitService.updateOrCreate(mDevice);
+                        limitService.updateOrCreateCloud(mDevice);
                     }
                     mActivity.onBackPressed();
                 } else {

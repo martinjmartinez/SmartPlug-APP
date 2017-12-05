@@ -136,11 +136,10 @@ public class DeviceUpdateFragment extends Fragment {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         DeviceFB deviceFB = deviceService.castToDeviceFB(mDevice);
-                        deviceFB.setConnected(false);
-                        if(!deviceFB.isReset()) {
-                            deviceFB.setReset(true);
-                        }
-                        deviceService.updateDeviceCloud(deviceFB);
+
+                        deviceService.updateDeviceConnected(deviceFB.get_id(), false);
+                        deviceService.updateDeviceReset(deviceFB.get_id(), true);
+
                         DevicePairFragment devicePairFragment = new DevicePairFragment();
                         Bundle bundle = new Bundle();
                         bundle.putString(Constants.DEVICE_ID, mDeviceId);
@@ -202,7 +201,7 @@ public class DeviceUpdateFragment extends Fragment {
                         deviceFB.setName(name.getText().toString());
                         deviceFB.setMonthlyLimit(Utils.isEditTextEmpty(monthlyLimit) ? 0 : Double.parseDouble(monthlyLimit.getText().toString()));
                         Log.e("limit", deviceFB.getMonthlyLimit() + "ppp");
-                        limitService.updateOrCreate(deviceFB);
+                        limitService.updateOrCreateCloud(deviceFB);
                         deviceService.updateDeviceCloud(deviceFB);
                         spaceService.updateSpacePowerAverageConsumption(mSpace.get_id());
                         if (lastSpace != null) {
@@ -214,7 +213,7 @@ public class DeviceUpdateFragment extends Fragment {
                         deviceFB.setMonthlyLimit(Utils.isEditTextEmpty(monthlyLimit) ? 0 : Double.parseDouble(monthlyLimit.getText().toString()));
                         deviceFB.setName(name.getText().toString());
                         Log.e("limit", deviceFB.getMonthlyLimit() + "pppp");
-                        limitService.updateOrCreate(deviceFB);
+                        limitService.updateOrCreateCloud(deviceFB);
                         deviceService.updateDeviceCloud(deviceFB);
                     }
                     mActivity.onBackPressed();

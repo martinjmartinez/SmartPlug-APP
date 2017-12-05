@@ -8,6 +8,10 @@ public class MonthConsumed {
 
     private double totalConsumed;
 
+    private String deviceId;
+
+    private long date;
+
     private double liveConsumed;
 
     private double accumulatedConsumed;
@@ -20,16 +24,33 @@ public class MonthConsumed {
 
     private boolean limitReachedNotificationSend;
 
-    public MonthConsumed() {
-    }
+    public MonthConsumed() {}
 
-    public MonthConsumed(String _id, boolean halfReachedNotificationSend, boolean almostReachNotificationSend, boolean limitReachedNotificationSend, double limit, boolean autoTurnOff) {
+    public MonthConsumed(String _id, boolean halfReachedNotificationSend, boolean almostReachNotificationSend, boolean limitReachedNotificationSend, double limit, boolean autoTurnOff, String deviceId, long date) {
         this._id = _id;
         this.limit = limit;
         this.halfReachedNotificationSend = halfReachedNotificationSend;
         this.almostReachNotificationSend = almostReachNotificationSend;
         this.limitReachedNotificationSend = limitReachedNotificationSend;
         this.autoTurnOff = autoTurnOff;
+        this.deviceId = deviceId;
+        this.date = date;
+    }
+
+    public long getDate() {
+        return date;
+    }
+
+    public void setDate(long date) {
+        this.date = date;
+    }
+
+    public String getDeviceId() {
+        return deviceId;
+    }
+
+    public void setDeviceId(String deviceId) {
+        this.deviceId = deviceId;
     }
 
     public boolean isAutoTurnOff() {

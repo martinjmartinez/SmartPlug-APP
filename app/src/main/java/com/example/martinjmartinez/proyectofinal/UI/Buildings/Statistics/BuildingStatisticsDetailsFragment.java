@@ -18,6 +18,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -59,6 +60,7 @@ public class BuildingStatisticsDetailsFragment extends Fragment {
     private Date mEndDate;
     private Spinner mDateSpinner;
     private BuildingService buildingService;
+    private LinearLayout actualTimeRow, averageTimeRow, maxTimeRow, minTimeRow;
     private TabLayout chartTabLayout;
     private BuildingChartsStatisticsViewPager buildingChartsStatisticsViewPager;
     private ViewPager chartsViewPager;
@@ -178,12 +180,21 @@ public class BuildingStatisticsDetailsFragment extends Fragment {
         averagePower =  view.findViewById(R.id.average_power_general);
         actualTime =  view.findViewById(R.id.actual_time_general);
         averageTime =  view.findViewById(R.id.average_time_general);
+        averageTimeRow = view.findViewById(R.id.average_time_row);
+        actualTimeRow = view.findViewById(R.id.actual_time_row);
+        minTimeRow = view.findViewById(R.id.min_time_row);
+        maxTimeRow = view.findViewById(R.id.max_time_row);
         maxDate =  view.findViewById(R.id.max_date_general);
         minDate = view.findViewById(R.id.min_date_general);
         maxTime =  view.findViewById(R.id.max_time_general);
         minTime = view.findViewById(R.id.min_time_general);
         maxPower =  view.findViewById(R.id.max_power_general);
         minPower =  view.findViewById(R.id.min_power_general);
+
+        averageTimeRow.setVisibility(View.GONE);
+        actualTimeRow.setVisibility(View.GONE);
+        maxTimeRow.setVisibility(View.GONE);
+        minTimeRow.setVisibility(View.GONE);
 
         buildingService = new BuildingService(realm);
     }
@@ -275,8 +286,7 @@ public class BuildingStatisticsDetailsFragment extends Fragment {
     }
 
     public void getMaxAndMinDays(List<HistorialReview> results) {
-        long totalTime = 0;
-        long avgeTime = 0;
+        double totalTime = 0;
         double totalConsumed = 0;
         double avgConsumed = 0;
         double actPower = 0;
@@ -299,22 +309,21 @@ public class BuildingStatisticsDetailsFragment extends Fragment {
                     maxDay = historialReview;
             }
 
-            avgeTime = totalTime/ resultsSize;
             avgConsumed = totalConsumed/ resultsSize;
             averageP = actPower / resultsSize;
 
             actualConsumed.setText(Utils.decimalFormat.format(totalConsumed) + " W/h");
             averageConsumed.setText(Utils.decimalFormat.format(avgConsumed) + " W/h");
-            actualTime.setText(DateUtils.timeFormatter(totalTime));
-            averageTime.setText(DateUtils.timeFormatter(avgeTime));
+            actualTime.setVisibility(View.GONE);
+            averageTime.setVisibility(View.GONE);
             averagePower.setText(Utils.decimalFormat.format(mBuilding.getAverageConsumption()) + " W");
             actualPower.setText(Utils.decimalFormat.format(averageP) + " W");
             maxDate.setText(maxDay.getDate());
             minDate.setText(minDay.getDate());
             maxPower.setText(Utils.decimalFormat.format(maxDay.getPowerConsumed()) + " W/h");
             minPower.setText(Utils.decimalFormat.format(minDay.getPowerConsumed()) + " W/h");
-            maxTime.setText(DateUtils.timeFormatter(maxDay.getTotalTimeInSeconds()));
-            minTime.setText(DateUtils.timeFormatter(minDay.getTotalTimeInSeconds()));
+            maxTime.setVisibility(View.GONE);
+            minTime.setVisibility(View.GONE);
         }
     }
 }

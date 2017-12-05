@@ -70,7 +70,9 @@ public class DeviceStatisticsDetailsFragment  extends Fragment{
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        getArgumentsBundle();
+        if (getArguments() != null) {
+            mDeviceId = getArguments().getString("deviceId");
+        }
     }
 
     @Override
@@ -88,9 +90,14 @@ public class DeviceStatisticsDetailsFragment  extends Fragment{
         mMainActivity.getSupportActionBar().setTitle(mDevice.getName() + "'s " + "Stats");
     }
 
-    public void getArgumentsBundle() {
-        Bundle bundle = this.getArguments();
-        mDeviceId = bundle != null ? bundle.getString(Constants.DEVICE_ID, "") : "";
+    public static DeviceStatisticsDetailsFragment newInstance(String deviceId) {
+        Bundle args = new Bundle();
+        args.putString("deviceId", deviceId);
+
+        DeviceStatisticsDetailsFragment fragment = new DeviceStatisticsDetailsFragment();
+        fragment.setArguments(args);
+
+        return fragment;
     }
 
     @Override
@@ -274,8 +281,8 @@ public class DeviceStatisticsDetailsFragment  extends Fragment{
     }
 
     public void getMaxAndMinDays(List<HistorialReview> results) {
-        long totalTime = 0;
-        long avgeTime = 0;
+        double totalTime = 0;
+        double avgeTime = 0;
         double totalConsumed = 0;
         double avgConsumed = 0;
         double actPower = 0;

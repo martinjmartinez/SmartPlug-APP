@@ -72,8 +72,8 @@ public class SpacePowerLineChartFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.item_chart_line, container, false);
 
-        chart = (LineChart) view.findViewById(R.id.chart);
-        title = (TextView) view.findViewById(R.id.chart_title_statistics);
+        chart = view.findViewById(R.id.chart);
+        title = view.findViewById(R.id.chart_title_statistics);
 
         chart.getDescription().setEnabled(false);
 
@@ -102,19 +102,14 @@ public class SpacePowerLineChartFragment extends Fragment {
 
     public void fillChart() {
         Map<String, Integer> dates = new TreeMap<>();
-        Map<String, Entry> entriesResults;
         ArrayList<Entry> entries;
         List<ILineDataSet> dataSets = new ArrayList<>();
-
         dates = getDates(dates);
 
         RealmResults<Historial> results = realm.where(Historial.class).equalTo("space._id", mSpace.get_id()).between("startDate", mStartDate, mEndDate).between("lastLogDate", mStartDate, mEndDate).findAll().sort("startDate", Sort.ASCENDING);
 
         if (!results.isEmpty()) {
-            entriesResults = ChartUtils.fetchPowerData(results, dates);
-            entries = new ArrayList<>();
-
-            entries.addAll(entriesResults.values());
+            entries = ChartUtils.fetchPowerData(results, dates);
             dataSets.add(new LineDataSet(entries, mSpace.getName()));
         }
 

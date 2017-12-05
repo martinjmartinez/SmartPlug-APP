@@ -1,6 +1,9 @@
 package com.example.martinjmartinez.proyectofinal.Services;
 
 
+import android.util.Log;
+
+import com.example.martinjmartinez.proyectofinal.Models.SettingsFB;
 import com.example.martinjmartinez.proyectofinal.Models.UserFB;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -8,13 +11,18 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import io.realm.Realm;
+
 public class UserService {
     private DatabaseReference databaseReferenceAccounts;
     private DatabaseReference databaseReferenceUsers;
+    private SettingsService settingsService;
+
 
     public UserService() {
         databaseReferenceAccounts = FirebaseDatabase.getInstance().getReference("Accounts");
         databaseReferenceUsers = FirebaseDatabase.getInstance().getReference("Users");
+        settingsService = new SettingsService(Realm.getDefaultInstance());
     }
 
     public void createOrUpdateUser(final UserFB user) {
@@ -37,22 +45,28 @@ public class UserService {
     }
 
     public void createUserFB(UserFB userFB) {
-        databaseReferenceUsers.child(userFB.getUid()).setValue(userFB);
-        databaseReferenceAccounts.child(userFB.getUid()).setValue(userFB);
+        //todo change depending the languaje
+        SettingsFB settingsFB = new SettingsFB(userFB.getUid(),0,0,0,0,0,0,true);
+        databaseReferenceUsers.child(userFB.getUid()).child("Settings").setValue(settingsFB);
+        settingsService.createSettingsLocal(settingsFB);
+
+        databaseReferenceUsers.child(userFB.getUid()).child("Information").setValue(userFB);
+        databaseReferenceAccounts.child(userFB.getUid()).child("Information").setValue(userFB);
     }
 
     public void deleteUserFCMToken(UserFB userFB) {
-        databaseReferenceUsers.child(userFB.getUid()).child("fcm_TOKEN").setValue("");
+        databaseReferenceUsers.child(userFB.getUid()).child("Information").child("fcm_TOKEN").setValue("");
     }
 
     public void updateUserFCMToken(UserFB userFB) {
-        databaseReferenceUsers.child(userFB.getUid()).child("fcm_TOKEN").setValue(userFB.getFCM_TOKEN());
+        databaseReferenceUsers.child(userFB.getUid()).child("Information").child("fcm_TOKEN").setValue(userFB.getFCM_TOKEN());
     }
 
     public void updateUserFB(UserFB userFB) {
-        databaseReferenceUsers.child(userFB.getUid()).setValue(userFB);
-        databaseReferenceAccounts.child(userFB.getUid()).child("uid").setValue(userFB.getUid());
-        databaseReferenceAccounts.child(userFB.getUid()).child("email").setValue(userFB.getEmail());
-        databaseReferenceAccounts.child(userFB.getUid()).child("name").setValue(userFB.getName());
+        databaseReferenceUsers.child(userFB.getUid()).child("Information").setValue(userFB);
+        databaseReferenceAccounts.child(userFB.getUid()).child("Information").child("uid").setValue(userFB.getUid());
+        databaseReferenceAccounts.child(userFB.getUid()).child("Information").child("email").setValue(userFB.getEmail());
+        databaseReferenceAccounts.child(userFB.getUid()).child("Information").child("name").setValue(userFB.getName());
     }
+
 }

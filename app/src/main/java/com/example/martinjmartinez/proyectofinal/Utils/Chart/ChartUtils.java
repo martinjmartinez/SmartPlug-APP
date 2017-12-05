@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Historial;
 import com.example.martinjmartinez.proyectofinal.Models.HistorialReview;
+import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Utils.DateUtils;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 import com.github.mikephil.charting.charts.BarChart;
@@ -13,6 +14,7 @@ import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
@@ -22,6 +24,8 @@ import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.github.mikephil.charting.utils.ColorTemplate;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -31,13 +35,16 @@ import java.util.TreeMap;
 
 import io.realm.RealmResults;
 
+import static com.github.mikephil.charting.utils.ColorTemplate.rgb;
+
 public final class ChartUtils {
 
     public static void makeLineChart(LineChart chart, List<ILineDataSet> datasets, final Map<String, Integer> mapDates) {
 
         if (!datasets.isEmpty()) {
             for (int j = 0; j < datasets.size(); j++) {
-                ((LineDataSet) datasets.get(j)).setColor(ColorTemplate.MATERIAL_COLORS[j%4]);
+                Log.e("Dataset", datasets.get(j).getLabel() + "   " + datasets.get(j).toString());
+                ((LineDataSet) datasets.get(j)).setColor(ColorTemplate.MATERIAL_COLORS[j % 4]);
                 ((LineDataSet) datasets.get(j)).setLineWidth(2.0f);
                 datasets.get(j).setValueTextSize(10.0f);
             }
@@ -81,8 +88,8 @@ public final class ChartUtils {
         chart.invalidate();
     }
 
-    public static Map<String, Entry> fetchConsumptionData(RealmResults<Historial> historials, Map<String, Integer> mapDates) {
-        Map<String, Entry> entries = new TreeMap<>();
+    public static ArrayList<Entry> fetchConsumptionData(RealmResults<Historial> historials, Map<String, Integer> mapDates) {
+        ArrayList<Entry> entries = new ArrayList<>();
 
         if (!historials.isEmpty()) {
             int count = 0;
@@ -93,25 +100,27 @@ public final class ChartUtils {
 
             for (Historial historial : historials) {
                 if (Utils.formatSimpleDate(lasteDate).contains(Utils.formatSimpleDate(historial.getStartDate()))) {
-                    sum = sum + historial.getPowerConsumed() ;
+                    sum = sum + historial.getPowerConsumed();
                     count++;
 
                     if (historials.size() == count) {
                         index = mapDates.get(Utils.formatSimpleDate(historial.getStartDate()));
-                        entries.put(Utils.formatSimpleDate(historial.getStartDate()), new Entry(index, (float) sum));
+                        entries.add(new Entry(index, (float) sum));
 
                     }
                 } else {
 
                     index = mapDates.get(Utils.formatSimpleDate(lasteDate));
-                    entries.put(Utils.formatSimpleDate(lasteDate), new Entry(index, (float) sum));
+                    entries.add(new Entry(index, (float) sum));
+
 
                     lasteDate = historial.getStartDate();
                     count++;
                     if (historials.size() == count) {
 
                         index = mapDates.get(Utils.formatSimpleDate(historial.getStartDate()));
-                        entries.put(Utils.formatSimpleDate(historial.getStartDate()), new Entry(index, (float) historial.getPowerConsumed()));
+                        entries.add(new Entry(index, (float) historial.getPowerConsumed()));
+
 
                     } else {
                         sum = 0;
@@ -119,13 +128,14 @@ public final class ChartUtils {
                     }
                 }
             }
+
             return entries;
         }
         return entries;
     }
 
-    public static Map<String, Entry> fetchPowerData(RealmResults<Historial> historials, Map<String, Integer> mapDates) {
-        Map<String, Entry> entries = new TreeMap<>();
+    public static  ArrayList<Entry> fetchPowerData(RealmResults<Historial> historials, Map<String, Integer> mapDates) {
+        ArrayList<Entry> entries = new ArrayList<>();
 
         if (!historials.isEmpty()) {
             int count = 0;
@@ -137,19 +147,19 @@ public final class ChartUtils {
 
             for (Historial historial : historials) {
                 if (Utils.formatSimpleDate(lasteDate).contains(Utils.formatSimpleDate(historial.getStartDate()))) {
-                    sum = sum + historial.getPowerAverage() ;
+                    sum = sum + historial.getPowerAverage();
                     i++;
                     count++;
 
                     if (historials.size() == count) {
                         index = mapDates.get(Utils.formatSimpleDate(historial.getStartDate()));
-                        entries.put(Utils.formatSimpleDate(historial.getStartDate()), new Entry(index, (float) sum/i));
+                        entries.add(new Entry(index, (float) sum / i));
 
                     }
                 } else {
 
                     index = mapDates.get(Utils.formatSimpleDate(lasteDate));
-                    entries.put(Utils.formatSimpleDate(lasteDate), new Entry(index, (float) sum/i));
+                    entries.add(new Entry(index, (float) sum / i));
 
                     lasteDate = historial.getStartDate();
                     count++;
@@ -157,7 +167,7 @@ public final class ChartUtils {
 
                         index = mapDates.get(Utils.formatSimpleDate(historial.getStartDate()));
 
-                        entries.put(Utils.formatSimpleDate(historial.getStartDate()), new Entry(index, (float) historial.getPowerAverage()));
+                        entries.add(new Entry(index, (float) historial.getPowerAverage()));
 
                     } else {
                         sum = 0;
@@ -172,8 +182,8 @@ public final class ChartUtils {
         return entries;
     }
 
-    public static Map<String, Entry> fetchTimeData(RealmResults<Historial> historials, Map<String, Integer> mapDates) {
-        Map<String, Entry> entries = new TreeMap<>();
+    public static ArrayList<Entry> fetchTimeData(RealmResults<Historial> historials, Map<String, Integer> mapDates) {
+        ArrayList<Entry> entries = new ArrayList<>();
 
         if (!historials.isEmpty()) {
             int count = 0;
@@ -185,19 +195,19 @@ public final class ChartUtils {
 
             for (Historial historial : historials) {
                 if (Utils.formatSimpleDate(lasteDate).contains(Utils.formatSimpleDate(historial.getStartDate()))) {
-                    sum = sum + historial.getTotalTimeInSeconds() ;
+                    sum = sum + historial.getTotalTimeInSeconds();
                     i++;
                     count++;
 
                     if (historials.size() == count) {
                         index = mapDates.get(Utils.formatSimpleDate(historial.getStartDate()));
-                        entries.put(Utils.formatSimpleDate(historial.getStartDate()), new Entry(index, (float) sum/60));
+                        entries.add(new Entry(index, (float) sum / 60));
 
                     }
                 } else {
 
                     index = mapDates.get(Utils.formatSimpleDate(lasteDate));
-                    entries.put(Utils.formatSimpleDate(lasteDate), new Entry(index, (float) sum/60));
+                    entries.add(new Entry(index, (float) sum / 60));
 
                     lasteDate = historial.getStartDate();
                     count++;
@@ -205,7 +215,7 @@ public final class ChartUtils {
 
                         index = mapDates.get(Utils.formatSimpleDate(historial.getStartDate()));
 
-                        entries.put(Utils.formatSimpleDate(historial.getStartDate()), new Entry(index, (float) historial.getTotalTimeInSeconds()));
+                        entries.add(new Entry(index, (float) historial.getTotalTimeInSeconds()));
 
                     } else {
                         sum = 0;
@@ -225,10 +235,10 @@ public final class ChartUtils {
 
         if (!historials.isEmpty()) {
             int count = 0;
-            long time = 0;
+            double time = 0;
             int i = 0;
             double sum = 0;
-            double sum2 =0;
+            double sum2 = 0;
             Date lasteDate = historials.first().getStartDate();
 
             for (Historial historial : historials) {
@@ -240,7 +250,7 @@ public final class ChartUtils {
                     count++;
 
                     if (historials.size() == count) {
-                        resutls.add(new HistorialReview(Utils.formatSimpleDate(historial.getStartDate()), sum, time, sum2/i));
+                        resutls.add(new HistorialReview(Utils.formatSimpleDate(historial.getStartDate()), sum, time, sum2 / i));
 
                     }
                 } else {
@@ -249,7 +259,7 @@ public final class ChartUtils {
                     lasteDate = historial.getStartDate();
                     count++;
                     if (historials.size() == count) {
-                        resutls.add(new HistorialReview(Utils.formatSimpleDate(historial.getStartDate()), historial.getPowerConsumed(), time, historial.getPowerAverage()));
+                        resutls.add(new HistorialReview(Utils.formatSimpleDate(historial.getStartDate()), historial.getPowerConsumed(), historial.getTotalTimeInSeconds(), historial.getPowerAverage()));
 
                     } else {
                         sum = 0;
@@ -258,7 +268,7 @@ public final class ChartUtils {
                         i = 0;
                         sum = sum + historial.getPowerConsumed();
                         sum2 = sum2 + historial.getPowerAverage();
-                        time = (long) (time + historial.getTotalTimeInSeconds());
+                        time = time + historial.getTotalTimeInSeconds();
                         i++;
                     }
                 }
@@ -275,7 +285,6 @@ public final class ChartUtils {
             int index;
 
             Date lasteDate = historials.first().getStartDate();
-
             for (Historial historial : historials) {
                 if (Utils.formatSimpleDate(lasteDate).contains(Utils.formatSimpleDate(historial.getStartDate()))) {
                     count++;
@@ -307,11 +316,17 @@ public final class ChartUtils {
             }
 
             ArrayList<String> dates = new ArrayList<>(mapDates.keySet());
-            Collections.sort(dates);
+            ArrayList<Long> dateInMillis = new ArrayList<>();
+            for (String date : dates) {
+
+                dateInMillis.add(DateUtils.fromStringToMillis(date));
+            }
+            Collections.sort(dateInMillis);
 
             Map<String, Integer> newMapDates = new TreeMap<>();
             for (int i = 0; i < mapDates.size(); i++) {
-                newMapDates.put(dates.get(i), i);
+                newMapDates.put(Utils.formatSimpleDate(new Date(dateInMillis.get(i))), i);
+
             }
             return newMapDates;
         }
@@ -352,6 +367,69 @@ public final class ChartUtils {
         xAxis.setGranularity(1f); // minimum axis-step (interval) is 1
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         xAxis.setValueFormatter(formatter);
+        chart.invalidate(); // refresh
+    }
+
+    public static void makeGroupBarChart(List<Double> limits, List<Double> consumed , BarChart chart, final List<String> labels) {
+
+        List<BarEntry> limitsEntries = new ArrayList<>();
+        List<BarEntry> consumedEntries = new ArrayList<>();
+
+
+        chart.setDrawBarShadow(false);
+        chart.setDrawGridBackground(false);
+
+        // fill the lists
+        for(int i = 0; i < limits.size(); i++) {
+            limitsEntries.add(new BarEntry(i, limits.get(i).intValue()));
+            consumedEntries.add(new BarEntry(i, consumed.get(i).intValue()));
+        }
+
+        float groupSpace = 0.4f;
+        float barSpace = 0f; // x2 dataset
+        float barWidth = 0.3f; // x2 dataset
+// (0.02 + 0.45) * 2 + 0.06 = 1.00 -> interval per "group"
+
+        BarDataSet set1 = new BarDataSet(limitsEntries, "Limits");
+        set1.setColor(rgb("#2aa9ff"));
+        BarDataSet set2 = new BarDataSet(consumedEntries, "Consumed");
+        set2.setColor(rgb("#128fe4"));
+
+        BarData data = new BarData(set1, set2);
+
+        chart.setData(data);
+        chart.getBarData().setBarWidth(barWidth);
+        chart.getXAxis().setAxisMinimum(0);
+        chart.getXAxis().setAxisMaximum(0 + chart.getBarData().getGroupWidth(groupSpace,barSpace) * limitsEntries.size());
+        chart.groupBars(0, groupSpace, barSpace); // perform the "explicit" grouping
+
+        IAxisValueFormatter formatter = new IAxisValueFormatter() {
+
+            @Override
+            public String getFormattedValue(float value, AxisBase axis) {
+                int intValue = (int) value;
+                if (labels.size() > intValue && intValue >= 0) {
+                    return labels.get(intValue);
+                }
+                return null;
+            }
+
+            // we don't draw numbers, so no decimal digits needed
+            public int getDecimalDigits() {
+                return 0;
+            }
+        };
+
+        XAxis xAxis = chart.getXAxis();
+
+        xAxis.setGranularity(1f); // minimum axis-step (interval) is 1
+        xAxis.setGranularityEnabled(true);
+        xAxis.setCenterAxisLabels(true);
+        xAxis.setDrawGridLines(false);
+        xAxis.setAxisMaximum(limitsEntries.size());
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis.setValueFormatter(formatter);
+
         chart.invalidate(); // refresh
     }
 }

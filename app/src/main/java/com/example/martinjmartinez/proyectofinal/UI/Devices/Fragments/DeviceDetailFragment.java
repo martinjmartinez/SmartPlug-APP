@@ -30,6 +30,7 @@ import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
 import com.example.martinjmartinez.proyectofinal.Services.HistorialService;
 import com.example.martinjmartinez.proyectofinal.Services.LimitService;
+import com.example.martinjmartinez.proyectofinal.UI.Devices.Statistics.DeviceStatistics;
 import com.example.martinjmartinez.proyectofinal.UI.Devices.Statistics.DeviceStatisticsDetailsFragment;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 
@@ -181,6 +182,7 @@ public class DeviceDetailFragment extends Fragment {
                 } else {
                     deviceService.updateDeviceAutoTurnOff(mDeviceId, false);
                 }
+
             }
         };
 
@@ -232,14 +234,14 @@ public class DeviceDetailFragment extends Fragment {
         statisticsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                DeviceStatisticsDetailsFragment deviceStatisticsDetailsFragment = new DeviceStatisticsDetailsFragment();
+                DeviceStatistics deviceStatistics = new DeviceStatistics();
                 Bundle bundle = new Bundle();
 
                 bundle.putString(Constants.DEVICE_ID, mDeviceId);
-                deviceStatisticsDetailsFragment.setArguments(bundle);
+                deviceStatistics.setArguments(bundle);
 
                 Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.DEVICE_DETAIL_FRAGMENT),
-                        deviceStatisticsDetailsFragment, FragmentKeys.DEVICE_STATISTICS_FRAGMENT, true);
+                        deviceStatistics, FragmentKeys.DEVICE_STATISTICS_FRAGMENT, true);
             }
         });
 
@@ -259,7 +261,6 @@ public class DeviceDetailFragment extends Fragment {
                 deviceService.updateDeviceLocal(deviceFB);
                 mDevice = deviceService.getDeviceById(mDeviceId);
                 limitReference.child(mDeviceId).addValueEventListener(limitListener);
-                limitService.updateAutoTurnOff(deviceFB);
                 initDeviceView(mDevice);
             }
 
@@ -325,6 +326,12 @@ public class DeviceDetailFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
 
+
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
         databaseReference.child(mDeviceId).removeEventListener(deviceListener);
     }
 
@@ -350,7 +357,9 @@ public class DeviceDetailFragment extends Fragment {
         building.setText(device.getBuilding().getName());
 
         if (device.isStatus()) {
-            power.setText(Utils.decimalFormat.format(mDevice.getPower()) + " W");
+            if(mDevice.getPower()>0) {
+                power.setText(Utils.decimalFormat.format(mDevice.getPower()) + " W");
+            }
         } else {
             power.setText("OFF");
         }

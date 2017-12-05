@@ -154,32 +154,38 @@ public class LogInActivity extends AppCompatActivity implements GoogleApiClient.
                 String confirmpass = confirnPassword.getText().toString();
 
                 if (confirnPassword.getVisibility() == View.GONE) {
-                    mAuth.signInWithEmailAndPassword(email, password)
-                            .addOnCompleteListener(LogInActivity.this, new OnCompleteListener<AuthResult>() {
-                                @Override
-                                public void onComplete(@NonNull Task<AuthResult> task) {
-                                    if (task.isSuccessful()) {
-                                        // Sign in success, update UI with the signed-in user's information
+                    if(!email.isEmpty() && !password.isEmpty()) {
+                        mAuth.signInWithEmailAndPassword(email, password)
+                                .addOnCompleteListener(LogInActivity.this, new OnCompleteListener<AuthResult>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<AuthResult> task) {
+                                        if (task.isSuccessful()) {
+                                            // Sign in success, update UI with the signed-in user's information
 
-                                        FirebaseUser user = mAuth.getCurrentUser();
-                                        UserFB userFB = new UserFB(user.getUid(), user.getDisplayName(), user.getEmail(), FirebaseInstanceId.getInstance().getToken());
-                                        userService.updateUserFB(userFB);
-                                        settings.edit().putString(Constants.USER_ID, user.getUid()).apply();
-                                        if (user.isEmailVerified()) {
-                                            Log.d("LOGIN", "signInWithEmail:success");
-                                            updateData();
+                                            FirebaseUser user = mAuth.getCurrentUser();
+                                            UserFB userFB = new UserFB(user.getUid(), user.getDisplayName(), user.getEmail(), FirebaseInstanceId.getInstance().getToken());
+                                            userService.updateUserFB(userFB);
+                                            settings.edit().putString(Constants.USER_ID, user.getUid()).apply();
+                                            if (user.isEmailVerified()) {
+                                                Log.d("LOGIN", "signInWithEmail:success");
+                                                updateData();
+                                            } else {
+                                                Toast.makeText(LogInActivity.this, R.string.email_verification_message,
+                                                        Toast.LENGTH_SHORT).show();
+                                            }
                                         } else {
-                                            Toast.makeText(LogInActivity.this, R.string.email_verification_message,
+                                            // If sign in fails, display a message to the user.
+                                            Log.w("LOGIN", "signInWithEmail:failure", task.getException());
+                                            Toast.makeText(LogInActivity.this, R.string.login_fail_message,
                                                     Toast.LENGTH_SHORT).show();
                                         }
-                                    } else {
-                                        // If sign in fails, display a message to the user.
-                                        Log.w("LOGIN", "signInWithEmail:failure", task.getException());
-                                        Toast.makeText(LogInActivity.this, R.string.login_fail_message,
-                                                Toast.LENGTH_SHORT).show();
                                     }
-                                }
-                            });
+                                });
+                    }else {
+                        Toast.makeText(LogInActivity.this, "Enter credentials to log in",
+                                Toast.LENGTH_SHORT).show();
+                    }
+
                 } else {
                     if (password.equals(confirmpass)) {
                         mAuth.createUserWithEmailAndPassword(email, password)

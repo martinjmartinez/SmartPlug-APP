@@ -102,7 +102,6 @@ public class BuildingConsumptionLineChartFragment extends Fragment {
 
     public void fillChart() {
         Map<String, Integer> dates = new TreeMap<>();
-        Map<String, Entry> entriesResults;
         ArrayList<Entry> entries;
         List<ILineDataSet> dataSets = new ArrayList<>();
 
@@ -111,10 +110,7 @@ public class BuildingConsumptionLineChartFragment extends Fragment {
         RealmResults<Historial> results = realm.where(Historial.class).equalTo("building._id", mBuilding.get_id()).between("startDate", mStartDate, mEndDate).between("lastLogDate", mStartDate, mEndDate).findAll().sort("startDate", Sort.ASCENDING);
 
         if (!results.isEmpty()) {
-            entriesResults = ChartUtils.fetchConsumptionData(results, dates);
-            entries = new ArrayList<>();
-
-            entries.addAll(entriesResults.values());
+            entries = ChartUtils.fetchConsumptionData(results, dates);
             dataSets.add(new LineDataSet(entries, mBuilding.getName()));
         }
 

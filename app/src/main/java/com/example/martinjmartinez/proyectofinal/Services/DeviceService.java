@@ -7,6 +7,7 @@ import com.example.martinjmartinez.proyectofinal.Entities.Device;
 import com.example.martinjmartinez.proyectofinal.Entities.Historial;
 import com.example.martinjmartinez.proyectofinal.Entities.Space;
 import com.example.martinjmartinez.proyectofinal.Models.DeviceFB;
+import com.example.martinjmartinez.proyectofinal.Utils.DateUtils;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
@@ -24,6 +25,7 @@ public class DeviceService {
     private SpaceService spaceService;
     private BuildingService buildingService;
     private DatabaseReference databaseReference;
+    private DatabaseReference limiteReference;
     private FirebaseAuth mAuth;
 
     public DeviceService(Realm realm) {
@@ -33,6 +35,7 @@ public class DeviceService {
         mAuth = FirebaseAuth.getInstance();
         FirebaseUser currentUser = mAuth.getCurrentUser();
         databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/"+ currentUser.getUid() + "/Devices");
+        limiteReference = FirebaseDatabase.getInstance().getReference("Accounts/"+ currentUser.getUid() + "/MonthlyConsumed");
     }
 
     public List<Device> allDevices() {
@@ -174,11 +177,8 @@ public class DeviceService {
         databaseReference.child(_id).child("spaceId").setValue(deviceFB.getSpaceId());
         databaseReference.child(_id).child("power").setValue(deviceFB.getPower());
         databaseReference.child(_id).child("inConfigMode").setValue(deviceFB.isInConfigMode());
-        databaseReference.child(_id).child("connected").setValue(deviceFB.isConnected());
         databaseReference.child(_id).child("autoTurnOff").setValue(deviceFB.isAutoTurnOff());
         databaseReference.child(_id).child("monthlyLimit").setValue(deviceFB.getMonthlyLimit());
-        Log.e("limit2", deviceFB.getMonthlyLimit() + "ppp");
-        databaseReference.child(_id).child("reset").setValue(deviceFB.isReset());
         databaseReference.child(_id).child("ssid").setValue(deviceFB.getSsid());
         databaseReference.child(_id).child("buildingId").setValue(deviceFB.getBuildingId());
         databaseReference.child(_id).child("averageConsumption").setValue(deviceFB.getAverageConsumption());
@@ -203,6 +203,8 @@ public class DeviceService {
         Device device = getDeviceById(_id);
 
         databaseReference.child(_id).child("autoTurnOff").setValue(autoTurnOff);
+        String monthId = DateUtils.getMonthAndYear(DateUtils.getCurrentDate());
+        limiteReference.child(_id).child(monthId).child("autoTurnOff").setValue(autoTurnOff);
 
         realm.beginTransaction();
 
@@ -213,6 +215,17 @@ public class DeviceService {
 
     public void  updateDeviceReset(String _id, boolean reset) {
         databaseReference.child(_id).child("reset").setValue(reset);
+    }
+
+    public void  updateDeviceConnected(String _id, boolean connected) {
+        Device device = getDeviceById(_id);
+        databaseReference.child(_id).child("connected").setValue(connected);
+
+        realm.beginTransaction();
+
+        device.setConnected(connected);
+
+        realm.commitTransaction();
     }
 
     public void updateDeviceStatus(String _id, boolean isOn) {

@@ -114,7 +114,7 @@ public class BuildingDetailFragment extends Fragment {
         mInfoTextView =  view.findViewById(R.id.building_detail_delete_info);
         statisticsButton =  view.findViewById(R.id.building_statistics_button);
         userId = mActivity.getSharedPreferences(Constants.USER_INFO, 0).getString(Constants.USER_ID, FirebaseAuth.getInstance().getCurrentUser().getUid());
-        databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/"+ userId + "/Spaces");
+        databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/"+ userId + "/Buildings/" + mBuildingId);
     }
 
     private void initListeners() {
@@ -182,10 +182,11 @@ public class BuildingDetailFragment extends Fragment {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 BuildingFB buildingFB = dataSnapshot.getValue(BuildingFB.class);
-
-                buildingService.updateBuildingLocal(buildingFB);
-                Building building = buildingService.getBuildingById(mBuildingId);
-                initView(building);
+                if(buildingFB != null) {
+                    buildingService.updateBuildingLocal(buildingFB);
+                    Building building = buildingService.getBuildingById(mBuildingId);
+                    initView(building);
+                }
             }
 
             @Override

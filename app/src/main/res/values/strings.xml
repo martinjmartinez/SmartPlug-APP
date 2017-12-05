@@ -27,4 +27,9 @@
     <string name="monthly_limit">Monthly Limit:</string>
     <string name="Keep_going">Keep going!</string>
     <string name="Change_settings">Change settings</string>
+    <string name="home">Home</string>
+    <string name="devices">Devices</string>
+    <string name="spaces">Spaces</string>
+    <string name="statistics">Statistics</string>
+    <string name="settings">Settings</string>
 </resources>
