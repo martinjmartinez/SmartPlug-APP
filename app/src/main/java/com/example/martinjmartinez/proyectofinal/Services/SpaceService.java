@@ -42,13 +42,14 @@ public class SpaceService {
         return results;
     }
 
-    public void createSpaceCloud(SpaceFB spaceFB) {
+    public String createSpaceCloud(SpaceFB spaceFB) {
         String spaceId = databaseReference.push().getKey();
 
         spaceFB.set_id(spaceId);
         databaseReference.child(spaceId).setValue(spaceFB);
 
         createSpaceLocal(spaceFB);
+        return spaceId;
     }
 
     public void createSpaceLocal(SpaceFB spaceFB) {
@@ -60,6 +61,7 @@ public class SpaceService {
 
         space.setName(spaceFB.getName());
         space.setBuilding(building);
+        space.setMonthlyLimit(spaceFB.getMonthlyLimit());
         space.setActive(spaceFB.isActive());
 
         realm.commitTransaction();
@@ -78,6 +80,18 @@ public class SpaceService {
         realm.beginTransaction();
 
         space.setName(name);
+
+        realm.commitTransaction();
+    }
+
+
+    public void updateSpaceLimit(String _id, double limit) {
+        Space space = getSpaceById(_id);
+        databaseReference.child(_id).child("monthlyLimit").setValue(limit);
+
+        realm.beginTransaction();
+
+        space.setMonthlyLimit(limit);
 
         realm.commitTransaction();
     }
@@ -126,6 +140,7 @@ public class SpaceService {
         databaseReference.child(space.get_id()).child("name").setValue(space.getName());
         databaseReference.child(space.get_id()).child("buildingId").setValue(space.getBuilding().get_id());
         databaseReference.child(space.get_id()).child("averageConsumption").setValue(space.getAverageConsumption());
+        databaseReference.child(space.get_id()).child("monthlyLimit").setValue(space.getMonthlyLimit());
     }
 
     public void updateSpaceLocal(SpaceFB spaceFB) {
@@ -134,9 +149,10 @@ public class SpaceService {
 
         realm.beginTransaction();
 
-        space.setName(space.getName());
+        space.setName(spaceFB.getName());
         space.setBuilding(building);
-        space.setActive(space.isActive());
+        space.setActive(spaceFB.isActive());
+        space.setMonthlyLimit(spaceFB.getMonthlyLimit());
         space.setAverageConsumption(spaceFB.getAverageConsumption());
 
         realm.commitTransaction();

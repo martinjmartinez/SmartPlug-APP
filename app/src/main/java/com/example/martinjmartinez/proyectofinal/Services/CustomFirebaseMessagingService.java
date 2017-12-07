@@ -25,6 +25,7 @@ public class CustomFirebaseMessagingService extends FirebaseMessagingService {
         intent.putExtra("tag", remoteMessage.getNotification().getTag());
         intent.putExtra("notification", true);
         intent.putExtra("deviceId", remoteMessage.getData().get("deviceId"));
+        intent.putExtra("spaceId", remoteMessage.getData().get("spaceId"));
 
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }

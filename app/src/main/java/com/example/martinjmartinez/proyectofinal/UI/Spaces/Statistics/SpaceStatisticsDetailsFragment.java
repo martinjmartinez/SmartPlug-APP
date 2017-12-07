@@ -28,6 +28,7 @@ import com.example.martinjmartinez.proyectofinal.Models.HistorialReview;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
 import com.example.martinjmartinez.proyectofinal.Services.SpaceService;
+import com.example.martinjmartinez.proyectofinal.UI.Devices.Statistics.DeviceStatisticsDetailsFragment;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.Utils.Chart.ChartUtils;
 import com.example.martinjmartinez.proyectofinal.Utils.Constants;
@@ -74,7 +75,9 @@ public class SpaceStatisticsDetailsFragment extends Fragment{
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        getArgumentsBundle();
+        if (getArguments() != null) {
+            mSpaceId = getArguments().getString("spaceId");
+        }
     }
 
     @Override
@@ -85,17 +88,23 @@ public class SpaceStatisticsDetailsFragment extends Fragment{
         mMainActivity = (MainActivity) mActivity;
     }
 
+    public static SpaceStatisticsDetailsFragment newInstance(String spaceId) {
+        Bundle args = new Bundle();
+        args.putString("spaceId", spaceId);
+
+        SpaceStatisticsDetailsFragment fragment = new SpaceStatisticsDetailsFragment();
+        fragment.setArguments(args);
+
+        return fragment;
+    }
+
     @Override
     public void onResume() {
         super.onResume();
 
-        mMainActivity.getSupportActionBar().setTitle(mSpace.getName() + "'s " + "Stats");
+        mMainActivity.getSupportActionBar().setTitle("Statistics");
     }
 
-    public void getArgumentsBundle() {
-        Bundle bundle = this.getArguments();
-        mSpaceId = bundle != null ? bundle.getString(Constants.SPACE_ID, "") : "";
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {

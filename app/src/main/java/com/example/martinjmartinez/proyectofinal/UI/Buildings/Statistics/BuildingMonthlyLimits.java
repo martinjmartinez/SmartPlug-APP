@@ -1,4 +1,4 @@
-package com.example.martinjmartinez.proyectofinal.UI.Devices.Statistics;
+package com.example.martinjmartinez.proyectofinal.UI.Buildings.Statistics;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -11,12 +11,13 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Spinner;
 
-import com.example.martinjmartinez.proyectofinal.Entities.Device;
+import com.example.martinjmartinez.proyectofinal.Entities.Building;
 import com.example.martinjmartinez.proyectofinal.Entities.MonthlyLimit;
-import com.example.martinjmartinez.proyectofinal.Models.DevicesMonthConsumed;
+import com.example.martinjmartinez.proyectofinal.Models.GroupMonthConsumed;
 import com.example.martinjmartinez.proyectofinal.R;
-import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
-import com.example.martinjmartinez.proyectofinal.Services.DevicesLimitService;
+import com.example.martinjmartinez.proyectofinal.Services.BuildingLimitsService;
+import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
+import com.example.martinjmartinez.proyectofinal.UI.Devices.Statistics.MonthSpinnerAdapter;
 import com.example.martinjmartinez.proyectofinal.Utils.Chart.ChartUtils;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 import com.github.mikephil.charting.charts.BarChart;
@@ -35,19 +36,18 @@ import io.realm.Realm;
 import io.realm.RealmResults;
 import io.realm.Sort;
 
-public class DeviceMonthlyLimits extends Fragment {
-
+public class BuildingMonthlyLimits extends Fragment {
     private Realm realm;
     private String monthSelected;
-    private DeviceService deviceService;
-    private DevicesLimitService devicesLimitService;
-    private Device mDevice;
-    private String deviceId;
+    private BuildingService buildingService;
+    private BuildingLimitsService buildingLimitsService;
+    private Building building;
+    private String buildingId;
     private BarChart groupBarChart;
     private Spinner monthSpinner;
     private ViewPager monthDetailsViewPager;
     private MonthSpinnerAdapter monthSpinnerAdapter;
-    private DeviceMonthDetailsViewPagerAdapter deviceMonthDetailsViewPagerAdapter;
+    private BuildingMonthDetailsViewPager buildingMonthDetailsViewPager;
     private TabLayout detailsTabLayout;
     private ArrayList<String> monthsId;
     private FirebaseAuth mAuth;
@@ -57,23 +57,20 @@ public class DeviceMonthlyLimits extends Fragment {
     private DatabaseReference databaseReference;
 
 
-    public static DeviceMonthlyLimits newInstance(String deviceId) {
+    public static BuildingMonthlyLimits newInstance(String buildingId) {
         Bundle args = new Bundle();
-        args.putString("deviceId", deviceId);
+        args.putString("buildingId", buildingId);
 
-        DeviceMonthlyLimits fragment = new DeviceMonthlyLimits();
+        BuildingMonthlyLimits fragment = new BuildingMonthlyLimits();
         fragment.setArguments(args);
 
         return fragment;
     }
 
     private void iniVariables(View view) {
-        realm = Realm.getDefaultInstance();
-        deviceService = new DeviceService(realm);
-        devicesLimitService = new DevicesLimitService(realm);
         mAuth = FirebaseAuth.getInstance();
         FirebaseUser currentUser = mAuth.getCurrentUser();
-        databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/" + currentUser.getUid() + "/MonthlyConsumed/" + deviceId);
+        databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/" + currentUser.getUid() + "/BuildingMonthlyConsumed/" + buildingId);
 
         limits = new ArrayList<>();
         consumed = new ArrayList<>();
@@ -93,10 +90,10 @@ public class DeviceMonthlyLimits extends Fragment {
     }
 
     private void setupViewPager(ViewPager fragmentsViewpager) {
-        deviceMonthDetailsViewPagerAdapter = new DeviceMonthDetailsViewPagerAdapter(getChildFragmentManager(), getContext(), deviceId, Utils.monthStringToId(monthSelected));
+        buildingMonthDetailsViewPager = new BuildingMonthDetailsViewPager(getChildFragmentManager(), getContext(), buildingId, Utils.monthStringToId(monthSelected));
         detailsTabLayout.setupWithViewPager(fragmentsViewpager, true);
 
-        fragmentsViewpager.setAdapter(deviceMonthDetailsViewPagerAdapter);
+        fragmentsViewpager.setAdapter(buildingMonthDetailsViewPager);
     }
 
     @Override
@@ -104,11 +101,12 @@ public class DeviceMonthlyLimits extends Fragment {
         super.onCreate(savedInstanceState);
 
         if (getArguments() != null) {
-            deviceId = getArguments().getString("deviceId");
+            buildingId = getArguments().getString("buildingId");
 
             realm = Realm.getDefaultInstance();
-            deviceService = new DeviceService(realm);
-            mDevice = deviceService.getDeviceById(deviceId);
+            buildingService = new BuildingService(realm);
+            buildingLimitsService = new BuildingLimitsService(realm);
+            building = buildingService.getBuildingById(buildingId);
         }
     }
 
@@ -131,41 +129,41 @@ public class DeviceMonthlyLimits extends Fragment {
     }
 
     public void fetchResults() {
-            RealmResults<MonthlyLimit> monthlyLimits = realm.where(MonthlyLimit.class).equalTo("device._id", deviceId).findAll().sort("date", Sort.ASCENDING);
+        RealmResults<MonthlyLimit> monthlyLimits = realm.where(MonthlyLimit.class).equalTo("building._id", buildingId).findAll().sort("date", Sort.ASCENDING);
         ArrayList<String> labels = new ArrayList<>();
         limits.clear();
         consumed.clear();
-            for(MonthlyLimit monthlyLimit : monthlyLimits) {
-                labels.add(Utils.monthIdToString(monthlyLimit.getMonth()));
-                limits.add(monthlyLimit.getLimit());
-                consumed.add(monthlyLimit.getTotalConsumed());
-            }
+        for(MonthlyLimit monthlyLimit : monthlyLimits) {
+            labels.add(Utils.monthIdToString(monthlyLimit.getMonth()));
+            limits.add(monthlyLimit.getLimit());
+            consumed.add(monthlyLimit.getTotalConsumed());
+        }
 
-           ChartUtils.makeGroupBarChart(limits, consumed, groupBarChart, labels);
+        ChartUtils.makeGroupBarChart(limits, consumed, groupBarChart, labels);
 
     }
 
     private void initListeners() {
-       limitsListener = new ValueEventListener() {
-           @Override
-           public void onDataChange(DataSnapshot dataSnapshot) {
+        limitsListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
                 for(DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()){
-                    DevicesMonthConsumed devicesMonthConsumed = dataSnapshot1.getValue(DevicesMonthConsumed.class);
-                    if(devicesMonthConsumed != null) {
-                        String[] parts = devicesMonthConsumed.get_id().split("_");
+                    GroupMonthConsumed groupMonthConsumed = dataSnapshot1.getValue(GroupMonthConsumed.class);
+                    if(groupMonthConsumed != null) {
+                        String[] parts = groupMonthConsumed.get_id().split("_");
                         monthsId.add(parts[0] + " " + parts[1]);
                         setAdapters();
-                        devicesLimitService.updateOrCreateLocal(devicesMonthConsumed);
+                        buildingLimitsService.updateOrCreateLocal(groupMonthConsumed);
                     }
                 }
-               fetchResults();
-           }
+                fetchResults();
+            }
 
-           @Override
-           public void onCancelled(DatabaseError databaseError) {
-           }
-       };
-       databaseReference.addListenerForSingleValueEvent(limitsListener);
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        };
+        databaseReference.addListenerForSingleValueEvent(limitsListener);
 
         monthSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override

@@ -1,14 +1,14 @@
 package com.example.martinjmartinez.proyectofinal.UI.LaunchLoader;
 
 import android.content.Intent;
-import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 
-import com.example.martinjmartinez.proyectofinal.Entities.Settings;
 import com.example.martinjmartinez.proyectofinal.Models.BuildingFB;
 import com.example.martinjmartinez.proyectofinal.Models.DeviceFB;
+import com.example.martinjmartinez.proyectofinal.Models.DevicesMonthConsumed;
+import com.example.martinjmartinez.proyectofinal.Models.GroupMonthConsumed;
 import com.example.martinjmartinez.proyectofinal.Models.HistorialFB;
 import com.example.martinjmartinez.proyectofinal.Models.SettingsFB;
 import com.example.martinjmartinez.proyectofinal.Models.SpaceFB;
@@ -16,11 +16,12 @@ import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
 import com.example.martinjmartinez.proyectofinal.Services.HistorialService;
+import com.example.martinjmartinez.proyectofinal.Services.DevicesLimitService;
 import com.example.martinjmartinez.proyectofinal.Services.SettingsService;
 import com.example.martinjmartinez.proyectofinal.Services.SpaceService;
+import com.example.martinjmartinez.proyectofinal.Services.SpacesLimitsService;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 
-import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -28,8 +29,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-
-import java.util.Date;
 
 import io.realm.Realm;
 
@@ -43,6 +42,9 @@ public class LoaderActivity extends AppCompatActivity {
     private SettingsService settingsService;
     private SpaceService spaceService;
     private DeviceService deviceService;
+    private SpacesLimitsService spacesLimitsService;
+    private DevicesLimitService devicesLimitService;
+
     private FirebaseAuth mAuth;
     private FirebaseUser currentUser;
 
@@ -55,6 +57,8 @@ public class LoaderActivity extends AppCompatActivity {
         historialService = new HistorialService(realm);
         settingsService = new SettingsService(realm);
         deviceService = new DeviceService(realm);
+        spacesLimitsService = new SpacesLimitsService(realm);
+        devicesLimitService = new DevicesLimitService(realm);
         buildingService = new BuildingService(realm);
         spaceService = new SpaceService(realm);
         mAuth = FirebaseAuth.getInstance();
@@ -203,12 +207,58 @@ public class LoaderActivity extends AppCompatActivity {
                 }
 
                 databaseReference.removeEventListener(this);
-                loadFinished();
+                getDevicesLimits();
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
 
+            }
+        });
+    }
+
+    public void getDevicesLimits() {
+        final DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/" + currentUser.getUid() + "/MonthlyConsumed");
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for(DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()){
+                   for (DataSnapshot snapshot : dataSnapshot1.getChildren()) {
+                       DevicesMonthConsumed devicesMonthConsumed = snapshot.getValue(DevicesMonthConsumed.class);
+                       if(devicesMonthConsumed != null) {
+                           devicesLimitService.updateOrCreateLocal(devicesMonthConsumed);
+                       }
+                   }
+                }
+                databaseReference.removeEventListener(this);
+                getSpacesLimits();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+    }
+
+    public void getSpacesLimits() {
+        final DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/" + currentUser.getUid() + "/SpacesMonthlyConsumed");
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for(DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()){
+                    for (DataSnapshot snapshot : dataSnapshot1.getChildren()) {
+                        GroupMonthConsumed groupMonthConsumed= snapshot.getValue(GroupMonthConsumed.class);
+                        if(groupMonthConsumed != null) {
+                            spacesLimitsService.updateOrCreateLocal(groupMonthConsumed);
+                        }
+                    }
+                }
+                databaseReference.removeEventListener(this);
+                loadFinished();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
             }
         });
     }

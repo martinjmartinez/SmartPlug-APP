@@ -14,6 +14,10 @@ public class MonthlyLimit extends RealmObject {
 
     private Device device;
 
+    private Space space;
+
+    private Building building;
+
     private double limit;
 
     private Date date;
@@ -30,6 +34,22 @@ public class MonthlyLimit extends RealmObject {
 
     public String getMonth() {
         return month;
+    }
+
+    public Space getSpace() {
+        return space;
+    }
+
+    public Building getBuilding() {
+        return building;
+    }
+
+    public void setBuilding(Building building) {
+        this.building = building;
+    }
+
+    public void setSpace(Space space) {
+        this.space = space;
     }
 
     public void setMonth(String month) {

@@ -12,9 +12,8 @@ import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.example.martinjmartinez.proyectofinal.Models.MonthConsumed;
+import com.example.martinjmartinez.proyectofinal.Models.DevicesMonthConsumed;
 import com.example.martinjmartinez.proyectofinal.R;
-import com.example.martinjmartinez.proyectofinal.Utils.DateUtils;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -25,7 +24,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 public class MonthDetails extends Fragment {
-    private String objectId, monthId;
+    private String objectId, monthId, type;
     private TextView limit, consumed;
     private TextView shouldPay, currentAmount, percentage, consumedProgressbar, limitProgressbar;
     private ValueEventListener monthLimitListener;
@@ -36,11 +35,12 @@ public class MonthDetails extends Fragment {
     private DatabaseReference databaseReference;
 
 
-    public static MonthDetails newInstance(String monthId, String objectId) {
+    public static MonthDetails newInstance(String monthId, String objectId, String type) {
         Bundle args = new Bundle();
 
         args.putString("objectId", objectId);
         args.putString("monthId", monthId);
+        args.putString("type", type);
 
         MonthDetails fragment = new MonthDetails();
         fragment.setArguments(args);
@@ -61,6 +61,7 @@ public class MonthDetails extends Fragment {
         if (getArguments() != null) {
             objectId = getArguments().getString("objectId");
             monthId = getArguments().getString("monthId");
+            type = getArguments().getString("type");
         }
     }
 
@@ -78,8 +79,14 @@ public class MonthDetails extends Fragment {
         progressBar = view.findViewById(R.id.limit_progressbas);
         percentage = view.findViewById(R.id.limit_percentage);
         currentAmount = view.findViewById(R.id.actualCost);
-        databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/" + currentUser.getUid() + "/MonthlyConsumed/" + objectId + "/" + monthId);
 
+        if (type.equals("Device")) {
+            databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/" + currentUser.getUid() + "/MonthlyConsumed/" + objectId + "/" + monthId);
+        } else if (type.equals("Space")) {
+            databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/" + currentUser.getUid() + "/SpacesMonthlyConsumed/" + objectId + "/" + monthId);
+        } else if (type.equals("Building")){
+            databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/" + currentUser.getUid() + "/BuildingMonthlyConsumed/" + objectId + "/" + monthId);
+        }
 
         initListeners();
 
@@ -91,24 +98,24 @@ public class MonthDetails extends Fragment {
         monthLimitListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                MonthConsumed monthConsumed = dataSnapshot.getValue(MonthConsumed.class);
-                if (monthConsumed != null) {
-                    if (monthConsumed.getLimit() == 0){
+                DevicesMonthConsumed devicesMonthConsumed = dataSnapshot.getValue(DevicesMonthConsumed.class);
+                if (devicesMonthConsumed != null) {
+                    if (devicesMonthConsumed.getLimit() == 0){
                         limitProgressbar.setText("Not set");
                     } else {
-                        limitProgressbar.setText(monthConsumed.getLimit() + " W/h");
-                        limit.setText(monthConsumed.getLimit() + " W/h");
-                        consumedProgressbar.setText(Utils.decimalFormat.format(monthConsumed.getTotalConsumed()));
-                        consumed.setText(Utils.decimalFormat.format(monthConsumed.getTotalConsumed()) + " W/h");
-                        double percentage1 = (monthConsumed.getTotalConsumed() / monthConsumed.getLimit()) * 100;
+                        limitProgressbar.setText(devicesMonthConsumed.getLimit() + " W/h");
+                        limit.setText(devicesMonthConsumed.getLimit() + " W/h");
+                        consumedProgressbar.setText(Utils.decimalFormat.format(devicesMonthConsumed.getTotalConsumed()));
+                        consumed.setText(Utils.decimalFormat.format(devicesMonthConsumed.getTotalConsumed()) + " W/h");
+                        double percentage1 = (devicesMonthConsumed.getTotalConsumed() / devicesMonthConsumed.getLimit()) * 100;
                         if(percentage1 >= 100){
-                            progressBar.setMax(Double.valueOf(monthConsumed.getTotalConsumed()).intValue());
-                            progressBar.setProgress(Double.valueOf(monthConsumed.getLimit()).intValue());
+                            progressBar.setMax(Double.valueOf(devicesMonthConsumed.getTotalConsumed()).intValue());
+                            progressBar.setProgress(Double.valueOf(devicesMonthConsumed.getLimit()).intValue());
                             progressBar.setProgressBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.alert)));
                             progressBar.setProgressBackgroundTintMode(PorterDuff.Mode.DARKEN);
                         }else {
-                            progressBar.setMax(Double.valueOf(monthConsumed.getLimit()).intValue());
-                            progressBar.setProgress(Double.valueOf(monthConsumed.getTotalConsumed()).intValue());
+                            progressBar.setMax(Double.valueOf(devicesMonthConsumed.getLimit()).intValue());
+                            progressBar.setProgress(Double.valueOf(devicesMonthConsumed.getTotalConsumed()).intValue());
                             if (percentage1 < 100 && percentage1 >= 75) {
                                 progressBar.setProgressTintList(ColorStateList.valueOf(getResources().getColor(R.color.color4)));
                             }
@@ -118,8 +125,8 @@ public class MonthDetails extends Fragment {
                     }
 
                     //TODO ADD COST
-                    shouldPay.setText("$" + Utils.decimalFormat.format(Utils.price(monthConsumed.getLimit(), currentUser.getUid())));
-                    currentAmount.setText("$" + Utils.decimalFormat.format(Utils.price(monthConsumed.getTotalConsumed(), currentUser.getUid())));
+                    shouldPay.setText("$" + Utils.decimalFormat.format(Utils.price(devicesMonthConsumed.getLimit(), currentUser.getUid())));
+                    currentAmount.setText("$" + Utils.decimalFormat.format(Utils.price(devicesMonthConsumed.getTotalConsumed(), currentUser.getUid())));
                 }
             }
 

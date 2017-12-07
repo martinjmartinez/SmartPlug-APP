@@ -28,6 +28,7 @@ import com.example.martinjmartinez.proyectofinal.Models.HistorialReview;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
+import com.example.martinjmartinez.proyectofinal.UI.Spaces.Statistics.SpaceStatisticsDetailsFragment;
 import com.example.martinjmartinez.proyectofinal.Utils.Chart.ChartUtils;
 import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.example.martinjmartinez.proyectofinal.Utils.DateUtils;
@@ -73,7 +74,19 @@ public class BuildingStatisticsDetailsFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        getArgumentsBundle();
+        if (getArguments() != null) {
+            mBuildingId = getArguments().getString("buildingId");
+        }
+    }
+
+    public static BuildingStatisticsDetailsFragment newInstance(String buildingId) {
+        Bundle args = new Bundle();
+        args.putString("buildingId", buildingId);
+
+        BuildingStatisticsDetailsFragment fragment = new BuildingStatisticsDetailsFragment();
+        fragment.setArguments(args);
+
+        return fragment;
     }
 
     @Override
@@ -87,12 +100,7 @@ public class BuildingStatisticsDetailsFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        mMainActivity.getSupportActionBar().setTitle(mBuilding.getName() + "'s " + "Stats");
-    }
-
-    public void getArgumentsBundle() {
-        Bundle bundle = this.getArguments();
-        mBuildingId = bundle != null ? bundle.getString(Constants.BUILDING_ID, "") : "";
+        mMainActivity.getSupportActionBar().setTitle("Statistics");
     }
 
     @Override

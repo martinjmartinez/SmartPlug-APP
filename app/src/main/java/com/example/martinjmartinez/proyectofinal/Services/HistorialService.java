@@ -21,7 +21,7 @@ import io.realm.RealmResults;
 public class HistorialService extends SmartPLugApplication {
     private Realm realm;
     private DeviceService deviceService;
-    private LimitService limitService;
+    private DevicesLimitService devicesLimitService;
     public DatabaseReference historialDatabaseReference;
     private DatabaseReference deviceDatabaseReference;
     private FirebaseAuth mAuth;
@@ -29,7 +29,7 @@ public class HistorialService extends SmartPLugApplication {
     public HistorialService(Realm realm) {
         this.realm = realm;
         deviceService = new DeviceService(realm);
-        limitService = new LimitService(realm);
+        devicesLimitService = new DevicesLimitService(realm);
         mAuth = FirebaseAuth.getInstance();
         FirebaseUser currentUser = mAuth.getCurrentUser();
         historialDatabaseReference = FirebaseDatabase.getInstance().getReference("Accounts/" + currentUser.getUid() + "/Histories");
@@ -54,7 +54,7 @@ public class HistorialService extends SmartPLugApplication {
         }
 
         historialDatabaseReference.child(historialId).setValue(historialFB);
-        limitService.updateOrCreateCloud(historialFB);
+        devicesLimitService.updateOrCreateCloud(historialFB);
         createHistoryLocal(historialFB);
         return historialId;
     }

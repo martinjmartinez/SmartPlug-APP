@@ -300,6 +300,7 @@
                         </LinearLayout>
 
                         <LinearLayout
+                            android:id="@+id/timeOn_last_month"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="horizontal">
@@ -531,6 +532,7 @@
                         </LinearLayout>
 
                         <LinearLayout
+                            android:id="@+id/timeOn_this_month"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="horizontal">

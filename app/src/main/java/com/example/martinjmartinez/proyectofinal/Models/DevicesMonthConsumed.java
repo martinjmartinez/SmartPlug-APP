@@ -1,6 +1,6 @@
 package com.example.martinjmartinez.proyectofinal.Models;
 
-public class MonthConsumed {
+public class DevicesMonthConsumed {
 
     private String _id;
 
@@ -24,9 +24,9 @@ public class MonthConsumed {
 
     private boolean limitReachedNotificationSend;
 
-    public MonthConsumed() {}
+    public DevicesMonthConsumed() {}
 
-    public MonthConsumed(String _id, boolean halfReachedNotificationSend, boolean almostReachNotificationSend, boolean limitReachedNotificationSend, double limit, boolean autoTurnOff, String deviceId, long date) {
+    public DevicesMonthConsumed(String _id, boolean halfReachedNotificationSend, boolean almostReachNotificationSend, boolean limitReachedNotificationSend, double limit, boolean autoTurnOff, String deviceId, long date) {
         this._id = _id;
         this.limit = limit;
         this.halfReachedNotificationSend = halfReachedNotificationSend;
@@ -35,6 +35,17 @@ public class MonthConsumed {
         this.autoTurnOff = autoTurnOff;
         this.deviceId = deviceId;
         this.date = date;
+    }
+
+    public DevicesMonthConsumed(String _id, double limit, double totalConsumed, String spaceId, long date, boolean halfReachedNotificationSend, boolean almostReachNotificationSend, boolean limitReachedNotificationSend) {
+        this._id = _id;
+        this.limit = limit;
+        this.totalConsumed = totalConsumed;
+        this.deviceId = spaceId;
+        this.date = date;
+        this.halfReachedNotificationSend = halfReachedNotificationSend;
+        this.almostReachNotificationSend = almostReachNotificationSend;
+        this.limitReachedNotificationSend = limitReachedNotificationSend;
     }
 
     public long getDate() {

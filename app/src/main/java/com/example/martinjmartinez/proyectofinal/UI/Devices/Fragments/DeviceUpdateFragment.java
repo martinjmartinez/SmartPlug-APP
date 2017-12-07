@@ -27,8 +27,9 @@ import com.example.martinjmartinez.proyectofinal.Models.DeviceFB;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
-import com.example.martinjmartinez.proyectofinal.Services.LimitService;
+import com.example.martinjmartinez.proyectofinal.Services.DevicesLimitService;
 import com.example.martinjmartinez.proyectofinal.Services.SpaceService;
+import com.example.martinjmartinez.proyectofinal.Services.SpacesLimitsService;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.UI.Spaces.Adapters.SpaceSpinnerAdapter;
 import com.example.martinjmartinez.proyectofinal.Utils.Constants;
@@ -59,7 +60,8 @@ public class DeviceUpdateFragment extends Fragment {
     private MainActivity mMainActivity;
     private DeviceService deviceService;
     private SpaceService spaceService;
-    private LimitService limitService;
+    private SpacesLimitsService spacesLimitsService;
+    private DevicesLimitService devicesLimitService;
     private BuildingService buildingService;
 
     public DeviceUpdateFragment() {
@@ -112,7 +114,8 @@ public class DeviceUpdateFragment extends Fragment {
     private void iniVariables(View view) {
         deviceService = new DeviceService(Realm.getDefaultInstance());
         buildingService = new BuildingService(Realm.getDefaultInstance());
-        limitService = new LimitService(Realm.getDefaultInstance());
+        devicesLimitService = new DevicesLimitService(Realm.getDefaultInstance());
+        spacesLimitsService = new SpacesLimitsService(Realm.getDefaultInstance());
         spaceService = new SpaceService(Realm.getDefaultInstance());
         name = view.findViewById(R.id.device_create_name);
         monthlyLimit = view.findViewById(R.id.device_create_limit);
@@ -165,12 +168,16 @@ public class DeviceUpdateFragment extends Fragment {
         mSpaceSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                mSpace = mDevice.getBuilding().getSpaces().get(position);
+
+                mSpace = spaceService.allActiveSpacesByBuilding(mDevice.getBuilding().get_id()).get(position);
+
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
                 mSpace = mDevice.getSpace();
+                mSpaceSpinner.setSelection(spaceService.allActiveSpacesByBuilding(mDevice.getBuilding().get_id()).indexOf(mSpace));
+
             }
         });
 
@@ -197,11 +204,13 @@ public class DeviceUpdateFragment extends Fragment {
                 if (!Utils.isEditTextEmpty(name)) {
                     if (mSpace != null) {
                         DeviceFB deviceFB = deviceService.castToDeviceFB(mDevice);
+
+                        spacesLimitsService.updateDevices(deviceFB.getSpaceId(), mSpace.get_id(), deviceFB.get_id());
                         deviceFB.setSpaceId(mSpace.get_id());
                         deviceFB.setName(name.getText().toString());
                         deviceFB.setMonthlyLimit(Utils.isEditTextEmpty(monthlyLimit) ? 0 : Double.parseDouble(monthlyLimit.getText().toString()));
                         Log.e("limit", deviceFB.getMonthlyLimit() + "ppp");
-                        limitService.updateOrCreateCloud(deviceFB);
+                        devicesLimitService.updateOrCreateCloud(deviceFB);
                         deviceService.updateDeviceCloud(deviceFB);
                         spaceService.updateSpacePowerAverageConsumption(mSpace.get_id());
                         if (lastSpace != null) {
@@ -213,7 +222,7 @@ public class DeviceUpdateFragment extends Fragment {
                         deviceFB.setMonthlyLimit(Utils.isEditTextEmpty(monthlyLimit) ? 0 : Double.parseDouble(monthlyLimit.getText().toString()));
                         deviceFB.setName(name.getText().toString());
                         Log.e("limit", deviceFB.getMonthlyLimit() + "pppp");
-                        limitService.updateOrCreateCloud(deviceFB);
+                        devicesLimitService.updateOrCreateCloud(deviceFB);
                         deviceService.updateDeviceCloud(deviceFB);
                     }
                     mActivity.onBackPressed();
@@ -250,6 +259,8 @@ public class DeviceUpdateFragment extends Fragment {
             mSpaceSpinnerAdapter = new SpaceSpinnerAdapter(getContext(), R.layout.spaces_item_spinner, items);
             mSpaceSpinner.setAdapter(mSpaceSpinnerAdapter);
             lastSpace = mDevice.getSpace();
+            mSpaceSpinner.setSelection(spaceService.allActiveSpacesByBuilding(mDevice.getBuilding().get_id()).indexOf(lastSpace));
+
         } else {
             if(mDevice.isStatus()){
                 spaceWarning.setVisibility(View.VISIBLE);

@@ -17,6 +17,7 @@ import android.widget.Toast;
 
 import com.example.martinjmartinez.proyectofinal.Models.BuildingFB;
 import com.example.martinjmartinez.proyectofinal.R;
+import com.example.martinjmartinez.proyectofinal.Services.BuildingLimitsService;
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.Utils.Constants;
@@ -27,11 +28,12 @@ import io.realm.Realm;
 
 public class BuildingCreateFragment extends Fragment {
     private Activity mActivity;
-    private EditText name;
+    private EditText name, limit;
     private TextView displayName;
     private Button saveBuilding;
     private MainActivity mMainActivity;
     private BuildingService buildingService;
+    private BuildingLimitsService buildingLimitsService;
     private String userId;
 
     public BuildingCreateFragment() {
@@ -81,6 +83,7 @@ public class BuildingCreateFragment extends Fragment {
 
     private void iniVariables() {
         buildingService = new BuildingService(Realm.getDefaultInstance());
+        buildingLimitsService = new BuildingLimitsService(Realm.getDefaultInstance());
         userId = mActivity.getSharedPreferences(Constants.USER_INFO, 0).getString(Constants.USER_ID, FirebaseAuth.getInstance().getCurrentUser().getUid());
     }
 
@@ -111,7 +114,8 @@ public class BuildingCreateFragment extends Fragment {
                     buildingFB.setActive(true);
                     buildingFB.setUid(userId);
                     buildingService.createBuildingCloud(buildingFB);
-
+                    buildingFB.setMonthlyLimit(Utils.isEditTextEmpty(limit) ? 0.0 : Double.parseDouble(limit.getText().toString()));
+                    buildingLimitsService.updateOrCreateCloud(buildingFB);
                     if (buildingService.allBuildings().size() > 1) {
                         mActivity.onBackPressed();
                     } else {
@@ -133,9 +137,9 @@ public class BuildingCreateFragment extends Fragment {
     }
 
     private void initView(View view) {
-        name = (EditText) view.findViewById(R.id.building_create_name);
-        displayName = (TextView) view.findViewById(R.id.building_create_display_name);
-        saveBuilding = (Button) view.findViewById(R.id.building_create_save_button);
-
+        name = view.findViewById(R.id.building_create_name);
+        displayName =  view.findViewById(R.id.building_create_display_name);
+        saveBuilding =  view.findViewById(R.id.building_create_save_button);
+        limit = view.findViewById(R.id.building_create_limit);
     }
 }

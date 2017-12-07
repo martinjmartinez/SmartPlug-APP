@@ -1,16 +1,17 @@
-package com.example.martinjmartinez.proyectofinal.UI.Devices.Statistics;
+package com.example.martinjmartinez.proyectofinal.UI.Spaces.Statistics;
 
 import android.content.Context;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.util.Log;
-import android.view.View;
 
 import com.example.martinjmartinez.proyectofinal.UI.Statistics.MonthDetails;
 import com.example.martinjmartinez.proyectofinal.UI.Statistics.MonthVsMonth;
 
-public class DeviceMonthDetailsViewPagerAdapter extends FragmentStatePagerAdapter{
+
+public class SpaceMonthDetailsViewPagerAdapter extends FragmentStatePagerAdapter {
+
     private Fragment[] mFragmentList;
 
     public static final int GENERAL_STATISTICS = 0;
@@ -18,15 +19,15 @@ public class DeviceMonthDetailsViewPagerAdapter extends FragmentStatePagerAdapte
 
     private String[] mTabTitlesId;
 
-    public DeviceMonthDetailsViewPagerAdapter(FragmentManager fragmentManager, Context context, String deviceId, String monthId) {
+    public SpaceMonthDetailsViewPagerAdapter(FragmentManager fragmentManager, Context context, String spaceId, String monthId) {
         super(fragmentManager);
 
         Log.e("MONTHID", monthId + "  KLKK");
         mFragmentList = new Fragment[]{
                 //todo add the other one
 
-                MonthDetails.newInstance(monthId, deviceId, "Device"),
-                MonthVsMonth.newInstance(monthId, deviceId, "Device")
+                MonthDetails.newInstance(monthId, spaceId, "Space"),
+                MonthVsMonth.newInstance(monthId, spaceId, "Space")
         };
     }
 

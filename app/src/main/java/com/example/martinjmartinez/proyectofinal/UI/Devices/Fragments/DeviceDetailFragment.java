@@ -20,18 +20,17 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.ToggleButton;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Device;
+import com.example.martinjmartinez.proyectofinal.Entities.MonthlyLimit;
 import com.example.martinjmartinez.proyectofinal.Models.DeviceFB;
 import com.example.martinjmartinez.proyectofinal.Models.HistorialFB;
-import com.example.martinjmartinez.proyectofinal.Models.MonthConsumed;
+import com.example.martinjmartinez.proyectofinal.Models.DevicesMonthConsumed;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
 import com.example.martinjmartinez.proyectofinal.Services.HistorialService;
-import com.example.martinjmartinez.proyectofinal.Services.LimitService;
+import com.example.martinjmartinez.proyectofinal.Services.DevicesLimitService;
 import com.example.martinjmartinez.proyectofinal.UI.Devices.Statistics.DeviceStatistics;
-import com.example.martinjmartinez.proyectofinal.UI.Devices.Statistics.DeviceStatisticsDetailsFragment;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 
 import com.example.martinjmartinez.proyectofinal.Utils.Constants;
@@ -40,7 +39,6 @@ import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -61,7 +59,7 @@ public class DeviceDetailFragment extends Fragment {
     private TextView averagePower;
     private TextView building;
     private TextView lastTimeUsed;
-    private TextView monthlyLimit;
+    private TextView monthlyLimitTextView;
     private Switch status;
     private ProgressBar limitProgress;
     private TextView limitPercentage;
@@ -76,13 +74,14 @@ public class DeviceDetailFragment extends Fragment {
     private LinearLayout statisticsButton;
     private DatabaseReference databaseReference;
     private DatabaseReference limitReference;
-    private LimitService limitService;
+    private DevicesLimitService devicesLimitService;
     private CompoundButton.OnCheckedChangeListener listener;
     private CompoundButton.OnCheckedChangeListener autoTurnOffListener;
     private ValueEventListener deviceListener;
     private ValueEventListener limitListener;
 
-    public DeviceDetailFragment() {}
+    public DeviceDetailFragment() {
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -133,25 +132,25 @@ public class DeviceDetailFragment extends Fragment {
     private void iniVariables(View view) {
         deviceService = new DeviceService(Realm.getDefaultInstance());
         historialService = new HistorialService(Realm.getDefaultInstance());
-        limitService = new LimitService(Realm.getDefaultInstance());
+        devicesLimitService = new DevicesLimitService(Realm.getDefaultInstance());
         name = view.findViewById(R.id.device_detail_name);
         space = view.findViewById(R.id.device_detail_space);
         building = view.findViewById(R.id.device_detail_building);
-        power =  view.findViewById(R.id.device_detail_power);
-        lastTimeUsed =  view.findViewById(R.id.device_detail_last_turn_on);
+        power = view.findViewById(R.id.device_detail_power);
+        lastTimeUsed = view.findViewById(R.id.device_detail_last_turn_on);
         limitProgress = view.findViewById(R.id.device_limit_progressbas);
         limitPercentage = view.findViewById(R.id.device_detail_limit_percentage);
         actualLimit = view.findViewById(R.id.device_actual_limit);
         status = view.findViewById(R.id.device_detail_status);
-        mEditButton =  view.findViewById(R.id.device_detail_update);
+        mEditButton = view.findViewById(R.id.device_detail_update);
         autoTurnOff = view.findViewById(R.id.device_detail_limit_autoOff);
         mDeleteButton = view.findViewById(R.id.device_detail_delete);
-        monthlyLimit = view.findViewById(R.id.device_detail_limit);
-        averagePower =  view.findViewById(R.id.device_detail_average);
-        statisticsButton =  view.findViewById(R.id.device_statistics_button);
+        monthlyLimitTextView = view.findViewById(R.id.device_detail_limit);
+        averagePower = view.findViewById(R.id.device_detail_average);
+        statisticsButton = view.findViewById(R.id.device_statistics_button);
         userId = mActivity.getSharedPreferences(Constants.USER_INFO, 0).getString(Constants.USER_ID, FirebaseAuth.getInstance().getCurrentUser().getUid());
-        databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/"+ userId + "/Devices");
-        limitReference = FirebaseDatabase.getInstance().getReference("Accounts/"+ userId + "/MonthlyConsumed");
+        databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/" + userId + "/Devices");
+        limitReference = FirebaseDatabase.getInstance().getReference("Accounts/" + userId + "/MonthlyConsumed");
 
         listener = new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -246,7 +245,6 @@ public class DeviceDetailFragment extends Fragment {
         });
 
 
-
         mMainActivity.toggleDrawerIcon(false, R.drawable.ic_action_back, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -260,7 +258,8 @@ public class DeviceDetailFragment extends Fragment {
                 DeviceFB deviceFB = dataSnapshot.getValue(DeviceFB.class);
                 deviceService.updateDeviceLocal(deviceFB);
                 mDevice = deviceService.getDeviceById(mDeviceId);
-                limitReference.child(mDeviceId).addValueEventListener(limitListener);
+                String monthId = DateUtils.getMonthAndYear(DateUtils.getCurrentDate());
+                limitReference.child(mDeviceId).child(monthId).addValueEventListener(limitListener);
                 initDeviceView(mDevice);
             }
 
@@ -273,45 +272,18 @@ public class DeviceDetailFragment extends Fragment {
         limitListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                boolean hasLimit = false;
-                for(DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()) {
-                    String monthId = DateUtils.getMonthAndYear(DateUtils.getCurrentDate());
-                    if(isAdded()) {
-                        if (dataSnapshot1.getKey().equals(monthId)) {
-                            hasLimit = true;
-                            MonthConsumed monthConsumed = dataSnapshot1.getValue(MonthConsumed.class);
-                            if (monthConsumed.getLimit() == 0){
-                                monthlyLimit.setText("Not set");
-                            } else {
-                                limitProgress.setMax(Double.valueOf(monthConsumed.getLimit()).intValue());
-                                limitProgress.setProgress(Double.valueOf(monthConsumed.getTotalConsumed()).intValue());
-                                monthlyLimit.setText(monthConsumed.getLimit() + " W/h");
-                                actualLimit.setText(Utils.decimalFormat.format(monthConsumed.getTotalConsumed()));
-                                double percentage = (monthConsumed.getTotalConsumed() / monthConsumed.getLimit()) * 100;
-                                if(percentage >= 100){
-                                    autoTurnOff.setEnabled(false);
-                                    limitProgress.setProgressTintList(ColorStateList.valueOf(getResources().getColor(R.color.alert)));
-                                }else {
-                                    if (percentage < 100 && percentage >= 75) {
-                                        limitProgress.setProgressTintList(ColorStateList.valueOf(getResources().getColor(R.color.color4)));
-                                    }
-                                    autoTurnOff.setEnabled(true);
-                                }
-
-                                limitPercentage.setText(Utils.decimalFormat.format(percentage) + "%");
-                            }
-
-                            deviceService.updateDeviceLimit(mDevice.get_id(), monthConsumed.getLimit());
-                        }
+                if (isAdded()) {
+                    DevicesMonthConsumed devicesMonthConsumed = dataSnapshot.getValue(DevicesMonthConsumed.class);
+                    if (devicesMonthConsumed != null) {
+                        devicesLimitService.updateOrCreateLocal(devicesMonthConsumed);
+                        MonthlyLimit monthlyLimit = devicesLimitService.getMonthlyById(devicesMonthConsumed.get_id(), mDeviceId);
+                        initDeviceLimitSecction(monthlyLimit);
+                    } else {
+                        MonthlyLimit monthlyLimit = devicesLimitService.getMonthlyById(devicesMonthConsumed.get_id(), mDeviceId);
+                        initDeviceLimitSecction(monthlyLimit);
                     }
                 }
-
-                if(!hasLimit) {
-                    monthlyLimit.setText("Not set");
-                }
-
                 limitReference.removeEventListener(this);
-
             }
 
             @Override
@@ -333,6 +305,34 @@ public class DeviceDetailFragment extends Fragment {
     public void onPause() {
         super.onPause();
         databaseReference.child(mDeviceId).removeEventListener(deviceListener);
+    }
+
+    private void initDeviceLimitSecction(MonthlyLimit monthlyLimit) {
+        if (monthlyLimit != null) {
+            if (monthlyLimit.getLimit() == 0) {
+                monthlyLimitTextView.setText("Not set");
+            } else {
+                limitProgress.setMax(Double.valueOf(monthlyLimit.getLimit()).intValue());
+                limitProgress.setProgress(Double.valueOf(monthlyLimit.getTotalConsumed()).intValue());
+                monthlyLimitTextView.setText(monthlyLimit.getLimit() + " W/h");
+                actualLimit.setText(Utils.decimalFormat.format(monthlyLimit.getTotalConsumed()));
+                double percentage = (monthlyLimit.getTotalConsumed() / monthlyLimit.getLimit()) * 100;
+                if (percentage >= 100) {
+                    autoTurnOff.setEnabled(false);
+                    limitProgress.setProgressTintList(ColorStateList.valueOf(getResources().getColor(R.color.alert)));
+                } else {
+                    if (percentage < 100 && percentage >= 75) {
+                        limitProgress.setProgressTintList(ColorStateList.valueOf(getResources().getColor(R.color.color4)));
+                    }
+                    autoTurnOff.setEnabled(true);
+                }
+
+                limitPercentage.setText(Utils.decimalFormat.format(percentage) + "%");
+            }
+            deviceService.updateDeviceLimit(mDevice.get_id(), monthlyLimit.getLimit());
+        } else {
+            monthlyLimitTextView.setText("Not set");
+        }
     }
 
     private void initDeviceView(Device device) {
@@ -357,7 +357,7 @@ public class DeviceDetailFragment extends Fragment {
         building.setText(device.getBuilding().getName());
 
         if (device.isStatus()) {
-            if(mDevice.getPower()>0) {
+            if (mDevice.getPower() > 0) {
                 power.setText(Utils.decimalFormat.format(mDevice.getPower()) + " W");
             }
         } else {

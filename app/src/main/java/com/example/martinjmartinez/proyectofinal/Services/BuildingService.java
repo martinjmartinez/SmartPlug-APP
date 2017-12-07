@@ -1,8 +1,11 @@
 package com.example.martinjmartinez.proyectofinal.Services;
 
+import android.util.Log;
+
 import com.example.martinjmartinez.proyectofinal.App.SmartPLugApplication;
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
 import com.example.martinjmartinez.proyectofinal.Entities.Device;
+import com.example.martinjmartinez.proyectofinal.Entities.Space;
 import com.example.martinjmartinez.proyectofinal.Models.BuildingFB;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -40,6 +43,12 @@ public class BuildingService extends SmartPLugApplication {
         return results;
     }
 
+    public List<Space> allActiveSpaces(String buildingId) {
+        RealmResults<Space> results = realm.where(Space.class).equalTo("isActive", true).equalTo("building._id", buildingId).findAll();
+
+        return results;
+    }
+
     public void createBuildingCloud(BuildingFB buildingFB) {
         String buildingId = databaseReference.push().getKey();
 
@@ -51,9 +60,10 @@ public class BuildingService extends SmartPLugApplication {
 
     public void createBuildingLocal(BuildingFB buildingFB) {
         realm.beginTransaction();
-
+        Log.e("BUILDINGDATA", buildingFB.getName() + "  ---  " + buildingFB.isActive());
         Building building = realm.createObject(Building.class, buildingFB.get_id());
         building.setName(buildingFB.getName());
+        building.setMonthlyLimit(buildingFB.getMonthlyLimit());
         building.setActive(buildingFB.isActive());
         building.setUid(buildingFB.getUid());
 
@@ -71,6 +81,7 @@ public class BuildingService extends SmartPLugApplication {
         databaseReference.child(building.get_id()).child("name").setValue(building.getName());
         databaseReference.child(building.get_id()).child("active").setValue(building.isActive());
         databaseReference.child(building.get_id()).child("uid").setValue(building.getUid());
+        databaseReference.child(building.get_id()).child("monthlyLimit").setValue(building.getMonthlyLimit());
 
         updateBuildingLocal(building);
     }
@@ -82,6 +93,17 @@ public class BuildingService extends SmartPLugApplication {
         } else {
             createBuildingLocal(buildingFB);
         }
+    }
+
+    public void updateBuildingLimit(String _id, double limit) {
+        Building building = getBuildingById(_id);
+        databaseReference.child(_id).child("monthlyLimit").setValue(limit);
+
+        realm.beginTransaction();
+
+        building.setMonthlyLimit(limit);
+
+        realm.commitTransaction();
     }
 
     public void updateBuildingPowerAverageConsumption(String _id) {
@@ -121,6 +143,7 @@ public class BuildingService extends SmartPLugApplication {
         building.setName(buildingFB.getName());
         building.setActive(buildingFB.isActive());
         building.setUid(buildingFB.getUid());
+        building.setMonthlyLimit(buildingFB.getMonthlyLimit());
 
         realm.commitTransaction();
     }

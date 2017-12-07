@@ -8,16 +8,27 @@ public class BuildingFB {
 
     private String uid;
 
+    private double monthlyLimit;
+
     private boolean isActive;
 
-    public BuildingFB(String _id, String name, boolean isActive, String uid) {
+    public BuildingFB(String _id, String name, boolean isActive, String uid, double monthlyLimit) {
         this._id = _id;
         this.name = name;
         this.isActive = isActive;
         this.uid = uid;
+        this.monthlyLimit = monthlyLimit;
     }
 
     public BuildingFB() {
+    }
+
+    public double getMonthlyLimit() {
+        return monthlyLimit;
+    }
+
+    public void setMonthlyLimit(double monthlyLimit) {
+        this.monthlyLimit = monthlyLimit;
     }
 
     public boolean isActive() {

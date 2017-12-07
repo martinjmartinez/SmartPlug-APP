@@ -23,7 +23,7 @@ import com.example.martinjmartinez.proyectofinal.Models.DeviceFB;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
-import com.example.martinjmartinez.proyectofinal.Services.LimitService;
+import com.example.martinjmartinez.proyectofinal.Services.DevicesLimitService;
 import com.example.martinjmartinez.proyectofinal.Services.SpaceService;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.UI.Spaces.Adapters.SpaceSpinnerAdapter;
@@ -58,7 +58,7 @@ public class DeviceCreateFragment extends Fragment {
     private SpaceSpinnerAdapter mSpaceSpinnerAdapter;
     private MainActivity mMainActivity;
     private DeviceService deviceService;
-    private LimitService limitService;
+    private DevicesLimitService devicesLimitService;
     private SpaceService spaceService;
     private BuildingService buildingService;
     private ValueEventListener singleDeviceListener;
@@ -126,7 +126,7 @@ public class DeviceCreateFragment extends Fragment {
         deviceService = new DeviceService(Realm.getDefaultInstance());
         buildingService = new BuildingService(Realm.getDefaultInstance());
         spaceService = new SpaceService(Realm.getDefaultInstance());
-        limitService = new LimitService(Realm.getDefaultInstance());
+        devicesLimitService = new DevicesLimitService(Realm.getDefaultInstance());
         name =  view.findViewById(R.id.device_create_name);
         displayName =  view.findViewById(R.id.device_create_display_name);
         deviceBuilding =  view.findViewById(R.id.device_create_building);
@@ -191,15 +191,9 @@ public class DeviceCreateFragment extends Fragment {
                     mDevice.setMonthlyLimit(Double.parseDouble(monthlyLimit.getText().toString()));
                     mDevice.setPower(0);
                     mDevice.setActive(true);
-                    if (mSpace ==null) {
-                        mDevice.setSpaceId("");
-                        deviceService.updateDeviceCloud(mDevice);
-                        limitService.updateOrCreateCloud(mDevice);
-                    } else {
-                        mDevice.setSpaceId(mSpace.get_id());
-                        deviceService.updateDeviceCloud(mDevice);
-                        limitService.updateOrCreateCloud(mDevice);
-                    }
+                    mDevice.setSpaceId(mSpace == null ? "" : mSpace.get_id());
+                    deviceService.updateDeviceCloud(mDevice);
+                    devicesLimitService.updateOrCreateCloud(mDevice);
                     mActivity.onBackPressed();
                 } else {
                     Toast.makeText(getActivity(), "Please, fill all the fields.", Toast.LENGTH_SHORT).show();

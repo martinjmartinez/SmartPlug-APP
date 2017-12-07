@@ -87,7 +87,7 @@ public class DeviceStatisticsDetailsFragment  extends Fragment{
     public void onResume() {
         super.onResume();
 
-        mMainActivity.getSupportActionBar().setTitle(mDevice.getName() + "'s " + "Stats");
+        mMainActivity.getSupportActionBar().setTitle("Statistics");
     }
 
     public static DeviceStatisticsDetailsFragment newInstance(String deviceId) {

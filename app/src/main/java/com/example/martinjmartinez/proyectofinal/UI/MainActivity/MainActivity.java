@@ -44,6 +44,7 @@ import com.example.martinjmartinez.proyectofinal.UI.Devices.Fragments.DeviceList
 import com.example.martinjmartinez.proyectofinal.UI.Home.HomeFragment;
 import com.example.martinjmartinez.proyectofinal.UI.LoginActivity.LogInActivity;
 import com.example.martinjmartinez.proyectofinal.UI.Settings.SettingsFragment;
+import com.example.martinjmartinez.proyectofinal.UI.Spaces.Fragments.SpaceDetailFragment;
 import com.example.martinjmartinez.proyectofinal.UI.Spaces.Fragments.SpaceListFragment;
 import com.example.martinjmartinez.proyectofinal.UI.Statistics.Charts.BuildingsLineChartFragment;
 import com.example.martinjmartinez.proyectofinal.UI.Statistics.StatisticsFragment;
@@ -114,8 +115,11 @@ public class MainActivity extends AppCompatActivity {
         Intent startingIntent = getIntent();
         if (startingIntent != null) {
             String deviceId = startingIntent.getStringExtra("deviceId"); // Retrieve the id
-            if (deviceId != null) {
+            String spaceId = startingIntent.getStringExtra("spaceId"); // Retrieve the id
+            if (deviceId != null && !deviceId.isEmpty()) {
                 openDeviceInfoFragment(deviceId);
+            } else if (spaceId != null && !spaceId.isEmpty()) {
+                openSpaceInfoFragment(spaceId);
             }
         }
     }
@@ -126,9 +130,6 @@ public class MainActivity extends AppCompatActivity {
             if (!deviceDetailFragment.isVisible()) {
                 Bundle bundle = new Bundle();
 
-                if (mSelectedBuilding == null) {
-                    mSelectedBuilding = mBuildingList.get(0);
-                }
                 bundle.putString(Constants.DEVICE_ID, deviceId);
                 deviceDetailFragment.setArguments(bundle);
 
@@ -138,13 +139,38 @@ public class MainActivity extends AppCompatActivity {
             DeviceDetailFragment newDeviceDetailFragment = new DeviceDetailFragment();
             Bundle bundle = new Bundle();
 
-            if (mSelectedBuilding == null) {
-                mSelectedBuilding = mBuildingList.get(0);
-            }
             bundle.putString(Constants.DEVICE_ID, deviceId);
             newDeviceDetailFragment.setArguments(bundle);
 
             loadContentFragment(newDeviceDetailFragment, FragmentKeys.DEVICE_DETAIL_FRAGMENT, true);
+        }
+    }
+
+    public void openSpaceInfoFragment(String spaceId) {
+        SpaceDetailFragment spaceDetailFragment = (SpaceDetailFragment) getSupportFragmentManager().findFragmentByTag(FragmentKeys.SPACE_DETAIL_FRAGMENT);
+        if (spaceDetailFragment != null) {
+            if (!spaceDetailFragment.isVisible()) {
+                Bundle bundle = new Bundle();
+
+                if (mSelectedBuilding == null) {
+                    mSelectedBuilding = mBuildingList.get(0);
+                }
+                bundle.putString(Constants.SPACE_ID, spaceId);
+                spaceDetailFragment.setArguments(bundle);
+
+                loadContentFragment(spaceDetailFragment, FragmentKeys.SPACE_DETAIL_FRAGMENT, true);
+            }
+        } else {
+            SpaceDetailFragment spaceDetailFragment1 = new SpaceDetailFragment();
+            Bundle bundle = new Bundle();
+
+            if (mSelectedBuilding == null) {
+                mSelectedBuilding = mBuildingList.get(0);
+            }
+            bundle.putString(Constants.SPACE_ID, spaceId);
+            spaceDetailFragment1.setArguments(bundle);
+
+            loadContentFragment(spaceDetailFragment1, FragmentKeys.SPACE_DETAIL_FRAGMENT, true);
         }
     }
 
@@ -175,6 +201,7 @@ public class MainActivity extends AppCompatActivity {
                 String title = intent.getStringExtra("title");
                 String tag = intent.getStringExtra("tag");
                 final String deviceId = intent.getStringExtra("deviceId");
+                final String spaceId = intent.getStringExtra("spaceId");
 
                 //alert data here
                 AlertDialog.Builder builder;
@@ -191,7 +218,11 @@ public class MainActivity extends AppCompatActivity {
                             public void onClick(DialogInterface dialog, int which) {
                                 // continue with delete
 
-                                openDeviceInfoFragment(deviceId);
+                                if(deviceId != null && !deviceId.isEmpty()) {
+                                    openDeviceInfoFragment(deviceId);
+                                }else if (spaceId != null && !spaceId.isEmpty()){
+                                    openSpaceInfoFragment(spaceId);
+                                }
                                 dialog.dismiss();
                             }
                         })

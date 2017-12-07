@@ -9,15 +9,26 @@ public class SpaceFB {
 
     private String buildingId;
 
+    private double monthlyLimit;
+
     private double averageConsumption;
 
     private boolean isActive;
 
-    public SpaceFB(String _id, String name, String buildingId, boolean isActive) {
+    public SpaceFB(String _id, String name, String buildingId, boolean isActive, double monthlyLimit) {
         this._id = _id;
         this.name = name;
         this.buildingId = buildingId;
         this.isActive = isActive;
+        this.monthlyLimit = monthlyLimit;
+    }
+
+    public double getMonthlyLimit() {
+        return monthlyLimit;
+    }
+
+    public void setMonthlyLimit(double monthlyLimit) {
+        this.monthlyLimit = monthlyLimit;
     }
 
     public double getAverageConsumption() {

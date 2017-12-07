@@ -10,8 +10,6 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
-import com.example.martinjmartinez.proyectofinal.Entities.Device;
-import com.example.martinjmartinez.proyectofinal.Models.MonthConsumed;
 import com.example.martinjmartinez.proyectofinal.R;
 
 import java.util.List;

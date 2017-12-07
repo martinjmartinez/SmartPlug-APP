@@ -3,15 +3,15 @@ package com.example.martinjmartinez.proyectofinal.UI.Statistics;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Historial;
 import com.example.martinjmartinez.proyectofinal.Models.HistorialReview;
-import com.example.martinjmartinez.proyectofinal.Models.MonthConsumed;
+import com.example.martinjmartinez.proyectofinal.Models.DevicesMonthConsumed;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.HistorialService;
 import com.example.martinjmartinez.proyectofinal.Utils.Chart.ChartUtils;
@@ -33,7 +33,7 @@ import io.realm.RealmResults;
 import io.realm.Sort;
 
 public class MonthVsMonth extends Fragment {
-    private String monthId, objectId;
+    private String monthId, objectId, type;
     private TextView lastMonth;
     private TextView actualMonth;
     private ArcProgress chart1, chart2, chart3;
@@ -41,6 +41,7 @@ public class MonthVsMonth extends Fragment {
     private TextView previusCost, currentCost, previousLimit, actualLimit, previousConsumtion, actualConsumption, prevPower, actualPower, prevTime, actualTime;
     private ValueEventListener monthLimitListener;
     private HistorialService historialService;
+    private LinearLayout timeThisMonthLayout, timeLastMonthLayout;
     private Realm realm;
     private FirebaseAuth mAuth;
     private FirebaseUser currentUser;
@@ -48,11 +49,12 @@ public class MonthVsMonth extends Fragment {
     private DatabaseReference databaseReference;
 
 
-    public static MonthVsMonth newInstance(String monthId, String objectId) {
+    public static MonthVsMonth newInstance(String monthId, String objectId, String type) {
         Bundle args = new Bundle();
 
         args.putString("objectId", objectId);
         args.putString("monthId", monthId);
+        args.putString("type", type);
 
         MonthVsMonth fragment = new MonthVsMonth();
         fragment.setArguments(args);
@@ -73,6 +75,7 @@ public class MonthVsMonth extends Fragment {
         if (getArguments() != null) {
             objectId = getArguments().getString("objectId");
             monthId = getArguments().getString("monthId");
+            type = getArguments().getString("type");
         }
     }
 
@@ -86,6 +89,8 @@ public class MonthVsMonth extends Fragment {
         historialService = new HistorialService(realm);
         previusCost = view.findViewById(R.id.prev_cost);
         currentCost = view.findViewById(R.id.actual_cost);
+        timeLastMonthLayout = view.findViewById(R.id.timeOn_last_month);
+        timeThisMonthLayout = view.findViewById(R.id.timeOn_this_month);
         previousConsumtion = view.findViewById(R.id.prev_consumed);
         previousLimit = view.findViewById(R.id.prev_limit);
         prevTime = view.findViewById(R.id.prev_time);
@@ -100,7 +105,20 @@ public class MonthVsMonth extends Fragment {
         chart3 = view.findViewById(R.id.chart3);
         lastMonth = view.findViewById(R.id.prev_month);
 
-        databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/" + currentUser.getUid() + "/MonthlyConsumed/" + objectId);
+        if(type.equals("Device")) {
+            databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/" + currentUser.getUid() + "/MonthlyConsumed/" + objectId);
+            timeThisMonthLayout.setVisibility(View.VISIBLE);
+            timeLastMonthLayout.setVisibility(View.VISIBLE);
+        } else if (type.equals("Space")) {
+            databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/" + currentUser.getUid() + "/SpacesMonthlyConsumed/" + objectId);
+            timeThisMonthLayout.setVisibility(View.GONE);
+            timeLastMonthLayout.setVisibility(View.GONE);
+        } else if (type.equals("Building")) {
+            databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/" + currentUser.getUid() + "/BuildingMonthlyConsumed/" + objectId);
+            timeThisMonthLayout.setVisibility(View.GONE);
+            timeLastMonthLayout.setVisibility(View.GONE);
+        }
+
 
         initListeners();
 
@@ -110,10 +128,11 @@ public class MonthVsMonth extends Fragment {
 
 
     public void fetchResults() {
-        RealmResults<Historial> currentMonthDate = realm.where(Historial.class).equalTo("device._id", objectId).between("startDate", Utils.firstDayOfCurrentMonth(), DateUtils.getCurrentDate()).between("lastLogDate", Utils.firstDayOfCurrentMonth(), DateUtils.getCurrentDate()).findAll().sort("startDate", Sort.ASCENDING);
+
+        RealmResults<Historial> currentMonthDate = realm.where(Historial.class).equalTo(type.toLowerCase() +"._id", objectId).between("startDate", Utils.firstDayOfCurrentMonth(), DateUtils.getCurrentDate()).between("lastLogDate", Utils.firstDayOfCurrentMonth(), DateUtils.getCurrentDate()).findAll().sort("startDate", Sort.ASCENDING);
         List<HistorialReview> resultsCurrentMonth = ChartUtils.fetchDataDetails(currentMonthDate);
 
-        RealmResults<Historial> prevMonthDate = realm.where(Historial.class).equalTo("device._id", objectId).between("startDate", Utils.firstDayOfPreviousMonth(), Utils.lastDayOfPreviousMonth()).between("lastLogDate", Utils.firstDayOfPreviousMonth(), Utils.lastDayOfPreviousMonth()).findAll().sort("startDate", Sort.ASCENDING);
+        RealmResults<Historial> prevMonthDate = realm.where(Historial.class).equalTo(type.toLowerCase()+"._id", objectId).between("startDate", Utils.firstDayOfPreviousMonth(), Utils.lastDayOfPreviousMonth()).between("lastLogDate", Utils.firstDayOfPreviousMonth(), Utils.lastDayOfPreviousMonth()).findAll().sort("startDate", Sort.ASCENDING);
         List<HistorialReview> resultsPrevMonth = ChartUtils.fetchDataDetails(prevMonthDate);
 
         getDataFromHistory(resultsPrevMonth, resultsCurrentMonth);
@@ -189,23 +208,23 @@ public class MonthVsMonth extends Fragment {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 boolean hasPrevMonth = false;
                 for (DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()) {
-                    MonthConsumed monthConsumed = dataSnapshot1.getValue(MonthConsumed.class);
-                    if (monthConsumed != null && monthId != null) {
-                        if (monthConsumed.get_id().equals(monthId)) {
-                            actualConsumtionValue = monthConsumed.getTotalConsumed();
+                    DevicesMonthConsumed devicesMonthConsumed = dataSnapshot1.getValue(DevicesMonthConsumed.class);
+                    if (devicesMonthConsumed != null && monthId != null) {
+                        if (devicesMonthConsumed.get_id().equals(monthId)) {
+                            actualConsumtionValue = devicesMonthConsumed.getTotalConsumed();
                             actualConsumption.setText(Utils.decimalFormat.format(actualConsumtionValue) + "W/h");
                             actualCostValue = Utils.price(actualConsumtionValue, currentUser.getUid());
                             currentCost.setText("$" + Utils.decimalFormat.format(actualCostValue));
-                            actualLimitValur = monthConsumed.getLimit();
+                            actualLimitValur = devicesMonthConsumed.getLimit();
                             actualLimit.setText(actualLimitValur + "W/h");
-                            actualMonth.setText(Utils.monthIdToString(monthConsumed.get_id()));
-                        } else if (monthConsumed.get_id().equals(Utils.getPreviousMonthId(monthId))) {
+                            actualMonth.setText(Utils.monthIdToString(devicesMonthConsumed.get_id()));
+                        } else if (devicesMonthConsumed.get_id().equals(Utils.getPreviousMonthId(monthId))) {
                             hasPrevMonth = true;
-                            prevConsuptionValue = monthConsumed.getTotalConsumed();
+                            prevConsuptionValue = devicesMonthConsumed.getTotalConsumed();
                             previousConsumtion.setText(Utils.decimalFormat.format(prevConsuptionValue) + "W/h");
                             prevCostValue = Utils.price(prevConsuptionValue, currentUser.getUid());
                             previusCost.setText("$" + Utils.decimalFormat.format(prevCostValue));
-                            prevLimitValue = monthConsumed.getLimit();
+                            prevLimitValue = devicesMonthConsumed.getLimit();
                             previousLimit.setText(prevLimitValue + "W/h");
                             lastMonth.setText(Utils.monthIdToString(Utils.getPreviousMonthId(monthId)));
                         }
