@@ -17,8 +17,10 @@ import android.widget.Toast;
 
 
 import com.example.martinjmartinez.proyectofinal.Entities.Space;
+import com.example.martinjmartinez.proyectofinal.Models.SpaceFB;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.SpaceService;
+import com.example.martinjmartinez.proyectofinal.Services.SpacesLimitsService;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
@@ -29,12 +31,13 @@ public class SpaceUpdateFragment extends Fragment {
 
     private Space mSpace;
     private Activity mActivity;
-    private EditText name;
+    private EditText name, limitTextView;
     private TextView displayName;
     private Button saveSpace;
     private String mSpaceId;
     private MainActivity mMainActivity;
     private SpaceService spaceService;
+    private SpacesLimitsService spacesLimitsService;
 
     public SpaceUpdateFragment() {
     }
@@ -84,9 +87,11 @@ public class SpaceUpdateFragment extends Fragment {
 
     private void iniVariables(View view) {
         spaceService = new SpaceService(Realm.getDefaultInstance());
-        name = (EditText) view.findViewById(R.id.space_create_name);
-        displayName = (TextView) view.findViewById(R.id.space_create_display_name);
-        saveSpace = (Button) view.findViewById(R.id.space_create_save_button);
+        spacesLimitsService = new SpacesLimitsService(Realm.getDefaultInstance());
+        name =  view.findViewById(R.id.space_create_name);
+        displayName = view.findViewById(R.id.space_create_display_name);
+        saveSpace = view.findViewById(R.id.space_create_save_button);
+        limitTextView = view.findViewById(R.id.space_create_limit);
     }
 
     private void initListeners() {
@@ -111,8 +116,20 @@ public class SpaceUpdateFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if (!Utils.isEditTextEmpty(name)) {
-                    if (!name.getText().toString().equals(mSpace.getName())) {
+                    SpaceFB spaceFB = new SpaceFB();
+                    spaceFB.set_id(mSpaceId);
+                    if (!name.getText().toString().equals(mSpace.getName()) || !limitTextView.getText().equals(mSpace.getMonthlyLimit())) {
+                        if (Utils.isEditTextEmpty(limitTextView)) {
+                            spaceService.updateSpaceLimit(mSpaceId, 0.0);
+                            spaceFB.setMonthlyLimit(0.0);
+
+                        } else {
+                            spaceService.updateSpaceLimit(mSpaceId, Double.parseDouble(limitTextView.getText().toString()));
+                            spaceFB.setMonthlyLimit(Double.parseDouble(limitTextView.getText().toString()));
+                        }
                         spaceService.updateSpaceName(mSpaceId, name.getText().toString());
+                        spaceFB.setName(name.getText().toString());
+                        spacesLimitsService.updateOrCreateCloud(spaceFB);
                         mActivity.onBackPressed();
                     } else {
                         Toast.makeText(getActivity(), "Please, update something.", Toast.LENGTH_SHORT).show();
@@ -134,6 +151,7 @@ public class SpaceUpdateFragment extends Fragment {
     private void initView(Space space) {
         name.setText(space.getName());
         displayName.setText(name.getText());
+        limitTextView.setText("" +space.getMonthlyLimit());
     }
 
     private void getSpace() {

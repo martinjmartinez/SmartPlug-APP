@@ -18,6 +18,7 @@ import android.widget.Toast;
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
 import com.example.martinjmartinez.proyectofinal.Models.BuildingFB;
 import com.example.martinjmartinez.proyectofinal.R;
+import com.example.martinjmartinez.proyectofinal.Services.BuildingLimitsService;
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.Utils.Constants;
@@ -30,11 +31,12 @@ public class BuildingUpdateFragment extends Fragment {
     private Building mBuilding;
     private Activity mActivity;
     private String mBuildingId;
-    private EditText name;
+    private EditText name, limit;
     private TextView displayName;
     private Button updateBuilding;
     private MainActivity mMainActivity;
     private BuildingService buildingService;
+    private BuildingLimitsService buildingLimitsService;
 
     public BuildingUpdateFragment() {
     }
@@ -91,9 +93,11 @@ public class BuildingUpdateFragment extends Fragment {
     private void iniVariables(View view) {
         buildingService = new BuildingService(Realm.getDefaultInstance());
         mBuilding = new Building();
-        name = (EditText) view.findViewById(R.id.building_create_name);
-        displayName = (TextView) view.findViewById(R.id.building_create_display_name);
-        updateBuilding = (Button) view.findViewById(R.id.building_create_save_button);
+        name = view.findViewById(R.id.building_create_name);
+        limit = view.findViewById(R.id.building_create_limit);
+        displayName =  view.findViewById(R.id.building_create_display_name);
+        updateBuilding = view.findViewById(R.id.building_create_save_button);
+        buildingLimitsService = new BuildingLimitsService(Realm.getDefaultInstance());
     }
 
     private void initListeners() {
@@ -118,9 +122,22 @@ public class BuildingUpdateFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if (!Utils.isEditTextEmpty(name)) {
-                    if (!name.getText().toString().equals(mBuilding.getName())) {
-                        BuildingFB buildingFB = new BuildingFB(mBuildingId, name.getText().toString(), mBuilding.isActive(), mBuilding.getUid());
+                    BuildingFB buildingFB =  new BuildingFB();
+                    buildingFB.set_id(mBuildingId);
+                    if (!name.getText().toString().equals(mBuilding.getName()) || !limit.getText().toString().equals(mBuilding.getMonthlyLimit())) {
+                        if (Utils.isEditTextEmpty(limit)) {
+                            buildingService.updateBuildingLimit(mBuildingId, 0.0);
+                            buildingFB.setMonthlyLimit(0.0);
+
+                        } else {
+                            buildingService.updateBuildingLimit(mBuildingId, Double.parseDouble(limit.getText().toString()));
+                            buildingFB.setMonthlyLimit(Double.parseDouble(limit.getText().toString()));
+                        }
+                        buildingFB.setName(name.getText().toString());
+                        buildingFB.setUid(mBuilding.getUid());
+                        buildingFB.setActive(true);
                         buildingService.updateBuildingCloud(buildingFB);
+                        buildingLimitsService.updateOrCreateCloud(buildingFB);
                         mActivity.onBackPressed();
                     } else {
                         Toast.makeText(getActivity(), "Please, update something.", Toast.LENGTH_SHORT).show();
@@ -147,5 +164,6 @@ public class BuildingUpdateFragment extends Fragment {
     private void initView(Building building) {
         name.setText(building.getName());
         displayName.setText(name.getText());
+        limit.setText(building.getMonthlyLimit() + "");
     }
 }

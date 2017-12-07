@@ -14,7 +14,7 @@ public class HistorialReview {
 
     private String buildingId;
 
-    private long totalTimeInSeconds;
+    private double totalTimeInSeconds;
 
     private List<Log> powerLog;
 
@@ -22,7 +22,7 @@ public class HistorialReview {
 
     private double averagePower;
 
-    public HistorialReview(String date, double powerConsumed, long totalTimeInSeconds, double averagePower) {
+    public HistorialReview(String date, double powerConsumed, double totalTimeInSeconds, double averagePower) {
         this.date = date;
         this.powerConsumed = powerConsumed;
         this.totalTimeInSeconds = totalTimeInSeconds;
@@ -37,7 +37,7 @@ public class HistorialReview {
         this.date = date;
     }
 
-    public long getTotalTimeInSeconds() {
+    public double getTotalTimeInSeconds() {
         return totalTimeInSeconds;
     }
 

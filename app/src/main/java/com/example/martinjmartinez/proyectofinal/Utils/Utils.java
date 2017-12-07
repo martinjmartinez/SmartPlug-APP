@@ -10,7 +10,9 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.example.martinjmartinez.proyectofinal.Entities.Settings;
 import com.example.martinjmartinez.proyectofinal.R;
+import com.example.martinjmartinez.proyectofinal.Services.SettingsService;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 
 import org.json.JSONObject;
@@ -21,6 +23,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+
+import io.realm.Realm;
 
 /**
  * Created by MartinJMartinez on 6/27/2017.
@@ -93,6 +97,69 @@ public class Utils {
         return stringDate;
     }
 
+    static public String monthStringToId(String monthString) {
+       String monthId = monthString.replace(" ", "_");
+        return monthId;
+    }
+
+    static public String monthIdToString(String monthString) {
+        String monthId = monthString.replace("_", " ");
+        return monthId;
+    }
+
+    static public String getPreviousMonthId(String actualMonthId) {
+        String[] parts = actualMonthId.split("_");
+        String month = parts[0];
+        String year = parts[1];
+
+        String previusMonthId = "";
+
+        switch(month) {
+            case "Jan":
+                Calendar prevYear = Calendar.getInstance();
+                prevYear.set(Calendar.YEAR, Integer.valueOf(year));
+                prevYear.add(Calendar.YEAR, -1);
+
+                previusMonthId = "Dec" + "_" + prevYear.get(Calendar.YEAR);
+                break;
+            case "Feb":
+                previusMonthId = "Jan" + "_" + year;
+                break;
+            case "Mar":
+                previusMonthId = "Feb" + "_" + year;
+                break;
+            case "Apr":
+                previusMonthId = "Mar" + "_" + year;
+                break;
+            case "May":
+                previusMonthId = "Apr" + "_" + year;
+                break;
+            case "Jun":
+                previusMonthId = "May" + "_" + year;
+                break;
+            case "Jul":
+                previusMonthId = "Jun" + "_" + year;
+                break;
+            case "Aug":
+                previusMonthId = "Jul" + "_" + year;
+                break;
+            case "Sep":
+                previusMonthId = "Aug" + "_" + year;
+                break;
+            case "Oct":
+                previusMonthId = "Sep" + "_" + year;
+                break;
+            case "Nov":
+                previusMonthId = "Oct" + "_" + year;
+                break;
+            case "Dec":
+                previusMonthId = "Nov" + "_" + year;
+                break;
+        }
+
+        return previusMonthId;
+    }
+
     static public AlertDialog.Builder createDialog(Activity activity, String dialog_title, String dialog_message) {
         // 1. Instantiate an AlertDialog.Builder with its constructor
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
@@ -102,6 +169,26 @@ public class Utils {
                 .setTitle(dialog_title);
 
         return builder;
+    }
+
+    static public Double price(double consumption, String userId) {
+        SettingsService settingsService = new SettingsService(Realm.getDefaultInstance());
+        Settings settings = settingsService.getSettingsById(userId);
+        Double consumptionInKWH = consumption/1000;
+        Double price = 0.0;
+        if (settings != null) {
+            if (consumptionInKWH > 700) {
+                price = consumptionInKWH * settings.getCat4Price();
+            } else if (consumptionInKWH <= 700 && consumptionInKWH >= 301) {
+                price = consumptionInKWH * settings.getCat3Price();
+            } else if (consumptionInKWH <= 300 && consumptionInKWH >= 201) {
+                price = consumptionInKWH * settings.getCat2Price();
+            } else if (consumptionInKWH <= 200 && consumptionInKWH >= 0) {
+                price = consumptionInKWH * settings.getCat1Price();
+            }
+        }
+
+        return price;
     }
 
     static public void setActionBarIcon(Activity activity, boolean isBack) {

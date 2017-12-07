@@ -266,7 +266,9 @@ public class DevicePairFragment extends Fragment {
                             bundle.putString(Constants.SPACE_ID, mSpaceId);
                             bundle.putString(Constants.DEVICE_ID, mDeviceId);
 
-                            handler.removeCallbacksAndMessages(null);
+                            if (handler !=null) {
+                                handler.removeCallbacksAndMessages(null);
+                            }
 
                             if (isNewDevice) {
                                 DeviceCreateFragment deviceCreateFragment = new DeviceCreateFragment();
@@ -384,6 +386,7 @@ public class DevicePairFragment extends Fragment {
                     mActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+                            deviceService.updateDeviceReset(mDeviceId, false);
                             connecting = true;
                             setLoadingState(true);
                             listStatusTextView.setText(R.string.device_is_connectiong);
@@ -493,7 +496,7 @@ public class DevicePairFragment extends Fragment {
                 }
             }
 
-            if (netInfo != null && netInfo.getType() == ConnectivityManager.TYPE_WIFI) {
+            if (netInfo != null) {
                 if (!connecting) {
                     if (currentSSID.contains("SmartPlug")) {
                         setWifiSetUp();
@@ -513,9 +516,7 @@ public class DevicePairFragment extends Fragment {
                     }
                     wifiListAdapter.notifyDataSetChanged();
                 }
-            } else
-
-            {
+            } else {
                 listStatusTextView.setText(R.string.searching_wifi);
                 setLoadingState(true);
             }

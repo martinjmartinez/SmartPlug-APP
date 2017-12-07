@@ -61,8 +61,7 @@ public class StatisticsFragment extends Fragment {
     private ViewPager chartsInfoViewPager;
     private String userId;
 
-    public StatisticsFragment() {
-    }
+    public StatisticsFragment() {}
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {

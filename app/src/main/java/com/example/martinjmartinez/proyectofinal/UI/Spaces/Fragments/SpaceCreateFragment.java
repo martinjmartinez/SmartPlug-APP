@@ -19,8 +19,10 @@ import com.example.martinjmartinez.proyectofinal.Entities.Building;
 import com.example.martinjmartinez.proyectofinal.Entities.Space;
 import com.example.martinjmartinez.proyectofinal.Models.SpaceFB;
 import com.example.martinjmartinez.proyectofinal.R;
+import com.example.martinjmartinez.proyectofinal.Services.BuildingLimitsService;
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.Services.SpaceService;
+import com.example.martinjmartinez.proyectofinal.Services.SpacesLimitsService;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 
@@ -38,7 +40,10 @@ public class SpaceCreateFragment extends Fragment {
     private Building mBuilding;
     private MainActivity mMainActivity;
     private SpaceService spaceService;
+    private EditText monthlyLimit;
     private BuildingService buildingService;
+    private BuildingLimitsService buildingLimitsService;
+    private SpacesLimitsService spacesLimitsService;
 
     public SpaceCreateFragment() {
     }
@@ -90,6 +95,8 @@ public class SpaceCreateFragment extends Fragment {
     private void iniVariables() {
         buildingService = new BuildingService(Realm.getDefaultInstance());
         spaceService = new SpaceService(Realm.getDefaultInstance());
+        buildingLimitsService = new BuildingLimitsService(Realm.getDefaultInstance());
+        spacesLimitsService = new SpacesLimitsService(Realm.getDefaultInstance());
         mSpace = new Space();
         mActivity = getActivity();
     }
@@ -117,14 +124,17 @@ public class SpaceCreateFragment extends Fragment {
             public void onClick(View v) {
                 if (!Utils.isEditTextEmpty(name) && mSpace != null) {
                     SpaceFB spaceFB = new SpaceFB();
-                    spaceFB.setActive(true);
                     spaceFB.setName(name.getText().toString());
-                    spaceFB.setBuildingId(mBuildingId);
+                    spaceFB.setBuildingId(mBuilding.get_id());
+                    spaceFB.setMonthlyLimit(Utils.isEditTextEmpty(monthlyLimit) ? 0.0 : Double.parseDouble(monthlyLimit.getText().toString()));
+                    spaceFB.setActive(true);
 
-                    spaceService.createSpaceCloud(spaceFB);
+                    String id = spaceService.createSpaceCloud(spaceFB);
+                    spacesLimitsService.updateOrCreateCloud(spaceFB);
+                    buildingLimitsService.addSpaceToBuildingLimit(mBuildingId, id);
                     mActivity.onBackPressed();
                 } else {
-                    Toast.makeText(getActivity(), "Please, name your Space.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), "Please, fill all the fields.", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -138,10 +148,11 @@ public class SpaceCreateFragment extends Fragment {
     }
 
     private void initView(View view) {
-        name = (EditText) view.findViewById(R.id.space_create_name);
-        displayName = (TextView) view.findViewById(R.id.space_create_display_name);
-        spaceBuilding = (TextView) view.findViewById(R.id.space_create_building);
-        saveSpace = (Button) view.findViewById(R.id.space_create_save_button);
+        name = view.findViewById(R.id.space_create_name);
+        displayName = view.findViewById(R.id.space_create_display_name);
+        spaceBuilding =  view.findViewById(R.id.space_create_building);
+        saveSpace =  view.findViewById(R.id.space_create_save_button);
+        monthlyLimit = view.findViewById(R.id.space_create_limit);
         getBuilding();
     }
 

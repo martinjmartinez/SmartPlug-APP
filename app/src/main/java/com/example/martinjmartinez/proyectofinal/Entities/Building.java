@@ -16,6 +16,8 @@ public class Building  extends RealmObject{
 
     private double averageConsumption;
 
+    private double monthlyLimit;
+
     private boolean isActive;
 
     @LinkingObjects("building")
@@ -26,6 +28,14 @@ public class Building  extends RealmObject{
 
     @LinkingObjects("building")
     private final RealmResults<Historial> historials = null;
+
+    public double getMonthlyLimit() {
+        return monthlyLimit;
+    }
+
+    public void setMonthlyLimit(double monthlyLimit) {
+        this.monthlyLimit = monthlyLimit;
+    }
 
     public RealmResults<Device> getDevices() {
         return devices;

@@ -19,24 +19,13 @@ public class CustomFirebaseMessagingService extends FirebaseMessagingService {
         super.onMessageReceived(remoteMessage);
 
         Intent intent = new Intent("notificationDialog");
+
         intent.putExtra("message", remoteMessage.getNotification().getBody());
         intent.putExtra("title", remoteMessage.getNotification().getTitle());
         intent.putExtra("tag", remoteMessage.getNotification().getTag());
         intent.putExtra("notification", true);
         intent.putExtra("deviceId", remoteMessage.getData().get("deviceId"));
-
-
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT);
-        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this);
-        notificationBuilder.setContentTitle(getResources().getString(R.string.app_name));
-        notificationBuilder.setContentText(remoteMessage.getNotification().getBody());
-
-        notificationBuilder.setAutoCancel(true);
-        notificationBuilder.setSmallIcon(R.mipmap.ic_launcher);
-        notificationBuilder.setContentIntent(pendingIntent);
-        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        notificationManager.notify(0, notificationBuilder.build());
+        intent.putExtra("spaceId", remoteMessage.getData().get("spaceId"));
 
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }

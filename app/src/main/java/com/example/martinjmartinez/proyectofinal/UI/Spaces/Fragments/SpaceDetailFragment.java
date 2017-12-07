@@ -3,6 +3,7 @@ package com.example.martinjmartinez.proyectofinal.UI.Spaces.Fragments;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -13,23 +14,25 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Device;
+import com.example.martinjmartinez.proyectofinal.Entities.MonthlyLimit;
 import com.example.martinjmartinez.proyectofinal.Entities.Space;
 import com.example.martinjmartinez.proyectofinal.Models.SpaceFB;
+import com.example.martinjmartinez.proyectofinal.Models.GroupMonthConsumed;
 import com.example.martinjmartinez.proyectofinal.R;
-import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
 import com.example.martinjmartinez.proyectofinal.Services.SpaceService;
-import com.example.martinjmartinez.proyectofinal.UI.Devices.Statistics.DeviceStatisticsDetailsFragment;
+import com.example.martinjmartinez.proyectofinal.Services.SpacesLimitsService;
 import com.example.martinjmartinez.proyectofinal.UI.MainActivity.MainActivity;
-import com.example.martinjmartinez.proyectofinal.UI.Spaces.Statistics.SpaceStatisticsDetailsFragment;
+import com.example.martinjmartinez.proyectofinal.UI.Spaces.Statistics.SpaceStatistics;
 import com.example.martinjmartinez.proyectofinal.Utils.Constants;
+import com.example.martinjmartinez.proyectofinal.Utils.DateUtils;
 import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -48,7 +51,8 @@ public class SpaceDetailFragment extends Fragment {
     private TextView mNameTextView;
     private TextView mDevicesTextView;
     private TextView mBuildingTextView;
-    private TextView mPowerTextView;
+    private TextView mPowerTextView, percentageTextView, actualConsumptionTextView, limitTextView;
+    private ProgressBar progressBar;
     private TextView mInfoTextView;
     private Button mEditButton;
     private Button mDeleteButton;
@@ -57,8 +61,11 @@ public class SpaceDetailFragment extends Fragment {
     private DeviceService deviceService;
     private LinearLayout statisticsButton;
     private DatabaseReference databaseReference;
+    private DatabaseReference limitReference;
     private Context context;
     private ValueEventListener spaceListener;
+    private ValueEventListener limitListener;
+    private SpacesLimitsService spacesLimitsService;
 
     public SpaceDetailFragment() {
     }
@@ -112,17 +119,23 @@ public class SpaceDetailFragment extends Fragment {
     private void iniVariables(View view) {
         spaceService = new SpaceService(Realm.getDefaultInstance());
         deviceService = new DeviceService(Realm.getDefaultInstance());
+        spacesLimitsService = new SpacesLimitsService(Realm.getDefaultInstance());
         mSpace = new Space();
         mNameTextView =  view.findViewById(R.id.space_detail_name);
         mDevicesTextView =  view.findViewById(R.id.space_detail_devices);
         mBuildingTextView =  view.findViewById(R.id.space_detail_building);
         mPowerTextView =  view.findViewById(R.id.space_average_power);
+        percentageTextView = view.findViewById(R.id.space_detail_limit_percentage);
+        actualConsumptionTextView = view.findViewById(R.id.space_actual_limit);
+        progressBar = view.findViewById(R.id.space_limit_progressbas);
+        limitTextView = view.findViewById(R.id.space_detail_limit);
         mInfoTextView =  view.findViewById(R.id.space_detail_delete_info);
         mEditButton =  view.findViewById(R.id.space_detail_update);
         mDeleteButton =  view.findViewById(R.id.space_detail_delete);
         statisticsButton =  view.findViewById(R.id.space_statistics_button);
         userId = mActivity.getSharedPreferences(Constants.USER_INFO, 0).getString(Constants.USER_ID, FirebaseAuth.getInstance().getCurrentUser().getUid());
         databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/"+ userId + "/Spaces");
+        limitReference = FirebaseDatabase.getInstance().getReference("Accounts/"+ userId + "/SpacesMonthlyConsumed");
     }
 
     private void initListeners() {
@@ -142,14 +155,14 @@ public class SpaceDetailFragment extends Fragment {
         statisticsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SpaceStatisticsDetailsFragment spaceStatisticsDetailsFragment = new SpaceStatisticsDetailsFragment();
+                SpaceStatistics spaceStatistics = new SpaceStatistics();
                 Bundle bundle = new Bundle();
 
                 bundle.putString(Constants.SPACE_ID, mSpaceId);
-                spaceStatisticsDetailsFragment.setArguments(bundle);
+                spaceStatistics.setArguments(bundle);
 
                 Utils.loadContentFragment(getFragmentManager().findFragmentByTag(FragmentKeys.SPACE_DETAIL_FRAGMENT),
-                        spaceStatisticsDetailsFragment, FragmentKeys.SPACE_STATISTICS_FRAGMENT, true);
+                        spaceStatistics, FragmentKeys.SPACE_STATISTICS_FRAGMENT, true);
             }
         });
 
@@ -193,6 +206,8 @@ public class SpaceDetailFragment extends Fragment {
                 SpaceFB spaceFB = dataSnapshot.getValue(SpaceFB.class);
                 spaceService.updateOrCreate(spaceFB);
                 mSpace = spaceService.getSpaceById(spaceFB.get_id());
+                String monthId = DateUtils.getMonthAndYear(DateUtils.getCurrentDate());
+                limitReference.child(mSpaceId).child(monthId).addValueEventListener(limitListener);
                 initSpaceView(mSpace);
             }
 
@@ -203,6 +218,29 @@ public class SpaceDetailFragment extends Fragment {
         };
 
         databaseReference.child(mSpaceId).addValueEventListener(spaceListener);
+
+        limitListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (isAdded()) {
+                    GroupMonthConsumed groupMonthConsumed = dataSnapshot.getValue(GroupMonthConsumed.class);
+                    if (groupMonthConsumed != null) {
+                        spacesLimitsService.updateOrCreateLocal(groupMonthConsumed);
+                        MonthlyLimit monthlyLimit = spacesLimitsService.getMonthlyById(groupMonthConsumed.get_id(), mSpaceId);
+                        initMonthView(monthlyLimit);
+                    } else {
+                        MonthlyLimit monthlyLimit = spacesLimitsService.getMonthlyById(groupMonthConsumed.get_id(), mSpaceId);
+                        initMonthView(monthlyLimit);
+                    }
+                }
+                limitReference.removeEventListener(this);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        };
     }
 
     @Override
@@ -217,6 +255,32 @@ public class SpaceDetailFragment extends Fragment {
         initSpaceView(mSpace);
     }
 
+    private void initMonthView(MonthlyLimit monthlyLimit) {
+        if (monthlyLimit != null) {
+            if (monthlyLimit.getLimit() == 0) {
+                limitTextView.setText("Not set");
+            } else {
+                progressBar.setMax(Double.valueOf(monthlyLimit.getLimit()).intValue());
+                progressBar.setProgress(Double.valueOf(monthlyLimit.getTotalConsumed()).intValue());
+                limitTextView.setText(monthlyLimit.getLimit() + " W/h");
+                actualConsumptionTextView.setText(Utils.decimalFormat.format(monthlyLimit.getTotalConsumed()));
+                double percentage = (monthlyLimit.getTotalConsumed() / monthlyLimit.getLimit()) * 100;
+                if (percentage >= 100) {
+                    progressBar.setProgressTintList(ColorStateList.valueOf(getResources().getColor(R.color.alert)));
+                } else {
+                    if (percentage < 100 && percentage >= 75) {
+                        progressBar.setProgressTintList(ColorStateList.valueOf(getResources().getColor(R.color.color4)));
+                    }
+                }
+
+                percentageTextView.setText(Utils.decimalFormat.format(percentage) + "%");
+            }
+            spaceService.updateSpaceLimit(mSpaceId, monthlyLimit.getLimit());
+        } else {
+            limitTextView.setText("Not set");
+        }
+
+    }
     private void initSpaceView(Space space) {
         mNameTextView.setText(space.getName());
         List<Device> deviceList = deviceService.allActiveDevicesBySpace(space.get_id());

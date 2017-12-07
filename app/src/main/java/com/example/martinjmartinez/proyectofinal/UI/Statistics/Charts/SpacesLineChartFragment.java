@@ -131,7 +131,6 @@ public class SpacesLineChartFragment extends Fragment {
     public void fillChart() {
         Map<String, Integer> dates = new TreeMap<>();
         List<Space> spaces = mBuilding.getSpaces().sort("_id", Sort.ASCENDING);
-        Map<String, Entry> entriesResults;
         ArrayList<Entry> entries;
         List<ILineDataSet> dataSets = new ArrayList<>();
 
@@ -141,10 +140,8 @@ public class SpacesLineChartFragment extends Fragment {
             RealmResults<Historial> results = realm.where(Historial.class).equalTo("space._id", space.get_id()).between("startDate", mStartDate, mEndDate).between("lastLogDate", mStartDate, mEndDate).findAll().sort("startDate", Sort.ASCENDING);
 
             if (!results.isEmpty()) {
-                entriesResults = ChartUtils.fetchConsumptionData(results, dates);
-                entries = new ArrayList<>();
+                entries = ChartUtils.fetchConsumptionData(results, dates);
 
-                entries.addAll(entriesResults.values());
                 dataSets.add(new LineDataSet(entries, space.getName()));
             }
         }

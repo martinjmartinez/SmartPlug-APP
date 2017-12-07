@@ -104,7 +104,6 @@ public class DeviceTimeLinechartFragment extends Fragment {
 
     public void fillChart() {
         Map<String, Integer> dates = new TreeMap<>();
-        Map<String, Entry> entriesResults;
         ArrayList<Entry> entries;
         List<ILineDataSet> dataSets = new ArrayList<>();
 
@@ -113,10 +112,7 @@ public class DeviceTimeLinechartFragment extends Fragment {
         RealmResults<Historial> results = realm.where(Historial.class).equalTo("device._id", mDevice.get_id()).between("startDate", mStartDate, mEndDate).between("lastLogDate", mStartDate, mEndDate).findAll().sort("startDate", Sort.ASCENDING);
 
         if (!results.isEmpty()) {
-            entriesResults = ChartUtils.fetchTimeData(results, dates);
-            entries = new ArrayList<>();
-
-            entries.addAll(entriesResults.values());
+            entries = ChartUtils.fetchTimeData(results, dates);
             dataSets.add(new LineDataSet(entries, mDevice.getName()));
         }
 

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <android.support.v7.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="5dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginStart="16dp"
+                android:elevation="5dp">
+
+                <TextView
+                    android:id="@+id/chart_title_home"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:text="Monthly Report"
+                    android:textAlignment="center"
+                    android:textSize="20dp" />
+            </android.support.v7.widget.CardView>
+
+            <android.support.v7.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="16dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginBottom="16dp">
+
+                <com.github.mikephil.charting.charts.BarChart
+                    android:id="@+id/groupBarChart"
+                    android:layout_width="match_parent"
+                    android:layout_height="195dp"
+                    android:layout_margin="5dp">
+
+                </com.github.mikephil.charting.charts.BarChart>
+            </android.support.v7.widget.CardView>
+
+            <android.support.v7.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="16dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginBottom="6dp"
+                android:elevation="10dp"
+                android:padding="5dp">
+
+                <Spinner
+                    android:id="@+id/monthsSpinner"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="visible">
+
+                </Spinner>
+            </android.support.v7.widget.CardView>
+
+            <android.support.design.widget.TabLayout
+                android:id="@+id/monthDetailsTabDots"
+                android:layout_width="match_parent"
+                android:layout_height="20dp"
+                app:tabBackground="@drawable/tab_selector"
+                app:tabGravity="center"
+                app:tabIndicatorHeight="0dp" />
+
+            <android.support.v4.view.ViewPager
+                android:id="@+id/viewpagerMonthDetails"
+                android:layout_width="match_parent"
+                android:layout_height="315dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="8dp" />
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

@@ -103,7 +103,6 @@ public class BuildingPowerLineChartFragment extends Fragment {
 
     public void fillChart() {
         Map<String, Integer> dates = new TreeMap<>();
-        Map<String, Entry> entriesResults;
         ArrayList<Entry> entries;
         List<ILineDataSet> dataSets = new ArrayList<>();
 
@@ -112,10 +111,7 @@ public class BuildingPowerLineChartFragment extends Fragment {
         RealmResults<Historial> results = realm.where(Historial.class).equalTo("building._id", mBuilding.get_id()).between("startDate", mStartDate, mEndDate).between("lastLogDate", mStartDate, mEndDate).findAll().sort("startDate", Sort.ASCENDING);
 
         if (!results.isEmpty()) {
-            entriesResults = ChartUtils.fetchPowerData(results, dates);
-            entries = new ArrayList<>();
-
-            entries.addAll(entriesResults.values());
+            entries = ChartUtils.fetchPowerData(results, dates);
             dataSets.add(new LineDataSet(entries, mBuilding.getName()));
         }
 

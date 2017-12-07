@@ -14,6 +14,8 @@ public class Space extends RealmObject {
 
     private Building building;
 
+    private double monthlyLimit;
+
     private double averageConsumption;
 
     private boolean isActive;
@@ -22,6 +24,14 @@ public class Space extends RealmObject {
     private final RealmResults<Device> devices = null;
 
     private double power;
+
+    public double getMonthlyLimit() {
+        return monthlyLimit;
+    }
+
+    public void setMonthlyLimit(double monthlyLimit) {
+        this.monthlyLimit = monthlyLimit;
+    }
 
     public double getPower() {
         return power;

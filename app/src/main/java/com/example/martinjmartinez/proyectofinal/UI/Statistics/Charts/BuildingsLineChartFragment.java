@@ -142,7 +142,6 @@ public class BuildingsLineChartFragment extends Fragment{
     static public void fillBuildingsChart() {
         Log.e("fillBuildingsChart", "yolo");
         Map<String, Integer> dates = new TreeMap<>();
-        Map<String, Entry> entriesResults;
         ArrayList<Entry> entries;
         List<ILineDataSet> dataSets = new ArrayList<>();
 
@@ -152,10 +151,7 @@ public class BuildingsLineChartFragment extends Fragment{
             RealmResults<Historial> results = realm.where(Historial.class).equalTo("building._id", building.get_id()).between("startDate", mStartDate, mEndDate).between("lastLogDate", mStartDate, mEndDate).findAll().sort("startDate", Sort.ASCENDING);
 
             if (!results.isEmpty()) {
-                entriesResults = ChartUtils.fetchConsumptionData(results, dates);
-                entries = new ArrayList<>();
-
-                entries.addAll(entriesResults.values());
+                entries = ChartUtils.fetchConsumptionData(results, dates);
                 dataSets.add(new LineDataSet(entries, building.getName()));
             }
         }
@@ -165,19 +161,17 @@ public class BuildingsLineChartFragment extends Fragment{
 
     static public void fillSingleBuildingChart(RealmResults<Historial> historials, LineChart chart) {
         List<ILineDataSet> dataSets = new ArrayList<>();
-        Map<String, Entry> results;
         ArrayList<Entry> entries;
         Map<String, Integer> dates = new TreeMap<>();
 
         chart.clear();
 
         dates = ChartUtils.sortDates(historials, dates);
-        results = ChartUtils.fetchConsumptionData(historials, dates);
-        entries = new ArrayList<>();
-        entries.addAll(results.values());
+
+        entries = ChartUtils.fetchConsumptionData(historials, dates);
         dataSets.add(new LineDataSet(entries, mBuilding.getName()));
 
-        if (!results.isEmpty()) {
+        if (!entries.isEmpty()) {
             ChartUtils.makeLineChart(chart, dataSets, dates);
             chart.invalidate();
         }
