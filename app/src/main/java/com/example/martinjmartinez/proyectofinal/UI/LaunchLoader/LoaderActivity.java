@@ -5,18 +5,22 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.example.martinjmartinez.proyectofinal.Entities.Routine;
 import com.example.martinjmartinez.proyectofinal.Models.BuildingFB;
 import com.example.martinjmartinez.proyectofinal.Models.DeviceFB;
 import com.example.martinjmartinez.proyectofinal.Models.DevicesMonthConsumed;
 import com.example.martinjmartinez.proyectofinal.Models.GroupMonthConsumed;
 import com.example.martinjmartinez.proyectofinal.Models.HistorialFB;
+import com.example.martinjmartinez.proyectofinal.Models.RoutineFB;
 import com.example.martinjmartinez.proyectofinal.Models.SettingsFB;
 import com.example.martinjmartinez.proyectofinal.Models.SpaceFB;
 import com.example.martinjmartinez.proyectofinal.R;
+import com.example.martinjmartinez.proyectofinal.Services.BuildingLimitsService;
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.Services.DeviceService;
 import com.example.martinjmartinez.proyectofinal.Services.HistorialService;
 import com.example.martinjmartinez.proyectofinal.Services.DevicesLimitService;
+import com.example.martinjmartinez.proyectofinal.Services.RoutineService;
 import com.example.martinjmartinez.proyectofinal.Services.SettingsService;
 import com.example.martinjmartinez.proyectofinal.Services.SpaceService;
 import com.example.martinjmartinez.proyectofinal.Services.SpacesLimitsService;
@@ -43,7 +47,9 @@ public class LoaderActivity extends AppCompatActivity {
     private SpaceService spaceService;
     private DeviceService deviceService;
     private SpacesLimitsService spacesLimitsService;
+    private BuildingLimitsService buildingLimitsService;
     private DevicesLimitService devicesLimitService;
+    private RoutineService routineService;
 
     private FirebaseAuth mAuth;
     private FirebaseUser currentUser;
@@ -56,6 +62,8 @@ public class LoaderActivity extends AppCompatActivity {
         realm = Realm.getDefaultInstance();
         historialService = new HistorialService(realm);
         settingsService = new SettingsService(realm);
+        buildingLimitsService = new BuildingLimitsService(realm);
+        routineService = new RoutineService(realm);
         deviceService = new DeviceService(realm);
         spacesLimitsService = new SpacesLimitsService(realm);
         devicesLimitService = new DevicesLimitService(realm);
@@ -250,6 +258,52 @@ public class LoaderActivity extends AppCompatActivity {
                         GroupMonthConsumed groupMonthConsumed= snapshot.getValue(GroupMonthConsumed.class);
                         if(groupMonthConsumed != null) {
                             spacesLimitsService.updateOrCreateLocal(groupMonthConsumed);
+                        }
+                    }
+                }
+                databaseReference.removeEventListener(this);
+                getBuildingLimits();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+    }
+
+    public void getBuildingLimits() {
+        final DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/" + currentUser.getUid() + "/BuildingMonthlyConsumed");
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for(DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()){
+                    for (DataSnapshot snapshot : dataSnapshot1.getChildren()) {
+                        GroupMonthConsumed groupMonthConsumed= snapshot.getValue(GroupMonthConsumed.class);
+                        if(groupMonthConsumed != null) {
+                            buildingLimitsService.updateOrCreateLocal(groupMonthConsumed);
+                        }
+                    }
+                }
+                databaseReference.removeEventListener(this);
+                getRoutines();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+    }
+
+    public void getRoutines() {
+        final DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Accounts/" + currentUser.getUid() + "/Routines");
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for(DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()){
+                    for (DataSnapshot snapshot : dataSnapshot1.getChildren()) {
+                        RoutineFB routineFB = snapshot.getValue(RoutineFB.class);
+                        if(routineFB != null) {
+                            routineService.updateOrCreateLocal(routineFB);
                         }
                     }
                 }

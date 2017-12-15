@@ -6,7 +6,9 @@ import android.util.Log;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Device;
 
+import java.sql.Time;
 import java.text.DateFormat;
+import java.text.Format;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -43,6 +45,23 @@ public final class DateUtils {
         setUpDateFormatter(format);
 
         return mDateFormatter.get(format).parse(date);
+    }
+
+    public static String getTime(int hr,int min) {
+        Time tme = new Time(hr,min,0);//seconds by default set to zero
+        Format formatter;
+        formatter = new SimpleDateFormat("h:mm a");
+        return formatter.format(tme);
+    }
+
+    public static String getTime(String timeIn24) {
+        String[] info= timeIn24.split(":");
+        int hours =  Integer.parseInt(info[0]);
+        int minutes = Integer.parseInt(info[1]);
+        Time tme = new Time(hours,minutes,0);//seconds by default set to zero
+        Format formatter;
+        formatter = new SimpleDateFormat("h:mm a");
+        return formatter.format(tme);
     }
 
     private static void setUpDateFormatter(String format) {

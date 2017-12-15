@@ -27,6 +27,9 @@ public class Building  extends RealmObject{
     private final RealmResults<Device> devices = null;
 
     @LinkingObjects("building")
+    private final RealmResults<Routine> routines = null;
+
+    @LinkingObjects("building")
     private final RealmResults<Historial> historials = null;
 
     public double getMonthlyLimit() {

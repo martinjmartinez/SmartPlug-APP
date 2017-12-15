@@ -1,7 +1,6 @@
 package com.example.martinjmartinez.proyectofinal.Services;
 
-import com.example.martinjmartinez.proyectofinal.App.SmartPLugApplication;
-import com.example.martinjmartinez.proyectofinal.Entities.Building;
+
 import com.example.martinjmartinez.proyectofinal.Entities.Device;
 import com.example.martinjmartinez.proyectofinal.Entities.MonthlyLimit;
 import com.example.martinjmartinez.proyectofinal.Models.DeviceFB;
@@ -20,7 +19,7 @@ import java.util.Date;
 
 import io.realm.Realm;
 
-public class DevicesLimitService extends SmartPLugApplication {
+public class DevicesLimitService {
 
     private Realm realm;
     private DatabaseReference databaseReference;

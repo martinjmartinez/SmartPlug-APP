@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.Build;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
@@ -29,12 +28,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.martinjmartinez.proyectofinal.Entities.Building;
-import com.example.martinjmartinez.proyectofinal.Entities.Historial;
 import com.example.martinjmartinez.proyectofinal.Models.HistorialFB;
 import com.example.martinjmartinez.proyectofinal.Models.UserFB;
 import com.example.martinjmartinez.proyectofinal.R;
 import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
-import com.example.martinjmartinez.proyectofinal.Services.CustomFirebaseMessagingService;
 import com.example.martinjmartinez.proyectofinal.Services.HistorialService;
 import com.example.martinjmartinez.proyectofinal.Services.UserService;
 import com.example.martinjmartinez.proyectofinal.UI.Buildings.Adapters.BuildingSpinnerAdapter;
@@ -43,14 +40,13 @@ import com.example.martinjmartinez.proyectofinal.UI.Devices.Fragments.DeviceDeta
 import com.example.martinjmartinez.proyectofinal.UI.Devices.Fragments.DeviceListFragment;
 import com.example.martinjmartinez.proyectofinal.UI.Home.HomeFragment;
 import com.example.martinjmartinez.proyectofinal.UI.LoginActivity.LogInActivity;
+import com.example.martinjmartinez.proyectofinal.UI.Routines.Fragments.RoutinesFragment;
 import com.example.martinjmartinez.proyectofinal.UI.Settings.SettingsFragment;
 import com.example.martinjmartinez.proyectofinal.UI.Spaces.Fragments.SpaceDetailFragment;
 import com.example.martinjmartinez.proyectofinal.UI.Spaces.Fragments.SpaceListFragment;
-import com.example.martinjmartinez.proyectofinal.UI.Statistics.Charts.BuildingsLineChartFragment;
 import com.example.martinjmartinez.proyectofinal.UI.Statistics.StatisticsFragment;
 import com.example.martinjmartinez.proyectofinal.Utils.Constants;
 import com.example.martinjmartinez.proyectofinal.Utils.FragmentKeys;
-import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
@@ -58,7 +54,6 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
 import java.util.List;
 
@@ -364,6 +359,19 @@ public class MainActivity extends AppCompatActivity {
 
                         mDrawerLayout.closeDrawer(Gravity.START);
                         break;
+
+                    case (R.id.nav_routines):
+                        RoutinesFragment routinesFragment= (RoutinesFragment) getSupportFragmentManager().findFragmentByTag(FragmentKeys.ROUTINES_FRAGMENT);
+                        if (routinesFragment != null) {
+                            if (!routinesFragment.isVisible()) {
+                                prepareRoutinesFragment(false);
+                            }
+                        } else {
+                            prepareRoutinesFragment(true);
+                        }
+
+                        mDrawerLayout.closeDrawer(Gravity.START);
+                        break;
                 }
                 return false;
             }
@@ -496,6 +504,19 @@ public class MainActivity extends AppCompatActivity {
         settingsFragment.setArguments(bundle);
 
         loadContentFragment(settingsFragment, FragmentKeys.SETTINGS_FRAGMENT, addToBackStack);
+    }
+
+    public void prepareRoutinesFragment(boolean addToBackStack) {
+        RoutinesFragment routinesFragment = new RoutinesFragment();
+        Bundle bundle = new Bundle();
+
+        if (mSelectedBuilding == null) {
+            mSelectedBuilding = mBuildingList.get(0);
+        }
+        bundle.putString(Constants.BUILDING_ID, mSelectedBuilding.get_id());
+        routinesFragment.setArguments(bundle);
+
+        loadContentFragment(routinesFragment, FragmentKeys.ROUTINES_FRAGMENT, addToBackStack);
     }
 
     public void prepareDeviceFragment(boolean addToBackStack) {
