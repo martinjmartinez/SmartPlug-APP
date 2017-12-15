@@ -46,6 +46,9 @@ public class Device extends RealmObject {
     @LinkingObjects("device")
     private final RealmResults<MonthlyLimit> monthlyLimits = null;
 
+    @LinkingObjects("device")
+    private final RealmResults<Routine> routines = null;
+
     public double getMonthlyLimit() {
         return monthlyLimit;
     }

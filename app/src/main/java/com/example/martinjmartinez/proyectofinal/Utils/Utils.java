@@ -22,7 +22,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 import io.realm.Realm;
 
@@ -95,6 +97,32 @@ public class Utils {
     static public String formatSimpleDate(Date date) {
         String stringDate = SimpleDateFormat.getDateInstance(SimpleDateFormat.DEFAULT).format(date);
         return stringDate;
+    }
+
+    static public String formatRoutineDays(List<Integer> days) {
+        String daysString = "";
+        if (days.size() ==7) {
+            daysString = "Everyday";
+        } else {
+            for(Integer integer : days) {
+                if (integer == 1) {
+                    daysString = daysString + "Sun ";
+                } else if (integer == 2) {
+                    daysString = daysString + "Mon ";
+                }else if (integer == 3) {
+                    daysString = daysString + "Tue ";
+                }else if (integer == 4) {
+                    daysString = daysString + "Wed ";
+                }else if (integer == 5) {
+                    daysString = daysString + "Thu ";
+                }else if (integer == 6) {
+                    daysString = daysString + "Fri ";
+                }else if (integer == 7) {
+                    daysString = daysString + "Sat ";
+                }
+            }
+        }
+        return daysString;
     }
 
     static public String monthStringToId(String monthString) {

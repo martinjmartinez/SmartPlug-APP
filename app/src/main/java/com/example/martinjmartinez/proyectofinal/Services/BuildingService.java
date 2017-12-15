@@ -17,7 +17,7 @@ import java.util.List;
 import io.realm.Realm;
 import io.realm.RealmResults;
 
-public class BuildingService extends SmartPLugApplication {
+public class BuildingService {
 
     private Realm realm;
     private DatabaseReference databaseReference;

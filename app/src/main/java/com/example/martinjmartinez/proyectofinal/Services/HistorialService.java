@@ -18,7 +18,7 @@ import java.util.Random;
 import io.realm.Realm;
 import io.realm.RealmResults;
 
-public class HistorialService extends SmartPLugApplication {
+public class HistorialService {
     private Realm realm;
     private DeviceService deviceService;
     private DevicesLimitService devicesLimitService;

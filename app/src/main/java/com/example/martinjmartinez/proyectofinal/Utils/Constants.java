@@ -5,6 +5,7 @@ public class Constants {
 
     static public String BUILDING_ID = "BUILDING_ID";
     static public String DEVICE_ID = "DEVICE_ID";
+    static public String ROUTINE_ID = "ROUTINE_ID";
     static public String SPACE_ID = "SPACE_ID";
     static public String IS_NEW_DEVICE = "IS_NEW_DEVICE";
 

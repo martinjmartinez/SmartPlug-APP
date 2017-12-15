@@ -22,7 +22,7 @@ public class UserService {
     public UserService() {
         databaseReferenceAccounts = FirebaseDatabase.getInstance().getReference("Accounts");
         databaseReferenceUsers = FirebaseDatabase.getInstance().getReference("Users");
-        settingsService = new SettingsService(Realm.getDefaultInstance());
+
     }
 
     public void createOrUpdateUser(final UserFB user) {
@@ -30,7 +30,9 @@ public class UserService {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 UserFB userFB = dataSnapshot.getValue(UserFB.class);
+                settingsService = new SettingsService(Realm.getDefaultInstance());
                 if(userFB != null){
+
                     updateUserFB(user);
                 } else {
                     createUserFB(user);
