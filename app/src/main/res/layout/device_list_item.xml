@@ -39,7 +39,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:maxLines="1"
-            android:text="Licuadora"
+            android:text="@string/licuadora"
             android:textSize="22sp" />
 
         <LinearLayout

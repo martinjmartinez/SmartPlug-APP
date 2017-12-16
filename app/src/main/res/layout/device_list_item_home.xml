@@ -39,7 +39,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:maxLines="1"
-            android:text="Licuadora"
+            android:text="@string/licuadora"
             android:textSize="22sp" />
 
         <LinearLayout
@@ -64,7 +64,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     tool:text="0.0 W"
-                    android:text="0 W"
+                    android:text="@string/_0_w"
                     android:minWidth="40dp"
                     android:maxWidth="70dp"
                     android:maxLines="1"

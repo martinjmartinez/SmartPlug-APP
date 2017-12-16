@@ -73,7 +73,7 @@
                         android:layout_alignParentStart="true"
                         android:layout_alignTop="@+id/device_detail_status"
                         android:gravity="center"
-                        android:text="Power State"
+                        android:text="@string/power_state"
                         android:textAppearance="?android:attr/textAppearanceMedium" />
 
                     <Switch
@@ -111,7 +111,7 @@
                         android:drawablePadding="5dp"
                         android:gravity="center"
 
-                        android:text="Power"
+                        android:text="@string/power"
                         android:textAppearance="?android:attr/textAppearanceMedium" />
 
                     <TextView
@@ -150,7 +150,7 @@
                         android:drawableLeft="@drawable/ic_bars_chart"
                         android:drawablePadding="5dp"
                         android:gravity="center"
-                        android:text="Average Power"
+                        android:text="@string/average_power"
                         android:textAppearance="?android:attr/textAppearanceMedium" />
 
                     <LinearLayout
@@ -234,7 +234,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Monthly Limit (W/h)"
+                        android:text="@string/monthly_limit_kw_h"
                         android:textAlignment="center"
                         android:textAppearance="?android:attr/textAppearanceMedium" />
 

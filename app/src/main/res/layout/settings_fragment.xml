@@ -39,7 +39,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:gravity="center"
-                            android:text="Monthly Consumption Price"
+                            android:text="@string/monthly_consumption_price"
                             android:textColor="@color/cardBackground"
                             android:textStyle="bold" />
                     </android.support.v7.widget.CardView>
@@ -188,7 +188,7 @@
                                 android:layout_height="match_parent"
                                 android:layout_marginStart="1dp"
                                 android:gravity="center"
-                                android:text="More than 700 kwh" />
+                                android:text="@string/more_than_700_kwh" />
                         </android.support.v7.widget.CardView>
 
                         <android.support.v7.widget.CardView
@@ -238,7 +238,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:gravity="center"
-                            android:text="Fixed charge"
+                            android:text="@string/fixed_charge"
                             android:textColor="@color/cardBackground"
                             android:textStyle="bold" />
                     </android.support.v7.widget.CardView>
@@ -341,7 +341,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:gravity="center"
-                    android:text="Language"
+                    android:text="@string/language"
                     android:textColor="@color/cardBackground"
                     android:textStyle="bold" />
             </android.support.v7.widget.CardView>
@@ -356,7 +356,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="English"
+                    android:text="@string/english"
                     android:elevation="10dp"
                     android:background="@color/colorPrimaryDark"
                     android:textColor="@android:color/white"
@@ -368,7 +368,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_marginStart="2dp"
-                    android:text="Español"
+                    android:text="@string/espa_ol"
                     android:textColor="@android:color/white"
                     android:background="@color/colorPrimaryDark"/>
             </LinearLayout>
@@ -377,7 +377,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@color/colorPrimaryDark"
-                android:text="Save"
+                android:text="@string/save"
                 android:textColor="@android:color/white"/>
         </LinearLayout>
     </ScrollView>

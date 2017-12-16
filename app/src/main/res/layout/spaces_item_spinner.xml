@@ -30,7 +30,7 @@
                 android:id="@+id/space_name_spinner_item"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                toola:text="Space 1"
+                toola:text="@string/space_1"
                 android:gravity="center_vertical"
                 android:includeFontPadding="true"
                 android:layout_gravity="center"

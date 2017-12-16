@@ -35,7 +35,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:text="Most Used Devices"
+                android:text="@string/most_used_devices"
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:textColor="@android:color/darker_gray" />
 

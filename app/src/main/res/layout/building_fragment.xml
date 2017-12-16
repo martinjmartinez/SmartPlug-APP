@@ -37,7 +37,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:maxLines="1"
-                android:text="Casa"
+                android:text="@string/casa"
                 android:textAppearance="?android:attr/textAppearanceLarge" />
         </LinearLayout>
     </android.support.v7.widget.CardView>

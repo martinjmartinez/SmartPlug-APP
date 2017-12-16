@@ -25,7 +25,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:text="This Building doesn't have spaces, Create a new Space by pressing the add button below."
+            android:text="@string/this_building_doesn_t_have_spaces_create_a_new_space_by_pressing_the_add_button_below"
             android:gravity="center"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:textColor="@android:color/darker_gray"/>

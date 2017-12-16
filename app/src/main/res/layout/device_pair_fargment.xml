@@ -38,7 +38,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center"
-            android:text="No devices were found..."
+            android:text="@string/no_devices_were_found"
             android:textAlignment="center"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:textColor="@android:color/white"
@@ -110,7 +110,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/color4"
-            android:text="pair"
+            android:text="@string/pair"
             android:textColor="@android:color/white" />
 
         <Button

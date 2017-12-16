@@ -29,7 +29,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:gravity="center"
-                    android:text="Monthly Report"
+                    android:text="@string/monthly_report"
                     android:textAlignment="center"
                     android:textSize="20dp" />
             </android.support.v7.widget.CardView>

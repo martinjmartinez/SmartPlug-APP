@@ -35,7 +35,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Building: "
+            android:text="@string/_building"
             android:textColor="@android:color/white"
             android:shadowRadius="6"
             android:textAppearance="?android:attr/textAppearanceSmall"/>

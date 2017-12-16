@@ -28,7 +28,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text=" vs " />
+                android:text="@string/vs" />
             <TextView
                 android:id="@+id/actual_month"
                 android:layout_width="wrap_content"
@@ -78,7 +78,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Power"
+                        android:text="@string/power"
                         android:textAlignment="center"
                         android:textSize="13dp"
                         android:textColor="@color/colorPrimaryDark"/>
@@ -107,7 +107,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Consumption"
+                        android:text="@string/consumption"
                         android:textAlignment="center"
                         android:textSize="13dp"
                         android:textColor="@color/colorPrimaryDark"/>
@@ -135,7 +135,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Savings"
+                        android:text="@string/savings"
                         android:textAlignment="center"
                         android:textSize="13dp"
                         android:textColor="@color/colorPrimaryDark"/>
@@ -172,7 +172,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:gravity="center"
-                                android:text="Last Month"
+                                android:text="@string/last_month"
                                 android:textColor="@color/cardBackground"
                                 android:textStyle="bold" />
                         </android.support.v7.widget.CardView>
@@ -195,7 +195,7 @@
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:gravity="center"
-                                    android:text="Consumed" />
+                                    android:text="@string/consumed" />
                             </android.support.v7.widget.CardView>
 
                             <android.support.v7.widget.CardView
@@ -236,7 +236,7 @@
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:gravity="center"
-                                    android:text="Limit" />
+                                    android:text="@string/limit" />
                             </android.support.v7.widget.CardView>
 
                             <android.support.v7.widget.CardView
@@ -276,7 +276,7 @@
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:gravity="center"
-                                    android:text="Avg Power" />
+                                    android:text="@string/avg_power" />
                             </android.support.v7.widget.CardView>
 
                             <android.support.v7.widget.CardView
@@ -318,7 +318,7 @@
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:gravity="center"
-                                    android:text="Time On" />
+                                    android:text="@string/time_on" />
                             </android.support.v7.widget.CardView>
 
                             <android.support.v7.widget.CardView
@@ -359,7 +359,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_marginStart="1dp"
                                     android:gravity="center"
-                                    android:text="Cost" />
+                                    android:text="@string/cost" />
                             </android.support.v7.widget.CardView>
 
                             <android.support.v7.widget.CardView
@@ -403,7 +403,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:gravity="center"
-                                android:text="This Month"
+                                android:text="@string/this_month"
                                 android:textColor="@color/cardBackground"
                                 android:textStyle="bold" />
                         </android.support.v7.widget.CardView>
@@ -426,7 +426,7 @@
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:gravity="center"
-                                    android:text="Consumed" />
+                                    android:text="@string/consumed" />
                             </android.support.v7.widget.CardView>
 
                             <android.support.v7.widget.CardView
@@ -467,7 +467,7 @@
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:gravity="center"
-                                    android:text="Limit" />
+                                    android:text="@string/limit" />
                             </android.support.v7.widget.CardView>
 
                             <android.support.v7.widget.CardView
@@ -508,7 +508,7 @@
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:gravity="center"
-                                    android:text="Avg Power" />
+                                    android:text="@string/avg_power" />
                             </android.support.v7.widget.CardView>
 
                             <android.support.v7.widget.CardView
@@ -550,7 +550,7 @@
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:gravity="center"
-                                    android:text="Time On" />
+                                    android:text="@string/time_on" />
                             </android.support.v7.widget.CardView>
 
                             <android.support.v7.widget.CardView
@@ -591,7 +591,7 @@
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:gravity="center"
-                                    android:text="Cost" />
+                                    android:text="@string/cost" />
                             </android.support.v7.widget.CardView>
 
                             <android.support.v7.widget.CardView

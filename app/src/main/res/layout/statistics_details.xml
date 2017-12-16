@@ -145,7 +145,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:gravity="center"
-                                android:text="Actual"
+                                android:text="@string/actual"
                                 android:textColor="@color/cardBackground"
                                 android:textStyle="bold" />
                         </android.support.v7.widget.CardView>
@@ -168,7 +168,7 @@
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:gravity="center"
-                                    android:text="Consumed" />
+                                    android:text="@string/consumed" />
                             </android.support.v7.widget.CardView>
 
                             <android.support.v7.widget.CardView
@@ -209,7 +209,7 @@
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:gravity="center"
-                                    android:text="Power" />
+                                    android:text="@string/power" />
                             </android.support.v7.widget.CardView>
 
                             <android.support.v7.widget.CardView
@@ -251,7 +251,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_marginStart="1dp"
                                     android:gravity="center"
-                                    android:text="Time" />
+                                    android:text="@string/time" />
                             </android.support.v7.widget.CardView>
 
                             <android.support.v7.widget.CardView
@@ -294,7 +294,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:gravity="center"
-                                android:text="Average"
+                                android:text="@string/average"
                                 android:textColor="@color/cardBackground"
                                 android:textStyle="bold" />
                         </android.support.v7.widget.CardView>
@@ -317,7 +317,7 @@
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:gravity="center"
-                                    android:text="Consumed" />
+                                    android:text="@string/consumed" />
                             </android.support.v7.widget.CardView>
 
                             <android.support.v7.widget.CardView
@@ -358,7 +358,7 @@
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:gravity="center"
-                                    android:text="Power" />
+                                    android:text="@string/power" />
                             </android.support.v7.widget.CardView>
 
                             <android.support.v7.widget.CardView
@@ -400,7 +400,7 @@
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:gravity="center"
-                                    android:text="Time" />
+                                    android:text="@string/time" />
                             </android.support.v7.widget.CardView>
 
                             <android.support.v7.widget.CardView
@@ -449,7 +449,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:gravity="center"
-                                android:text="Max"
+                                android:text="@string/max"
                                 android:textColor="@color/cardBackground"
                                 android:textStyle="bold" />
                         </android.support.v7.widget.CardView>
@@ -473,7 +473,7 @@
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:gravity="center"
-                                    android:text="Date" />
+                                    android:text="@string/date" />
                             </android.support.v7.widget.CardView>
 
                             <android.support.v7.widget.CardView
@@ -516,7 +516,7 @@
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:gravity="center"
-                                    android:text="Power" />
+                                    android:text="@string/power" />
                             </android.support.v7.widget.CardView>
 
                             <android.support.v7.widget.CardView
@@ -558,7 +558,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_marginStart="1dp"
                                     android:gravity="center"
-                                    android:text="Time" />
+                                    android:text="@string/time" />
                             </android.support.v7.widget.CardView>
 
                             <android.support.v7.widget.CardView
@@ -600,7 +600,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:gravity="center"
-                                android:text="Min"
+                                android:text="@string/min"
                                 android:textColor="@color/cardBackground"
                                 android:textStyle="bold" />
                         </android.support.v7.widget.CardView>
@@ -624,7 +624,7 @@
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:gravity="center"
-                                    android:text="Date" />
+                                    android:text="@string/date" />
                             </android.support.v7.widget.CardView>
 
                             <android.support.v7.widget.CardView
@@ -666,7 +666,7 @@
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:gravity="center"
-                                    android:text="Power" />
+                                    android:text="@string/power" />
                             </android.support.v7.widget.CardView>
 
                             <android.support.v7.widget.CardView
@@ -708,7 +708,7 @@
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:gravity="center"
-                                    android:text="Time" />
+                                    android:text="@string/time" />
                             </android.support.v7.widget.CardView>
 
                             <android.support.v7.widget.CardView

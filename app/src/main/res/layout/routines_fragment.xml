@@ -34,7 +34,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:text="Create a new Routine by pressing the add button below."
+            android:text="@string/create_a_new_routine_by_pressing_the_add_button_below"
             android:gravity="center"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:textColor="@android:color/darker_gray"/>
