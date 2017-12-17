@@ -17,6 +17,8 @@ import com.example.martinjmartinez.proyectofinal.Services.BuildingService;
 import com.example.martinjmartinez.proyectofinal.Utils.Chart.ChartUtils;
 import com.example.martinjmartinez.proyectofinal.Utils.DateUtils;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.util.Date;
 import java.util.List;
@@ -34,9 +36,12 @@ public class BuildingChartDetailsFragment extends Fragment {
     private BuildingService buildingService;
     private Realm realm;
     private TextView maxPower, minPower;
+    private TextView maxCost, minCost;
     private TextView maxDate, minDate;
     private HistorialReview maxDay;
     private HistorialReview minDay;
+    private FirebaseAuth mAuth;
+    private FirebaseUser currentUser;
 
     public static BuildingChartDetailsFragment newInstance(String buildingId, Date startDate, Date endDate) {
         Bundle args = new Bundle();
@@ -70,10 +75,14 @@ public class BuildingChartDetailsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.chart_details_fragment, container, false);
 
+        mAuth = FirebaseAuth.getInstance();
+        currentUser = mAuth.getCurrentUser();
         maxDate =  view.findViewById(R.id.max_date);
         minDate =  view.findViewById(R.id.min_date);
         maxPower =  view.findViewById(R.id.max_power);
         minPower =  view.findViewById(R.id.min_power);
+        minCost = view.findViewById(R.id.min_cost);
+        maxCost = view.findViewById(R.id.max_cost);
 
         return view;
     }
@@ -104,6 +113,8 @@ public class BuildingChartDetailsFragment extends Fragment {
             minDate.setText(minDay.getDate());
             maxPower.setText(Utils.decimalFormat.format(maxDay.getPowerConsumed()) + " W/h");
             minPower.setText(Utils.decimalFormat.format(minDay.getPowerConsumed()) + " W/h");
+            minCost.setText("$" + Utils.decimalFormat.format(Utils.price(minDay.getPowerConsumed(), currentUser.getUid())));
+            maxCost.setText("$" + Utils.decimalFormat.format(Utils.price(maxDay.getPowerConsumed(), currentUser.getUid())));
         }
     }
 }

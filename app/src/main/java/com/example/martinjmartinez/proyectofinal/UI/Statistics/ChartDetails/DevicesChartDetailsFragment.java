@@ -22,6 +22,8 @@ import com.example.martinjmartinez.proyectofinal.UI.Devices.Adapters.DeviceSpinn
 import com.example.martinjmartinez.proyectofinal.Utils.Chart.ChartUtils;
 import com.example.martinjmartinez.proyectofinal.Utils.DateUtils;
 import com.example.martinjmartinez.proyectofinal.Utils.Utils;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -43,6 +45,7 @@ public class DevicesChartDetailsFragment extends Fragment {
     private TextView maxPower, minPower;
     private TextView maxDate, minDate;
     private TextView maxTime, minTime;
+    private TextView maxCost, minCost;
     private Spinner devicesSpinner;
     private DeviceSpinnerAdapter deviceSpinnerAdapter;
     private LinearLayout maxTimeRow, minTimeRow;
@@ -50,6 +53,8 @@ public class DevicesChartDetailsFragment extends Fragment {
     private HistorialReview minDay;
     private Device device;
     private List<Device> devices;
+    private FirebaseAuth mAuth;
+    private FirebaseUser currentUser;
 
     public static DevicesChartDetailsFragment newInstance(String buildingId, Date startDate, Date endDate) {
         Bundle args = new Bundle();
@@ -85,12 +90,16 @@ public class DevicesChartDetailsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.chart_details_fragment, container, false);
 
+        mAuth = FirebaseAuth.getInstance();
+        currentUser = mAuth.getCurrentUser();
         maxDate =  view.findViewById(R.id.max_date);
         minDate =  view.findViewById(R.id.min_date);
         maxTime =  view.findViewById(R.id.max_time);
         minTime = view.findViewById(R.id.min_time);
         maxPower =  view.findViewById(R.id.max_power);
         minPower =  view.findViewById(R.id.min_power);
+        minCost = view.findViewById(R.id.min_cost);
+        maxCost = view.findViewById(R.id.max_cost);
         devicesSpinner = view.findViewById(R.id.itemsSpinner);
 
         minTimeRow = view.findViewById(R.id.min_time_row);
@@ -160,6 +169,8 @@ public class DevicesChartDetailsFragment extends Fragment {
             minPower.setText(Utils.decimalFormat.format(minDay.getPowerConsumed()) + " W/h");
             maxTime.setText(DateUtils.timeFormatter(maxDay.getTotalTimeInSeconds()));
             minTime.setText(DateUtils.timeFormatter(minDay.getTotalTimeInSeconds()));
+            minCost.setText("$" + Utils.decimalFormat.format(Utils.price(minDay.getPowerConsumed(), currentUser.getUid())));
+            maxCost.setText("$" + Utils.decimalFormat.format(Utils.price(maxDay.getPowerConsumed(), currentUser.getUid())));
         }
     }
 

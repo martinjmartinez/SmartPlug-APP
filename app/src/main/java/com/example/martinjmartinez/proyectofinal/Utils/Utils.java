@@ -35,7 +35,7 @@ public class Utils {
 
     public static Handler mHandler;
 
-    public static DecimalFormat decimalFormat = new DecimalFormat("#.#");
+    public static DecimalFormat decimalFormat = new DecimalFormat("#.##");
 
     public static ArrayList<String> updateDeviceData(final String url){
 
