@@ -103,7 +103,7 @@ public class SpaceDetailFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        mMainActivity.getSupportActionBar().setTitle("Space Details");
+        mMainActivity.getSupportActionBar().setTitle(R.string.space_details);
     }
 
     @Override
@@ -169,9 +169,9 @@ public class SpaceDetailFragment extends Fragment {
         mDeleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                AlertDialog.Builder builder = Utils.createDialog(mActivity, "Delete Space", "Do you want to delete this Space?");
+                AlertDialog.Builder builder = Utils.createDialog(mActivity, getString(R.string.delete_space), getString(R.string.delete_space_message));
 
-                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                builder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         spaceService.deleteSpace(mSpaceId);
@@ -179,7 +179,7 @@ public class SpaceDetailFragment extends Fragment {
                     }
                 });
 
-                builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.dismiss();
@@ -258,7 +258,7 @@ public class SpaceDetailFragment extends Fragment {
     private void initMonthView(MonthlyLimit monthlyLimit) {
         if (monthlyLimit != null) {
             if (monthlyLimit.getLimit() == 0) {
-                limitTextView.setText("Not set");
+                limitTextView.setText(R.string.Not_set);
             } else {
                 progressBar.setMax(Double.valueOf(monthlyLimit.getLimit()).intValue());
                 progressBar.setProgress(Double.valueOf(monthlyLimit.getTotalConsumed()).intValue());
@@ -277,7 +277,7 @@ public class SpaceDetailFragment extends Fragment {
             }
             spaceService.updateSpaceLimit(mSpaceId, monthlyLimit.getLimit());
         } else {
-            limitTextView.setText("Not set");
+            limitTextView.setText(R.string.Not_set);
         }
 
     }

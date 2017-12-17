@@ -77,7 +77,7 @@ public class BuildingUpdateFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        mMainActivity.getSupportActionBar().setTitle("Building Edit");
+        mMainActivity.getSupportActionBar().setTitle(R.string.edit_building);
     }
 
     @Override
@@ -140,10 +140,10 @@ public class BuildingUpdateFragment extends Fragment {
                         buildingLimitsService.updateOrCreateCloud(buildingFB);
                         mActivity.onBackPressed();
                     } else {
-                        Toast.makeText(getActivity(), "Please, update something.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getActivity(), R.string.update_message, Toast.LENGTH_SHORT).show();
                     }
                 } else {
-                    Toast.makeText(getActivity(), "Please, name your building.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), R.string.name_building_message, Toast.LENGTH_SHORT).show();
                 }
             }
         });

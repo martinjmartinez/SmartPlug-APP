@@ -105,7 +105,7 @@ public class BuildingDetailFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        mMainActivity.getSupportActionBar().setTitle("Building Details");
+        mMainActivity.getSupportActionBar().setTitle(R.string.building_details);
     }
 
     @Override
@@ -168,9 +168,9 @@ public class BuildingDetailFragment extends Fragment {
         mDeleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                AlertDialog.Builder builder = Utils.createDialog(mActivity, "Delete Building", "Do you want to delete this Building?");
+                AlertDialog.Builder builder = Utils.createDialog(mActivity, getString(R.string.delete_building), getString(R.string.delete_building_message));
 
-                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                builder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         buildingService.deleteBuilding(mBuildingId);
@@ -179,7 +179,7 @@ public class BuildingDetailFragment extends Fragment {
                     }
                 });
 
-                builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.dismiss();
@@ -238,7 +238,7 @@ public class BuildingDetailFragment extends Fragment {
 
             }
         };
-        Log.e("BUILDINGid", mBuildingId + "klkk");
+
         databaseReference.child(mBuildingId).addValueEventListener(buildingListener);
     }
 
@@ -258,7 +258,7 @@ public class BuildingDetailFragment extends Fragment {
     private void initMonthView(MonthlyLimit monthlyLimit) {
         if (monthlyLimit != null) {
             if (monthlyLimit.getLimit() == 0) {
-                limitTextView.setText("Not set");
+                limitTextView.setText(R.string.Not_set);
             } else {
                 progressBar.setMax(Double.valueOf(monthlyLimit.getLimit()).intValue());
                 progressBar.setProgress(Double.valueOf(monthlyLimit.getTotalConsumed()).intValue());
@@ -277,7 +277,7 @@ public class BuildingDetailFragment extends Fragment {
             }
             buildingService.updateBuildingLimit(mBuildingId, monthlyLimit.getLimit());
         } else {
-            limitTextView.setText("Not set");
+            limitTextView.setText(R.string.Not_set);
         }
 
     }

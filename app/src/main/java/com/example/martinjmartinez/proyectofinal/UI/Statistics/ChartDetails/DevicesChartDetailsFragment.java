@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -44,6 +45,7 @@ public class DevicesChartDetailsFragment extends Fragment {
     private TextView maxTime, minTime;
     private Spinner devicesSpinner;
     private DeviceSpinnerAdapter deviceSpinnerAdapter;
+    private LinearLayout maxTimeRow, minTimeRow;
     private HistorialReview maxDay;
     private HistorialReview minDay;
     private Device device;
@@ -91,6 +93,11 @@ public class DevicesChartDetailsFragment extends Fragment {
         minPower =  view.findViewById(R.id.min_power);
         devicesSpinner = view.findViewById(R.id.itemsSpinner);
 
+        minTimeRow = view.findViewById(R.id.min_time_row);
+        maxTimeRow = view.findViewById(R.id.max_time_row);
+
+        minTimeRow.setVisibility(View.VISIBLE);
+        maxTimeRow.setVisibility(View.VISIBLE);
         initListenners();
         devicesSpinner.setVisibility(View.VISIBLE);
         devices = getDevices();

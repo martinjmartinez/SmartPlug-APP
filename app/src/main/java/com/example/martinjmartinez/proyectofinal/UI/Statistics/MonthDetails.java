@@ -101,7 +101,7 @@ public class MonthDetails extends Fragment {
                 DevicesMonthConsumed devicesMonthConsumed = dataSnapshot.getValue(DevicesMonthConsumed.class);
                 if (devicesMonthConsumed != null) {
                     if (devicesMonthConsumed.getLimit() == 0){
-                        limitProgressbar.setText("Not set");
+                        limitProgressbar.setText(R.string.Not_set);
                     } else {
                         limitProgressbar.setText(devicesMonthConsumed.getLimit() + " W/h");
                         limit.setText(devicesMonthConsumed.getLimit() + " W/h");

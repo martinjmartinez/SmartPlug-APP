@@ -21,9 +21,6 @@ import com.example.martinjmartinez.proyectofinal.Utils.Utils;
 
 import java.util.List;
 
-/**
- * Created by MartinJMartinez on 7/16/2017.
- */
 
 public class BuildingSpinnerAdapter extends ArrayAdapter<Building> {
 
@@ -45,7 +42,7 @@ public class BuildingSpinnerAdapter extends ArrayAdapter<Building> {
         Building building = getItem(position);
 
         if (building != null) {
-            TextView name = (TextView) view.findViewById(R.id.building_name_spinner_item);
+            TextView name =  view.findViewById(R.id.building_name_spinner_item);
             name.setText(building.getName());
         }
         return view;
@@ -64,7 +61,7 @@ public class BuildingSpinnerAdapter extends ArrayAdapter<Building> {
         Building building = getItem(position);
 
         if (building != null) {
-            TextView name = (TextView) view.findViewById(R.id.building_name_spinner_item);
+            TextView name =  view.findViewById(R.id.building_name_spinner_item);
             name.setText(building.getName());
         }
         return view;

@@ -6,18 +6,20 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 
+import com.example.martinjmartinez.proyectofinal.R;
+
 public class SpaceStatisticsViewPagerAdapter extends FragmentStatePagerAdapter {
     private Fragment[] mFragmentList;
 
     public static final int GENERAL_STATISTICS = 0;
     public static final int MONTH_STATISTICS = 1;
-
+    private Context context;
     private String[] mTabTitlesId;
 
     public SpaceStatisticsViewPagerAdapter(FragmentManager fragmentManager, Context context, String deviceId) {
         super(fragmentManager);
 
-
+        this.context = context;
 
         mFragmentList = new Fragment[]{
                 SpaceStatisticsDetailsFragment.newInstance(deviceId),
@@ -40,11 +42,11 @@ public class SpaceStatisticsViewPagerAdapter extends FragmentStatePagerAdapter {
         String title = null;
         if (position == 0)
         {
-            title = "General Stats";
+            title = context.getResources().getString(R.string.general_stats);
         }
         else if (position == 1)
         {
-            title = "Monthly Report";
+            title = context.getResources().getString(R.string.monthly_report);
         }
         return title;
     }

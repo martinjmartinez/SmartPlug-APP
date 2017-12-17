@@ -117,7 +117,7 @@ public class DeviceListFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        mMainActivity.getSupportActionBar().setTitle("Devices");
+        mMainActivity.getSupportActionBar().setTitle(R.string.devices);
     }
 
     private void iniVariables(View view) {

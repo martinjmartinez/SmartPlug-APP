@@ -99,7 +99,7 @@ public class DeviceUpdateFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        mMainActivity.getSupportActionBar().setTitle("Device Edit");
+        mMainActivity.getSupportActionBar().setTitle(R.string.device_edit);
     }
 
     @Override
@@ -133,9 +133,9 @@ public class DeviceUpdateFragment extends Fragment {
         pairButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                AlertDialog.Builder builder = Utils.createDialog(mActivity, "Change network", "Do you want to connect to another wifi network?");
+                AlertDialog.Builder builder = Utils.createDialog(mActivity, getString(R.string.change_network), getString(R.string.change_network_message));
 
-                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                builder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         DeviceFB deviceFB = deviceService.castToDeviceFB(mDevice);
@@ -152,7 +152,7 @@ public class DeviceUpdateFragment extends Fragment {
                     }
                 });
 
-                builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.dismiss();
@@ -209,7 +209,7 @@ public class DeviceUpdateFragment extends Fragment {
                         deviceFB.setSpaceId(mSpace.get_id());
                         deviceFB.setName(name.getText().toString());
                         deviceFB.setMonthlyLimit(Utils.isEditTextEmpty(monthlyLimit) ? 0 : Double.parseDouble(monthlyLimit.getText().toString()));
-                        Log.e("limit", deviceFB.getMonthlyLimit() + "ppp");
+
                         devicesLimitService.updateOrCreateCloud(deviceFB);
                         deviceService.updateDeviceCloud(deviceFB);
                         spaceService.updateSpacePowerAverageConsumption(mSpace.get_id());
@@ -221,13 +221,13 @@ public class DeviceUpdateFragment extends Fragment {
                         deviceFB.setSpaceId("");
                         deviceFB.setMonthlyLimit(Utils.isEditTextEmpty(monthlyLimit) ? 0 : Double.parseDouble(monthlyLimit.getText().toString()));
                         deviceFB.setName(name.getText().toString());
-                        Log.e("limit", deviceFB.getMonthlyLimit() + "pppp");
+
                         devicesLimitService.updateOrCreateCloud(deviceFB);
                         deviceService.updateDeviceCloud(deviceFB);
                     }
                     mActivity.onBackPressed();
                 } else {
-                    Toast.makeText(getActivity(), "Please, name your device.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), R.string.name_device_message, Toast.LENGTH_SHORT).show();
                 }
             }
         });

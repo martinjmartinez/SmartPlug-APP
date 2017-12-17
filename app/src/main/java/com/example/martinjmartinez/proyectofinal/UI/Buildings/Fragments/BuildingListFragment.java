@@ -78,7 +78,7 @@ public class BuildingListFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        mMainActivity.getSupportActionBar().setTitle("Buildings");
+        mMainActivity.getSupportActionBar().setTitle(R.string.buildings);
     }
 
     @Override

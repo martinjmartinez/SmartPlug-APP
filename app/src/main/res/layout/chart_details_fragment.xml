@@ -147,7 +147,8 @@
                 android:id="@+id/max_time_row"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:visibility="gone">
 
                 <android.support.v7.widget.CardView
                     android:layout_width="0dp"
@@ -298,7 +299,8 @@
                 android:id="@+id/min_time_row"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:visibility="gone">
 
                 <android.support.v7.widget.CardView
                     android:layout_width="0dp"

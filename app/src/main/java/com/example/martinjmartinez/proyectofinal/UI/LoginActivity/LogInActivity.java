@@ -184,7 +184,7 @@ public class LogInActivity extends AppCompatActivity implements GoogleApiClient.
                                     }
                                 });
                     }else {
-                        Toast.makeText(LogInActivity.this, "Enter credentials to log in",
+                        Toast.makeText(LogInActivity.this, R.string.credentials_message,
                                 Toast.LENGTH_SHORT).show();
                     }
 
@@ -209,11 +209,11 @@ public class LogInActivity extends AppCompatActivity implements GoogleApiClient.
                                                         public void onComplete(@NonNull Task<Void> task) {
                                                             if (task.isSuccessful()) {
                                                                 Toast.makeText(LogInActivity.this,
-                                                                        "Verification email sent to " + user.getEmail(),
+                                                                        getString(R.string.verification_email_message) + user.getEmail(),
                                                                         Toast.LENGTH_SHORT).show();
                                                             } else {
                                                                 Toast.makeText(LogInActivity.this,
-                                                                        "Failed to send verification email.",
+                                                                        R.string.verification_email_not_send,
                                                                         Toast.LENGTH_SHORT).show();
                                                             }
                                                         }
@@ -226,7 +226,7 @@ public class LogInActivity extends AppCompatActivity implements GoogleApiClient.
                                     }
                                 });
                     } else {
-                        Toast.makeText(LogInActivity.this, "Password didn't match!",
+                        Toast.makeText(LogInActivity.this, R.string.password_different,
                                 Toast.LENGTH_SHORT).show();
                     }
                 }
@@ -267,7 +267,7 @@ public class LogInActivity extends AppCompatActivity implements GoogleApiClient.
             confirnPassword.setVisibility(View.GONE);
             userName.setVisibility(View.GONE);
         }
-        Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, R.string.press_back_message, Toast.LENGTH_SHORT).show();
 
         new Handler().postDelayed(new Runnable() {
 

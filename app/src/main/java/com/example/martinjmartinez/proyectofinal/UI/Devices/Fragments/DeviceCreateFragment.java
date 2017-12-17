@@ -109,7 +109,7 @@ public class DeviceCreateFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        mMainActivity.getSupportActionBar().setTitle("New Device");
+        mMainActivity.getSupportActionBar().setTitle(R.string.new_device);
     }
 
     @Override
@@ -196,7 +196,7 @@ public class DeviceCreateFragment extends Fragment {
                     devicesLimitService.updateOrCreateCloud(mDevice);
                     mActivity.onBackPressed();
                 } else {
-                    Toast.makeText(getActivity(), "Please, fill all the fields.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), R.string.fill_all_fields_message, Toast.LENGTH_SHORT).show();
                 }
             }
         });

@@ -79,7 +79,7 @@ public class SpaceCreateFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        mMainActivity.getSupportActionBar().setTitle("New Space");
+        mMainActivity.getSupportActionBar().setTitle(R.string.new_space);
     }
 
     @Override
@@ -134,7 +134,7 @@ public class SpaceCreateFragment extends Fragment {
                     buildingLimitsService.addSpaceToBuildingLimit(mBuildingId, id);
                     mActivity.onBackPressed();
                 } else {
-                    Toast.makeText(getActivity(), "Please, fill all the fields.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), R.string.fill_all_fields_message, Toast.LENGTH_SHORT).show();
                 }
             }
         });

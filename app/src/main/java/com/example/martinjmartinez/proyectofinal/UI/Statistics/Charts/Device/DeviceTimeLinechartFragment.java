@@ -86,7 +86,7 @@ public class DeviceTimeLinechartFragment extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        title.setText("Time On (Min)");
+        title.setText(R.string.time_on);
         fillChart();
     }
 
