@@ -74,7 +74,7 @@ public class DeviceStatistics extends Fragment {
     public void onResume() {
         super.onResume();
 
-        mMainActivity.getSupportActionBar().setTitle("Statistics");
+        mMainActivity.getSupportActionBar().setTitle(R.string.statistics);
     }
 
     @Override

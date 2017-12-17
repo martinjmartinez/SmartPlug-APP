@@ -73,7 +73,7 @@ public class SpaceUpdateFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        mMainActivity.getSupportActionBar().setTitle("Space Edit");
+        mMainActivity.getSupportActionBar().setTitle(R.string.space_edit);
     }
 
     @Override
@@ -132,10 +132,10 @@ public class SpaceUpdateFragment extends Fragment {
                         spacesLimitsService.updateOrCreateCloud(spaceFB);
                         mActivity.onBackPressed();
                     } else {
-                        Toast.makeText(getActivity(), "Please, update something.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getActivity(), R.string.fill_all_fields_message, Toast.LENGTH_SHORT).show();
                     }
                 } else {
-                    Toast.makeText(getActivity(), "Please, name your building.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), R.string.name_building_message, Toast.LENGTH_SHORT).show();
                 }
             }
         });

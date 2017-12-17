@@ -106,7 +106,7 @@ public class RoutineUpdateFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        mMainActivity.getSupportActionBar().setTitle("Edit Routine");
+        mMainActivity.getSupportActionBar().setTitle(R.string.edit_routine);
     }
 
     @Override
@@ -209,9 +209,9 @@ public class RoutineUpdateFragment extends Fragment {
         deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                AlertDialog.Builder builder = Utils.createDialog(mActivity, "Delete routine", "Do you really want to delete this routine?");
+                AlertDialog.Builder builder = Utils.createDialog(mActivity, getString(R.string.delete_routine), getString(R.string.delete_routine_message));
 
-                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                builder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         routineService.deleteRoutine(routineId);
@@ -219,7 +219,7 @@ public class RoutineUpdateFragment extends Fragment {
                     }
                 });
 
-                builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.dismiss();
@@ -284,7 +284,7 @@ public class RoutineUpdateFragment extends Fragment {
                         startTimeTextView.setText(DateUtils.getTime(selectedHour, selectedMinute));
                     }
                 }, startHour, startMin, false);
-                mTimePicker.setTitle("Select Time");
+                mTimePicker.setTitle(R.string.select_time);
                 mTimePicker.show();
             }
         });
@@ -301,7 +301,7 @@ public class RoutineUpdateFragment extends Fragment {
                         endTimeTextView.setText(DateUtils.getTime(selectedHour, selectedMinute));
                     }
                 }, endHour, endMinute, false);
-                mTimePicker.setTitle("Select Time");
+                mTimePicker.setTitle(R.string.select_time);
                 mTimePicker.show();
             }
         });
@@ -434,7 +434,7 @@ public class RoutineUpdateFragment extends Fragment {
                     routineService.updateRoutineCloud(routineFB, weekDays);
                     mActivity.onBackPressed();
                 } else {
-                    Toast.makeText(getContext(), "Please enter a name and make sure to choose a device", Toast.LENGTH_SHORT);
+                    Toast.makeText(getContext(), R.string.routine_message_1, Toast.LENGTH_SHORT);
                 }
             }
         });

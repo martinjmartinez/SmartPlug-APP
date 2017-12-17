@@ -100,7 +100,7 @@ public class BuildingStatisticsDetailsFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        mMainActivity.getSupportActionBar().setTitle("Statistics");
+        mMainActivity.getSupportActionBar().setTitle(R.string.statistics);
     }
 
     @Override

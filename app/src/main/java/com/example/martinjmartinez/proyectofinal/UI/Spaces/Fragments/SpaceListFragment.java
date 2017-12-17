@@ -99,7 +99,7 @@ public class SpaceListFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        mMainActivity.getSupportActionBar().setTitle("Spaces");
+        mMainActivity.getSupportActionBar().setTitle(R.string.spaces);
     }
 
     @Override

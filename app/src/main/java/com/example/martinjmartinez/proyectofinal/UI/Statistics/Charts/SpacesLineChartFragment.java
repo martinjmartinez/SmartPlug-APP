@@ -104,7 +104,7 @@ public class SpacesLineChartFragment extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        title.setText("Spaces");
+        title.setText(R.string.spaces);
         fillChart();
     }
 

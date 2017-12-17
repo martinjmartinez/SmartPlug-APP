@@ -140,7 +140,7 @@ public class DevicePairFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        mMainActivity.getSupportActionBar().setTitle("Pairing Device");
+        mMainActivity.getSupportActionBar().setTitle(R.string.oairing_device);
         databaseReference.addValueEventListener(deviceListener);
         mActivity.registerReceiver(receiverWifi, new IntentFilter(
                 WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
@@ -345,7 +345,7 @@ public class DevicePairFragment extends Fragment {
 
                         sendCredentialsToArduino(new OkHttpClient(), newConnection.getSSID(), wifiPassword.getText().toString());
                     } else {
-                        Toast.makeText(mActivity.getApplicationContext(), "Please, enter the password", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(mActivity.getApplicationContext(), R.string.enter_password_message, Toast.LENGTH_SHORT).show();
                     }
                 }
             }
@@ -363,7 +363,7 @@ public class DevicePairFragment extends Fragment {
                 mActivity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(mActivity.getApplicationContext(), "Couldn't connect to the device, Reset it and try again", Toast.LENGTH_LONG).show();
+                        Toast.makeText(mActivity.getApplicationContext(), R.string.conection_error_1, Toast.LENGTH_LONG).show();
                     }
                 });
 
@@ -376,7 +376,7 @@ public class DevicePairFragment extends Fragment {
                     mActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Toast.makeText(mActivity.getApplicationContext(), "Something went wrong, please try again", Toast.LENGTH_LONG).show();
+                            Toast.makeText(mActivity.getApplicationContext(), R.string.connect_error_2, Toast.LENGTH_LONG).show();
                         }
                     });
                     throw new IOException("sendHistoryIdToArduino" + response);
@@ -402,7 +402,7 @@ public class DevicePairFragment extends Fragment {
                                 @Override
                                 public void run() {
                                     if (mainWifi.getConnectionInfo().getSSID().contains(deviceSSID)) {
-                                        Toast.makeText(mActivity.getApplicationContext(), "Couldn't connect device to wifi", Toast.LENGTH_LONG).show();
+                                        Toast.makeText(mActivity.getApplicationContext(), R.string.connect_error_5, Toast.LENGTH_LONG).show();
                                         connecting = false;
                                     } else {
                                         if (deviceSSID == null) {
@@ -410,7 +410,7 @@ public class DevicePairFragment extends Fragment {
                                         }
                                         for (WifiConnection wifiConnection : connections) {
                                             if (wifiConnection.getSSID().contains(deviceSSID)) {
-                                                Toast.makeText(mActivity.getApplicationContext(), "Couldn't connect device to wifi", Toast.LENGTH_LONG).show();
+                                                Toast.makeText(mActivity.getApplicationContext(), R.string.connect_error_5, Toast.LENGTH_LONG).show();
                                                 connecting = false;
                                             }
                                         }

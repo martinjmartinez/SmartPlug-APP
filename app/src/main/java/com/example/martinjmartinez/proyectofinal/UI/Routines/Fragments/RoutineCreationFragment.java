@@ -103,7 +103,7 @@ public class RoutineCreationFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        mMainActivity.getSupportActionBar().setTitle("Create Routine");
+        mMainActivity.getSupportActionBar().setTitle(R.string.create_routine);
     }
 
     @Override
@@ -234,7 +234,7 @@ public class RoutineCreationFragment extends Fragment {
                         startTimeTextView.setText( DateUtils.getTime(selectedHour, selectedMinute));
                     }
                 }, hour, minute, false);
-                mTimePicker.setTitle("Select Time");
+                mTimePicker.setTitle(getString(R.string.select_time));
                 mTimePicker.show();
             }
         });
@@ -254,7 +254,7 @@ public class RoutineCreationFragment extends Fragment {
                         endTimeTextView.setText( DateUtils.getTime(selectedHour, selectedMinute));
                     }
                 }, hour, minute, false);
-                mTimePicker.setTitle("Select Time");
+                mTimePicker.setTitle(R.string.select_time);
                 mTimePicker.show();
             }
         });
@@ -387,10 +387,10 @@ public class RoutineCreationFragment extends Fragment {
                         routineService.createRoutineCloud(routineFB, weekDays);
                         mActivity.onBackPressed();
                     } else {
-                        Toast.makeText(getContext(), "Please enter a name and make sure to choose a device", Toast.LENGTH_SHORT);
+                        Toast.makeText(getContext(), R.string.routine_message_1, Toast.LENGTH_SHORT);
                     }
                 } else {
-                    Toast.makeText(getContext(), "Select at least one weekday", Toast.LENGTH_SHORT);
+                    Toast.makeText(getContext(), R.string.routine_message_2, Toast.LENGTH_SHORT);
                 }
 
             }

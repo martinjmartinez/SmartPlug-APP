@@ -22,7 +22,6 @@ public class SpaceMonthDetailsViewPagerAdapter extends FragmentStatePagerAdapter
     public SpaceMonthDetailsViewPagerAdapter(FragmentManager fragmentManager, Context context, String spaceId, String monthId) {
         super(fragmentManager);
 
-        Log.e("MONTHID", monthId + "  KLKK");
         mFragmentList = new Fragment[]{
                 //todo add the other one
 

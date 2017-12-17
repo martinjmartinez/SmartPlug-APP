@@ -104,7 +104,7 @@ public class BuildingsLineChartFragment extends Fragment{
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        title.setText("Building");
+        title.setText(R.string.buildings);
     }
 
     static public Map<String, Integer> getDates(List<Building> buildings, Map<String, Integer> dates) {

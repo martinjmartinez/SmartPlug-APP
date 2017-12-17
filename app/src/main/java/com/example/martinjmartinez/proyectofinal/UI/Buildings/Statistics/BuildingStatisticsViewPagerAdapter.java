@@ -5,22 +5,20 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 
-/**
- * Created by MartinJMartinez on 12/6/2017.
- */
+import com.example.martinjmartinez.proyectofinal.R;
 
 public class BuildingStatisticsViewPagerAdapter extends FragmentStatePagerAdapter {
     private Fragment[] mFragmentList;
 
     public static final int GENERAL_STATISTICS = 0;
     public static final int MONTH_STATISTICS = 1;
-
+    private Context context;
     private String[] mTabTitlesId;
 
     public BuildingStatisticsViewPagerAdapter(FragmentManager fragmentManager, Context context, String buildingId) {
         super(fragmentManager);
 
-
+        this.context = context;
 
         mFragmentList = new Fragment[]{
                 BuildingStatisticsDetailsFragment.newInstance(buildingId),
@@ -43,11 +41,11 @@ public class BuildingStatisticsViewPagerAdapter extends FragmentStatePagerAdapte
         String title = null;
         if (position == 0)
         {
-            title = "General Stats";
+            title = context.getResources().getString(R.string.general_stats);
         }
         else if (position == 1)
         {
-            title = "Monthly Report";
+            title = context.getString(R.string.monthly_report);
         }
         return title;
     }

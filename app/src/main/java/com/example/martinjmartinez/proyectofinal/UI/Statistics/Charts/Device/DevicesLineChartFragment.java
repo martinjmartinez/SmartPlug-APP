@@ -85,7 +85,7 @@ public class DevicesLineChartFragment extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        title.setText("Devices");
+        title.setText(R.string.devices);
         fillChart();
     }
 

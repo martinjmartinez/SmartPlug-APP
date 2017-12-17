@@ -68,7 +68,7 @@ public class BuildingCreateFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        mMainActivity.getSupportActionBar().setTitle("New Building");
+        mMainActivity.getSupportActionBar().setTitle(R.string.new_building);
     }
 
     @Override
@@ -123,7 +123,7 @@ public class BuildingCreateFragment extends Fragment {
                     }
 
                 } else {
-                    Toast.makeText(getActivity(), "Please, name your building.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), R.string.name_building_mesage, Toast.LENGTH_SHORT).show();
                 }
             }
         });

@@ -84,7 +84,7 @@ public class SpaceConsumptionLineChartFragment extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        title.setText("Power Consumption  (W/h)");
+        title.setText(R.string.power_consumption);
         fillChart();
     }
 

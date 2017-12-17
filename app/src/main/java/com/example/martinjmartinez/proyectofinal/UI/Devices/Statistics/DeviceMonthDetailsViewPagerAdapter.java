@@ -21,10 +21,7 @@ public class DeviceMonthDetailsViewPagerAdapter extends FragmentStatePagerAdapte
     public DeviceMonthDetailsViewPagerAdapter(FragmentManager fragmentManager, Context context, String deviceId, String monthId) {
         super(fragmentManager);
 
-        Log.e("MONTHID", monthId + "  KLKK");
         mFragmentList = new Fragment[]{
-                //todo add the other one
-
                 MonthDetails.newInstance(monthId, deviceId, "Device"),
                 MonthVsMonth.newInstance(monthId, deviceId, "Device")
         };

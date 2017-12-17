@@ -96,7 +96,6 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
                     deviceService.updateDevicePower(device.get_id(), 0);
                     HistorialFB historialFB = historialService.castToHistorialFB(historialService.getHistorialById(device.getLastHistoryId()), new Date());
 
-                    Log.e("DeviceListAdapter", "getHistoryLogs");
                     historialService.closeHistory(historialFB);
                     holder.mAverage.setText(Utils.decimalFormat.format(device.getAverageConsumption()) + " W");
                     holder.mPower.setText("0 W");

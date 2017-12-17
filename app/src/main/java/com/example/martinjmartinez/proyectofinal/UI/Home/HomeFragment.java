@@ -79,7 +79,7 @@ public class HomeFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        mMainActivity.getSupportActionBar().setTitle("Home");
+        mMainActivity.getSupportActionBar().setTitle(R.string.home);
     }
 
     public void getArgumentsBundle() {

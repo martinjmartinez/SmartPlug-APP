@@ -116,7 +116,7 @@ public class DeviceDetailFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        mMainActivity.getSupportActionBar().setTitle("Device Details");
+        mMainActivity.getSupportActionBar().setTitle(R.string.device_details);
     }
 
     @Override
@@ -163,10 +163,10 @@ public class DeviceDetailFragment extends Fragment {
                 } else {
                     deviceService.updateDeviceStatus(mDeviceId, false);
                     HistorialFB historialFB = historialService.castToHistorialFB(historialService.getHistorialById(mDevice.getLastHistoryId()), new Date());
-                    Log.e("DeviceDetailAdapter", "getHistoryLogs");
+
                     historialService.closeHistory(historialFB);
                     deviceService.updateDevicePower(mDevice.get_id(), 0);
-                    power.setText("OFF");
+                    power.setText(R.string.off);
                     averagePower.setText(Utils.decimalFormat.format(mDevice.getAverageConsumption()) + " W");
                 }
 
@@ -207,9 +207,9 @@ public class DeviceDetailFragment extends Fragment {
         mDeleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                AlertDialog.Builder builder = Utils.createDialog(mActivity, "Delete Device", "Do you want to delete this Device?");
+                AlertDialog.Builder builder = Utils.createDialog(mActivity, getString(R.string.delete_device), getString(R.string.delete_device_warning));
 
-                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                builder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         deviceService.deleteDevice(mDeviceId);
@@ -217,7 +217,7 @@ public class DeviceDetailFragment extends Fragment {
                     }
                 });
 
-                builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.dismiss();
@@ -310,7 +310,7 @@ public class DeviceDetailFragment extends Fragment {
     private void initDeviceLimitSecction(MonthlyLimit monthlyLimit) {
         if (monthlyLimit != null) {
             if (monthlyLimit.getLimit() == 0) {
-                monthlyLimitTextView.setText("Not set");
+                monthlyLimitTextView.setText(R.string.Not_set);
             } else {
                 limitProgress.setMax(Double.valueOf(monthlyLimit.getLimit()).intValue());
                 limitProgress.setProgress(Double.valueOf(monthlyLimit.getTotalConsumed()).intValue());
@@ -331,7 +331,7 @@ public class DeviceDetailFragment extends Fragment {
             }
             deviceService.updateDeviceLimit(mDevice.get_id(), monthlyLimit.getLimit());
         } else {
-            monthlyLimitTextView.setText("Not set");
+            monthlyLimitTextView.setText(R.string.Not_set);
         }
     }
 

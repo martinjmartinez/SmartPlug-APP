@@ -102,7 +102,7 @@ public class SpaceStatisticsDetailsFragment extends Fragment{
     public void onResume() {
         super.onResume();
 
-        mMainActivity.getSupportActionBar().setTitle("Statistics");
+        mMainActivity.getSupportActionBar().setTitle(R.string.statistics);
     }
 
 

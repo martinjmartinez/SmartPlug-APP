@@ -85,7 +85,7 @@ public class BuildingPowerLineChartFragment extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        title.setText("Average Power (Watts)");
+        title.setText(R.string.average_power);
         fillChart();
     }
 

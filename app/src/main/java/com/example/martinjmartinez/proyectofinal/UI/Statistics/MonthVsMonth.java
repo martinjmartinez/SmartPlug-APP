@@ -179,7 +179,7 @@ public class MonthVsMonth extends Fragment {
             previusCost.setText("$0.0");
             chart1.setMax(100);
             chart1.setProgress(0);
-            chart1.setBottomText("No Data");
+            chart1.setBottomText(getString(R.string.no_data));
         }
 
 
@@ -187,12 +187,12 @@ public class MonthVsMonth extends Fragment {
         if (monthsDifferences < 0) {
             chart1.setFinishedStrokeColor(getResources().getColor(R.color.color3));
             chart1.setTextColor(getResources().getColor(R.color.color3));
-            chart1.setBottomText("Under");
+            chart1.setBottomText(getString(R.string.under));
             monthsDifferences = monthsDifferences * -1;
         } else if (monthsDifferences > 0 && hasPrevMonth) {
             chart1.setFinishedStrokeColor(getResources().getColor(R.color.alert));
             chart1.setTextColor(getResources().getColor(R.color.alert));
-            chart1.setBottomText("Over");
+            chart1.setBottomText(getString(R.string.over));
         }
         if (hasPrevMonth) {
             Double monthsDifferencesPercentage = (monthsDifferences / prevAvgPower) * 100;
@@ -249,12 +249,12 @@ public class MonthVsMonth extends Fragment {
                 if (monthsDifferences < 0) {
                     chart2.setFinishedStrokeColor(getResources().getColor(R.color.color3));
                     chart2.setTextColor(getResources().getColor(R.color.color3));
-                    chart2.setBottomText("Under");
+                    chart2.setBottomText(getResources().getString(R.string.under));
                     monthsDifferences = monthsDifferences * -1;
                 } else if (monthsDifferences > 0 && hasPrevMonth) {
                     chart2.setFinishedStrokeColor(getResources().getColor(R.color.alert));
                     chart2.setTextColor(getResources().getColor(R.color.alert));
-                    chart2.setBottomText("Over");
+                    chart2.setBottomText(getResources().getString(R.string.over));
                 }
                 if (hasPrevMonth) {
                     Double monthsDifferencesPercentage = (monthsDifferences / prevConsuptionValue) * 100;
@@ -267,12 +267,12 @@ public class MonthVsMonth extends Fragment {
                 if (monthsDifferencesCost < 0) {
                     chart3.setFinishedStrokeColor(getResources().getColor(R.color.color3));
                     chart3.setTextColor(getResources().getColor(R.color.color3));
-                    chart3.setBottomText("Under");
+                    chart3.setBottomText(getResources().getString(R.string.under));
                     monthsDifferencesCost = monthsDifferencesCost * -1;
                 } else if (monthsDifferencesCost > 0 && hasPrevMonth) {
                     chart3.setFinishedStrokeColor(getResources().getColor(R.color.alert));
                     chart3.setTextColor(getResources().getColor(R.color.alert));
-                    chart3.setBottomText("Over");
+                    chart3.setBottomText(getResources().getString(R.string.over));
                 }
                 if (hasPrevMonth) {
                     Double monthsDifferencesPercentage = (monthsDifferencesCost / prevCostValue) * 100;
