@@ -45,8 +45,6 @@ In order to have a better management of all the devices found in the home, it wa
 
 Some of the technologies used:
 
-Client:
-
 * MPAndroidChart: This is responsible for making all the graphics of the application. Its versatility, easy use and aesthetics made this the library of choice for the development of the system.
 
 * Firebase Messaging: Firebase Cloud Messaging (FCM) is a cross-platform messaging solution that allows you to send messages securely and for free. With FCM, you can notify a client app that a new email or other information is available for synchronization. You can send notification messages to increase retention and retention of users.
